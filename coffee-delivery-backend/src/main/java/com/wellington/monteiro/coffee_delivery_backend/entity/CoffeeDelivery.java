@@ -1,5 +1,6 @@
-package com.wellington.monteiro.coffee_delivery_backend;
+package com.wellington.monteiro.coffee_delivery_backend.entity;
 
+import com.wellington.monteiro.coffee_delivery_backend.enums.CoffeeType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "coffeedelivery")
+@Table(name = "coffee_delivery")
 @Entity(name = "CoffeeDelivery")
 public class CoffeeDelivery {
 
@@ -16,7 +17,7 @@ public class CoffeeDelivery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private double value;
+    private double price;
     private String image;
     private String description;
 

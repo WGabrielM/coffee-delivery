@@ -1,4 +1,4 @@
-package com.wellington.monteiro.coffee_delivery_backend;
+package com.wellington.monteiro.coffee_delivery_backend.enums;
 
 public enum CoffeeType {
     GELADO,
