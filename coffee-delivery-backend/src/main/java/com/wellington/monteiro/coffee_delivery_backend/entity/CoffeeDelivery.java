@@ -1,5 +1,6 @@
 package com.wellington.monteiro.coffee_delivery_backend.entity;
 
+import com.wellington.monteiro.coffee_delivery_backend.coffeedelivery.DataRegisterCoffeeDelivery;
 import com.wellington.monteiro.coffee_delivery_backend.enums.CoffeeType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,12 @@ public class CoffeeDelivery {
 
     @Enumerated(EnumType.STRING)
     private CoffeeType coffeeType;
+
+    public CoffeeDelivery(DataRegisterCoffeeDelivery data) {
+        this.name = data.name();
+        this.price = data.price();
+        this.image = data.image();
+        this.description = data.description();
+        this.coffeeType = data.coffeeType();
+    }
 }
