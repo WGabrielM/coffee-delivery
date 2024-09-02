@@ -1,10 +1,9 @@
 package com.wellington.monteiro.coffee_delivery_backend.enums;
 
 public enum CoffeeType {
-    GELADO,
+    ICE,
     ESPECIAL,
-    COM_LEITE,
-    ALCOOLICO,
-    TRADICIONAL,
-
+    WITH_MILK,
+    ALCOHOLIC,
+    TRADITIONAL,
 }
