@@ -20,8 +20,8 @@ public class CoffeeDeliveryController {
     @Autowired
     CoffeeDeliveryRepository repository;
 
-    @PostMapping
     @Transactional
+    @PostMapping
     public void register(@RequestBody @Valid DataCoffeeDelivery data) {
         repository.save(new CoffeeDelivery(data));
     }
@@ -31,11 +31,17 @@ public class CoffeeDeliveryController {
         return repository.findAll().stream().map(DataCoffeeDelivery::new).toList();
     }
 
-    @PutMapping
     @Transactional
+    @PutMapping
     public void update(@RequestBody @Valid DataUpdateCoffeeDelivery data) {
         var coffee = repository.getReferenceById(data.id());
         coffee.updateInfo(data);
+    }
+
+    @Transactional
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        repository.deleteById(id);
     }
 
 }
