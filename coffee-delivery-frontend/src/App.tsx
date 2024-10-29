@@ -1,12 +1,18 @@
-import NaVBar from "./components/NavBar";
+import { ThemeProvider } from "styled-components";
+
 import Home from "./pages/Home";
+import Header from "./components/Header";
+
+import { GlobalStyle } from "./styles/global";
+import { defaultTheme } from "./styles/themes/default";
 
 function App() {
   return (
-    <>
-      <NaVBar />
+    <ThemeProvider theme={defaultTheme}>
+      <Header />
       <Home />
-    </>
+      <GlobalStyle />
+    </ThemeProvider>
   );
 }
 
