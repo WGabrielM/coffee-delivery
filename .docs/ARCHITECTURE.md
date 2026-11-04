@@ -16,9 +16,9 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | API tests | JUnit 5 and AssertJ; `test` is unit tests without Docker, `e2eTest` is Spring Boot with Testcontainers; ArchUnit; JaCoCo (minimum 80% line coverage over both) | `[implemented]` |
 | Observability | Structured JSON logs and OpenTelemetry (Micrometer) to Grafana LGTM are `[implemented]`; the dashboard as code is `[planned]` (spec 008) | `[implemented]` / `[planned]` |
 | Load tests | k6, one scenario per endpoint; the harness and the smoke profile are `[implemented]`, the other profiles are `[planned]` (spec 008) | `[implemented]` / `[planned]` |
-| App | React, TypeScript, Vite, React Router, TanStack Query, React Hook Form with Zod, in `apps/app` | `[planned]` (spec 012 onward) |
+| App | React 19, TypeScript (strict), Vite, React Router (data mode), TanStack Query, in `apps/app`; React Hook Form with Zod arrives with the checkout spec | `[implemented]` (foundation, spec 012) |
 | Styling | Tailwind CSS mapped to the Figma tokens; fonts Roboto and Baloo 2, self-hosted | `[planned]` (spec 013) |
-| App tests | Vitest and Testing Library; Playwright with axe | `[planned]` (spec 012 onward) |
+| App tests | Vitest with jsdom and Testing Library; Playwright (axe arrives with the screen specs) | `[implemented]` (spec 012) |
 | CI | GitHub Actions | `[planned]` (spec 030) |
 
 ## Ports
@@ -51,7 +51,7 @@ Database name, user, password, and port come from `.env.local`; the Compose file
 ```
 apps/
   api/            [implemented] Spring Boot API (Gradle)
-  app/            [planned] React app (Vite)
+  app/            [implemented] React app (Vite)
 .agents/skills/   [implemented] workflow skills (linked into .claude/skills)
 .claude/          [implemented] agents and commands
 .docs/            [implemented] the documentation hub
@@ -101,7 +101,12 @@ Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `applicati
 - `tags` (`id`, `slug`, `name`, `position`), `coffees` (`id`, `slug`, `name`, `description`, `price_in_cents`, `position`), `coffee_tags` (`coffee_id`, `tag_id`): spec 004.
 - `orders` (address, payment method, `subtotal_in_cents`, `delivery_fee_in_cents`, `total_in_cents`, `status`, `created_at`) and `order_items` (`coffee_id`, `coffee_name`, `unit_price_in_cents`, `quantity`, `line_total_in_cents`): spec 009.
 
-## App architecture `[planned]`
+## App architecture `[implemented]` (foundation; features arrive with specs 016 onward)
+
+- Layout of `apps/app`: `index.html`, `vite.config.ts`, `playwright.config.ts`, `src/main.tsx` (entry), `src/app` (`App`, `providers`, `routes`), `src/pages` (`HomePage`, `CheckoutPage`, `OrderPage`, `NotFoundPage`), `src/api` (`client`, `info`), `src/features` and `src/lib` (empty until the screen specs), `src/test/setup.ts`, `e2e/`.
+- Routes (data mode, one table in `src/app/routes.tsx`): `/`, `/checkout`, `/orders/:id`, and `*` for the not-found page.
+- The API client (`src/api/client.ts`) offers `apiGet` and `apiPost` on the base path `/api/v1` and throws `ApiError` (`status`, `code`, `message`, `fields`). A network failure is `ApiError` with status `0` and code `network_error`; a response outside the project's error shape is `unexpected_error`.
+- `AppProviders` creates the TanStack Query client; it does not retry 4xx errors and retries other failures at most twice.
 
 - Pages in `src/pages`; features by domain in `src/features` (`catalog`, `cart`, `checkout`, `orders`); shared components in `src/components`; the API client in `src/api`; helpers in `src/lib`; assets in `src/assets`.
 - Server state is read with TanStack Query. The cart is client state (a reducer in a context, saved in `localStorage`) and holds only coffee ids and quantities.

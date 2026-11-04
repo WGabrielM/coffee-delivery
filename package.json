@@ -18,6 +18,7 @@
     "local:setup": "yarn install && yarn env:setup && yarn infra:up",
     "api:dev": "node scripts/api-dev.mjs",
     "load:smoke": "node scripts/load.mjs smoke",
+    "app:dev": "yarn --cwd apps/app dev",
     "prepare": "lefthook install && node scripts/link-skills.mjs"
   },
   "devDependencies": {
@@ -36,7 +37,7 @@
     "*.{json,jsonc,css,html}": "oxfmt --write --no-error-on-unmatched-pattern"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
   "packageManager": "yarn@1.22.22"
 }

@@ -45,6 +45,9 @@ Package names cannot be Java keywords, so the fourth layer is `interfaces` (plur
 
 ### App (`apps/app`)
 
+- **Running the app.** `yarn app:dev` starts Vite on port 5173 (`strictPort`: it fails instead of picking another port). The dev server proxies `/api` to `http://localhost:3000`, so start the API with `yarn api:dev` when a page calls it. Needs Node 22.12 or newer.
+- **Scripts.** The app defines `dev`, `build`, `types:check`, `test`, and `test:e2e` only; `yarn lint` and `yarn code:fix` come from the root (`oxlint`, `oxfmt`).
+- **Browser for Playwright.** After `yarn install`, run `yarn --cwd apps/app playwright install chromium` once. If you already have a Chromium, set `PLAYWRIGHT_CHROMIUM_PATH` to its executable instead. The `test:e2e` command starts the dev server itself.
 - Pages in `src/pages` only compose features. Features by domain in `src/features/<domain>`. Shared presentational components in `src/components`. The API client in `src/api`; helpers in `src/lib`.
 - Components do not fetch data directly: features expose hooks (TanStack Query) and components receive data through props.
 - Colors, fonts, and sizes come from the theme tokens ([DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)); components contain no hex color literal.

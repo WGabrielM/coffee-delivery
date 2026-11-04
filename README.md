@@ -25,4 +25,4 @@ yarn test
 | `plans/`, `adrs/` | One plan before each spec and one decision record after it |
 | `docs/` | The roadmap and the Figma analysis |
 | `apps/api` | The Spring Boot API (`yarn api:dev` starts it on port 3000) |
-| `apps/app` | The React app (planned, from spec 012) |
+| `apps/app` | The React app (`yarn app:dev` starts it on port 5173) |

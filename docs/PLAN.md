@@ -114,4 +114,4 @@ Open:
 | 001 foundation | Done (2026-11-04) |
 | 002 local-infrastructure | Done (2026-11-04); container runtime checks are manual, see the end-of-task report |
 | 003 api-foundation | Done (2026-11-04): compiled and verified on the owner's machine; 97% line coverage, all six QA commands green, traces and metrics seen in Grafana (see `adrs/api-foundation.md`) |
-| 012 app-foundation | Done in the workspace (2026-11-04): 28 Vitest tests, strict `tsc`, `vite build`, and 2 Playwright smoke tests pass. Run `yarn install` and `yarn --cwd apps/app playwright install chromium` on your machine |
+| 012 app-foundation | Done (2026-11-04): 28 Vitest tests, strict `tsc`, `vite build`, and 2 Playwright smoke tests pass on the owner's machine too. Run `yarn install` and `yarn --cwd apps/app playwright install chromium` after cloning |
