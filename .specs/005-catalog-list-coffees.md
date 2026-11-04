@@ -4,7 +4,7 @@
 @apps/api/src/main/java/com/coffeedelivery/catalog/domain - New; `Coffee`, `Tag`
 @apps/api/src/main/java/com/coffeedelivery/catalog/application - New; `ListCoffeesUseCase`, `CoffeeRepository` port
 @apps/api/src/main/java/com/coffeedelivery/catalog/infrastructure - New; persistence adapter for `CoffeeRepository`
-@apps/api/src/main/java/com/coffeedelivery/catalog/interface - New; `ListCoffeesRequestHandler` for `GET /api/v1/coffees`
+@apps/api/src/main/java/com/coffeedelivery/catalog/interfaces - New; `ListCoffeesRequestHandler` for `GET /api/v1/coffees`
 @apps/api/src/test/java/com/coffeedelivery/catalog - New; unit and e2e tests
 @apps/api/load/scenarios/coffees-list.js - New
 @.docs/ARCHITECTURE.md - Document the endpoint and the response contract
@@ -27,7 +27,7 @@ A visitor sees every coffee with its name, description, price, and tags, in the 
 
 ## What to do
 - Write the tests first, then the domain types, port, use case, adapter, request handler, and the scenario.
-- Keep the response mapping in the `interface` layer; the domain has no JSON or Spring types.
+- Keep the response mapping in the `interfaces` layer; the domain has no JSON or Spring types.
 - Update `.docs/ARCHITECTURE.md` with the request and response example.
 
 ## What not to do

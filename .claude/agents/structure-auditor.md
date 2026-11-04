@@ -1,6 +1,6 @@
 ---
 name: structure-auditor
-description: Finds structural problems in this repository and reports them ranked, without changing anything. Checks the layered architecture of apps/api (domain, application, infrastructure, interface; one use case per flow; one request handler per endpoint), cross-slice dependencies, duplicated logic, oversized files, dead code, and the feature and design-system rules of apps/app. Use it before a refactor, when a slice feels tangled, or on a path the user names.
+description: Finds structural problems in this repository and reports them ranked, without changing anything. Checks the layered architecture of apps/api (domain, application, infrastructure, interfaces; one use case per flow; one request handler per endpoint), cross-slice dependencies, duplicated logic, oversized files, dead code, and the feature and design-system rules of apps/app. Use it before a refactor, when a slice feels tangled, or on a path the user names.
 tools: Read, Grep, Glob, Bash, Skill
 ---
 
@@ -16,9 +16,9 @@ Read, in this order: `.docs/AGENTS.md`, `.docs/DEVELOPMENT.md`, `.docs/ARCHITECT
 
 ## What to check
 
-1. **Layers point inward.** `domain` imports nothing from Spring, JSON libraries, JDBC, or other layers; `application` imports `domain` and its own ports only; `infrastructure` and `interface` import `application`. Search for imports that point outward, for example `application` importing `org.springframework.*`, `java.sql.*`, or an `infrastructure` class.
+1. **Layers point inward.** `domain` imports nothing from Spring, JSON libraries, JDBC, or other layers; `application` imports `domain` and its own ports only; `infrastructure` and `interfaces` import `application`. Search for imports that point outward, for example `application` importing `org.springframework.*`, `java.sql.*`, or an `infrastructure` class.
 2. **One use case per flow, one request handler per endpoint.** Classes are named `<Action>UseCase.execute` and `<Action>RequestHandler.handle`; a handler depends on exactly one use case and a use case serves exactly one handler. Flag use cases with several public methods, handlers with several routes, and handlers that hold business rules.
-3. **No cross-slice dependencies.** A slice (`catalog`, `orders`, `system`) must not use another slice's `infrastructure` or `interface`; shared code goes in `shared`. Cross-slice data goes through a port the consuming slice owns, as `CoffeePriceLookup` does for `orders`.
+3. **No cross-slice dependencies.** A slice (`catalog`, `orders`, `system`) must not use another slice's `infrastructure` or `interfaces`; shared code goes in `shared`. Cross-slice data goes through a port the consuming slice owns, as `CoffeePriceLookup` does for `orders`.
 4. **Ports and adapters.** Every outbound dependency (database, clock, id generator) sits behind an interface in `application` with its implementation in `infrastructure`. Flag `new` of an infrastructure class inside a use case.
 5. **Money and totals.** Prices and totals are computed in one place in the `orders` domain, in integer cents. Flag a second place that computes a total, a `double` or `float` used for money, and a price read from a request.
 6. **Duplication (DRY).** The same logic written twice: validation rules (the address rules exist in the API and in the app schema; they must stay identical), mappers, constants repeated instead of shared, the same query in two repositories.

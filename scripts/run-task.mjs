@@ -46,7 +46,7 @@ export function planTask(task, context) {
   }
 
   if (exists("apps/api/gradlew")) {
-    const command = platform === "win32" ? "gradlew.bat" : "./gradlew";
+    const command = platform === "win32" ? ".\\gradlew.bat" : "./gradlew";
     steps.push({ workspace: "api", command, args: GRADLE_TASKS[task], cwd: "apps/api" });
   } else {
     skipped.push({ workspace: "api", reason: "apps/api not created yet" });

@@ -45,12 +45,15 @@ Details:
   }
   ```
 
-  `code` is a stable `snake_case` identifier, `message` is an en-US sentence a person can read, and `fields` appears only for validation errors. Its keys are JSON paths (`paymentMethod`, `address.zipCode`, `items`).
+  `code` is a stable `snake_case` identifier, `message` is an en-US sentence a person can read, and `fields` appears only for validation errors. Its keys are JSON paths (`paymentMethod`, `address.zipCode`, `items`); a body that is not valid JSON uses the key `body`. Messages are fixed sentences: they never contain exception messages, class names, or stack traces. `ApiExceptionHandler` (`shared.error`) builds every error; do not build one by hand in an endpoint.
 
 | Status | Code | Used when |
 | --- | --- | --- |
 | 400 | `validation_failed` | A field is missing or invalid, or the body is not valid JSON |
 | 404 | `not_found` | The route or resource does not exist |
+| 405 | `method_not_allowed` | The route exists but not for this HTTP method (the `Allow` header lists the methods) |
+| 415 | `unsupported_media_type` | The request content type is not supported |
+| 4xx | `bad_request` | Any other client error the framework reports |
 | 422 | `unprocessable_content` | The request is valid but its content cannot be used, for example an order for a coffee that does not exist |
 | 500 | `unexpected_error` | Anything unhandled; the message never exposes internals |
 

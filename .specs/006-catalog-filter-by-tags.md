@@ -3,7 +3,7 @@
 ## Scope
 @apps/api/src/main/java/com/coffeedelivery/catalog/application - `ListCoffeesUseCase` accepts tag slugs; the port filters
 @apps/api/src/main/java/com/coffeedelivery/catalog/infrastructure - Adapter filters by tags with AND logic
-@apps/api/src/main/java/com/coffeedelivery/catalog/interface - `ListCoffeesRequestHandler` reads and validates `tags`
+@apps/api/src/main/java/com/coffeedelivery/catalog/interfaces - `ListCoffeesRequestHandler` reads and validates `tags`
 @apps/api/src/test/java/com/coffeedelivery/catalog - Unit and e2e tests for the filter cases
 @apps/api/load/scenarios/coffees-list.js - Add a filtered request
 @.docs/ARCHITECTURE.md - Document the `tags` parameter
@@ -27,7 +27,7 @@ A visitor narrows the list to the coffees that match every tag they select.
 
 ## What to do
 - Write the tests first, one per case in the list above.
-- Validate the slugs against the stored tags in the use case, so the rule lives in `application`, and map the failure to the project's error shape in `interface`.
+- Validate the slugs against the stored tags in the use case, so the rule lives in `application`, and map the failure to the project's error shape in `interfaces`.
 - Keep ordering by coffee `position`.
 
 ## What not to do

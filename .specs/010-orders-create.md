@@ -4,7 +4,7 @@
 @apps/api/src/main/java/com/coffeedelivery/orders/domain - `Order`, `OrderItem`, `Address`, totals rule
 @apps/api/src/main/java/com/coffeedelivery/orders/application - New; `CreateOrderUseCase`, `OrderRepository` and `CoffeePriceLookup` ports
 @apps/api/src/main/java/com/coffeedelivery/orders/infrastructure - New; adapters for both ports
-@apps/api/src/main/java/com/coffeedelivery/orders/interface - New; `CreateOrderRequestHandler` for `POST /api/v1/orders`
+@apps/api/src/main/java/com/coffeedelivery/orders/interfaces - New; `CreateOrderRequestHandler` for `POST /api/v1/orders`
 @apps/api/src/test/java/com/coffeedelivery/orders - New; unit and e2e tests
 @apps/api/load/scenarios/orders-create.js - New
 @.docs/ARCHITECTURE.md, @.docs/BUSINESS.md - Document the contract and the pricing rule

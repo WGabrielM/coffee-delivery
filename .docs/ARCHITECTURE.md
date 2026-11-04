@@ -10,12 +10,12 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Lint and format (JavaScript, TypeScript, JSON, CSS) | `oxlint` and `oxfmt` | `[implemented]` |
 | Git hooks | Lefthook: `pre-commit` runs lint-staged, `commit-msg` runs commitlint (Conventional Commits) | `[implemented]` |
 | Local infrastructure | Docker Compose: PostgreSQL 18 and Grafana LGTM, versions pinned in `compose.yaml` | `[implemented]` |
-| API | Java (LTS) and Spring Boot, built with Gradle, in `apps/api` | `[planned]` (spec 003) |
-| Database | PostgreSQL; schema and seed by Flyway migrations | `[planned]` (specs 003, 004, 009) |
-| API formatting | Spotless | `[planned]` (spec 003) |
-| API tests | JUnit 5, Testcontainers, ArchUnit, JaCoCo (minimum 80% line coverage) | `[planned]` (spec 003) |
-| Observability | Structured JSON logs, OpenTelemetry (Micrometer) to Grafana LGTM, dashboard as code | `[planned]` (specs 003 and 008) |
-| Load tests | k6, one scenario per endpoint, profiles smoke, load, stress, spike, soak | `[planned]` (specs 003 and 008) |
+| API | Java 21 or newer and Spring Boot 4.1, built with Gradle 9 (wrapper), in `apps/api` | `[implemented]` |
+| Database | PostgreSQL; schema and seed by Flyway migrations (Flyway runs at startup; the first migrations come in specs 004 and 009) | `[implemented]` (specs 003 to 009) |
+| API formatting | Spotless with google-java-format | `[implemented]` |
+| API tests | JUnit 5 and AssertJ; `test` is unit tests without Docker, `e2eTest` is Spring Boot with Testcontainers; ArchUnit; JaCoCo (minimum 80% line coverage over both) | `[implemented]` |
+| Observability | Structured JSON logs and OpenTelemetry (Micrometer) to Grafana LGTM are `[implemented]`; the dashboard as code is `[planned]` (spec 008) | `[implemented]` / `[planned]` |
+| Load tests | k6, one scenario per endpoint; the harness and the smoke profile are `[implemented]`, the other profiles are `[planned]` (spec 008) | `[implemented]` / `[planned]` |
 | App | React, TypeScript, Vite, React Router, TanStack Query, React Hook Form with Zod, in `apps/app` | `[planned]` (spec 012 onward) |
 | Styling | Tailwind CSS mapped to the Figma tokens; fonts Roboto and Baloo 2, self-hosted | `[planned]` (spec 013) |
 | App tests | Vitest and Testing Library; Playwright with axe | `[planned]` (spec 012 onward) |
@@ -50,7 +50,7 @@ Database name, user, password, and port come from `.env.local`; the Compose file
 
 ```
 apps/
-  api/            [planned] Spring Boot API (Gradle)
+  api/            [implemented] Spring Boot API (Gradle)
   app/            [planned] React app (Vite)
 .agents/skills/   [implemented] workflow skills (linked into .claude/skills)
 .claude/          [implemented] agents and commands
@@ -67,7 +67,7 @@ compose.yaml      [implemented] PostgreSQL and Grafana LGTM
 
 The root package only orchestrates scripts and Git hooks; each app owns its own build.
 
-## API architecture `[planned]`
+## API architecture `[implemented]`
 
 The API is organized as vertical slices by domain, and each slice has four layers (see [DEVELOPMENT.md](DEVELOPMENT.md)):
 
@@ -79,22 +79,22 @@ apps/api/src/main/java/com/coffeedelivery/
   shared/        error handling and common configuration
 ```
 
-Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, `infrastructure`, and `interface`.
+Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, `infrastructure`, and `interfaces`. The fourth layer is `interfaces`, not `interface`, because `interface` is a reserved word in Java and cannot be a package name. Only `system` exists so far; `shared` holds the error handling (`shared.error`) and request logging (`shared.logging`).
 
-- `domain` has entities and rules and depends on nothing but the language. `application` has the use cases (`<Action>UseCase.execute`) and the ports they need. `infrastructure` implements the ports (database access). `interface` has the request handlers (`<Action>RequestHandler.handle`, one per endpoint) and the HTTP mapping.
-- Slices do not use each other's `infrastructure` or `interface`. `orders` reads coffee prices through its own `CoffeePriceLookup` port, not through `catalog` classes.
+- `domain` has entities and rules and depends on nothing but the language. `application` has the use cases (`<Action>UseCase.execute`) and the ports they need. `infrastructure` implements the ports (database access). `interfaces` has the request handlers (`<Action>RequestHandler.handle`, one per endpoint) and the HTTP mapping.
+- Slices do not use each other's `infrastructure` or `interfaces`. `orders` reads coffee prices through its own `CoffeePriceLookup` port, not through `catalog` classes.
 - `ArchitectureTest` (ArchUnit) enforces these rules and fails the build when one is broken.
 
-## Endpoints `[planned]`
+## Endpoints
 
 | Method and path | Spec | Purpose |
 | --- | --- | --- |
-| `GET /actuator/health` | 003 | Health check |
-| `GET /api/v1` | 003 | API name and version |
-| `GET /api/v1/coffees` (`?tags=`) | 005, 006 | List coffees, optionally filtered by tags (AND logic) |
-| `GET /api/v1/checkout-config` | 007 | Currency, delivery fee, delivery estimate, payment methods |
-| `POST /api/v1/orders` | 010 | Create an order |
-| `GET /api/v1/orders/{id}` | 011 | Read an order |
+| `GET /actuator/health` `[implemented]` | 003 | Health check |
+| `GET /api/v1` `[implemented]` | 003 | API name and version |
+| `GET /api/v1/coffees` (`?tags=`) `[planned]` | 005, 006 | List coffees, optionally filtered by tags (AND logic) |
+| `GET /api/v1/checkout-config` `[planned]` | 007 | Currency, delivery fee, delivery estimate, payment methods |
+| `POST /api/v1/orders` `[planned]` | 010 | Create an order |
+| `GET /api/v1/orders/{id}` `[planned]` | 011 | Read an order |
 
 ## Data model `[planned]`
 

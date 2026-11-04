@@ -46,3 +46,7 @@ apps/api/load/results
 docs/design/*.fig
 docs/design/*.pdf
 docs/design/image-frames.png
+
+# Output of the Java language server in the editor
+.vscode/
+apps/api/bin

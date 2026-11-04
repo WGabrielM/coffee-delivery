@@ -3,7 +3,7 @@
 ## Scope
 @apps/api/src/main/java/com/coffeedelivery/orders/application - New; `GetOrderUseCase`; `OrderRepository` gains a lookup by id
 @apps/api/src/main/java/com/coffeedelivery/orders/infrastructure - Adapter implements the lookup
-@apps/api/src/main/java/com/coffeedelivery/orders/interface - New; `GetOrderRequestHandler` for `GET /api/v1/orders/{id}`
+@apps/api/src/main/java/com/coffeedelivery/orders/interfaces - New; `GetOrderRequestHandler` for `GET /api/v1/orders/{id}`
 @apps/api/src/test/java/com/coffeedelivery/orders - New; unit and e2e tests
 @apps/api/load/scenarios/orders-get.js - New
 @.docs/ARCHITECTURE.md - Document the endpoint

@@ -32,11 +32,11 @@ The team has a running, observable, architecture-checked API skeleton where ever
 - An unhandled exception returns `500` and error code `unexpected_error`, without a stack trace or internal message in the body.
 
 **Architecture**
-- `ArchitectureTest` fails when `domain` depends on `application`, `infrastructure`, `interface`, or Spring; when `application` depends on `infrastructure` or `interface`; when `interface` depends on `infrastructure`; when a slice uses another slice's `infrastructure` or `interface`; or when slices form a cycle.
+- `ArchitectureTest` fails when `domain` depends on `application`, `infrastructure`, `interfaces`, or Spring; when `application` depends on `infrastructure` or `interfaces`; when `interfaces` depends on `infrastructure`; when a slice uses another slice's `infrastructure` or `interfaces`; or when slices form a cycle.
 - Every `*UseCase` has exactly one public method, `execute`, and every `*RequestHandler` exactly one, `handle`.
 
 **Observability**
-- Logs go to stdout as JSON with timestamp, level, message, and `traceId`; each request produces one line with method, path, status, and duration in milliseconds.
+- Logs go to stdout as JSON with timestamp (`@timestamp`), `level`, `message`, and `traceId`; each request produces one line with method, path, status, and duration in milliseconds.
 - After a call to `GET /api/v1`, Grafana (port 3030) shows its trace and the HTTP server metrics (manual QA step listed in the end-of-task report).
 
 **Tests and gates**

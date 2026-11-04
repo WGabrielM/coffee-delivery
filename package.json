@@ -16,6 +16,8 @@
     "infra:up": "node scripts/env-setup.mjs && docker compose --env-file .env.local up --detach --wait",
     "infra:down": "node scripts/env-setup.mjs && docker compose --env-file .env.local down",
     "local:setup": "yarn install && yarn env:setup && yarn infra:up",
+    "api:dev": "node scripts/api-dev.mjs",
+    "load:smoke": "node scripts/load.mjs smoke",
     "prepare": "lefthook install && node scripts/link-skills.mjs"
   },
   "devDependencies": {

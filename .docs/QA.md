@@ -15,7 +15,7 @@ Each command runs one task in every workspace that exists (`scripts/run-task.mjs
 | E2E and integration tests (API with Testcontainers, app with Playwright) | `yarn test:e2e` | `[implemented]` |
 | Build | `yarn build` | `[implemented]` |
 
-The `apps/api` part of each command is `[planned]` for spec 003 and the `apps/app` part for spec 012. Until then the command skips that workspace and still passes.
+The `apps/api` part of each command is `[implemented]` (spec 003) and needs JDK 21 or newer; `test:e2e` also needs Docker running. The `apps/app` part is `[planned]` for spec 012. Until then the command skips that workspace and still passes.
 
 Gradle tasks behind the API commands: `spotlessApply` (`code:fix`), `spotlessCheck` (`lint`), `compileJava compileTestJava` (`types:check`), `test` (`test`), `e2eTest jacocoTestCoverageVerification` (`test:e2e`, with a minimum of 80% line coverage), and `build` without tests (`build`).
 
@@ -27,9 +27,9 @@ Gradle tasks behind the API commands: `spotlessApply` (`code:fix`), `spotlessChe
 | First-time setup (install, env file, infrastructure) | `yarn local:setup` | `[implemented]` |
 | Create `.env.local` from `.env.example` (never overwrites) | `yarn env:setup` | `[implemented]` |
 | Start and stop Postgres and Grafana | `yarn infra:up`, `yarn infra:down` | `[implemented]` |
-| Start the API on port 3000 | `yarn api:dev` | `[planned]` (spec 003) |
+| Start the API on port 3000 (loads `.env.local`; needs `yarn infra:up` first) | `yarn api:dev` | `[implemented]` |
 | Start the app on port 5173 | `yarn app:dev` | `[planned]` (spec 012) |
-| Load test one profile: `smoke`, `load`, `stress`, `spike`, `soak` | `yarn load:smoke`, `yarn load`, `yarn load:stress`, `yarn load:spike`, `yarn load:soak` | `[planned]` (specs 003 and 008) |
+| Load test one profile: `smoke`, `load`, `stress`, `spike`, `soak` | `yarn load:smoke`, `yarn load`, `yarn load:stress`, `yarn load:spike`, `yarn load:soak` | `yarn load:smoke` is `[implemented]` (spec 003, needs k6 installed); the other profiles are `[planned]` (spec 008) |
 | Audit the Home page with Lighthouse (desktop) | `yarn lighthouse` | `[planned]` (spec 029) |
 
 ## Rules

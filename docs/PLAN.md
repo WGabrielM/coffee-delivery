@@ -13,7 +13,7 @@ Language: everything in this repository (docs, specs, plans, ADRs, code, UI, API
 | `plans/NNN-<spec>-plan.md` before any code; `adrs/<name>.md` after | Same, with the same headers |
 | Skills in `.agents/skills` (`feature-concept`, `create-specification`, `breakdown-specs`, `refine-spec`, `implement-me`, `implement-specs`, `commit-and-push`, `tdd`, `grill-me`, `handoff`, `playwright`, `frontend-design`, `web-design-guidelines`, `vercel-react-best-practices`, `vitest`, `skill-creator`, `find-skills`), linked into `.claude/skills` | Copied from the mold. Skills tied to Nest, Next.js, Supabase and shadcn are left out |
 | `.claude/agents` and `.claude/commands` (`code-reviewer`, `docs-keeper`, `structure-auditor`, `performance-analyst`, `bug-investigator`, `evolution-advisor`, `/health-check`, `/sync-docs`...) | Copied and adapted to Java and React |
-| Vertical slices by domain, layers `domain`, `application`, `infrastructure`, `interface`; one `<Action>UseCase.execute` per flow; one `<Action>RequestHandler.handle` per endpoint | Same architecture in Java: `catalog` and `orders` slices under `apps/api`. ArchUnit tests enforce the rules (the mold used `scripts/audit-slices.mjs`) |
+| Vertical slices by domain, layers `domain`, `application`, `infrastructure`, `interfaces`; one `<Action>UseCase.execute` per flow; one `<Action>RequestHandler.handle` per endpoint | Same architecture in Java: `catalog` and `orders` slices under `apps/api`. ArchUnit tests enforce the rules (the mold used `scripts/audit-slices.mjs`) |
 | TDD, QA commands run from the root, end-of-task report (ADR summary, manual QA, modified files, installed libraries, rationale) | Same. Root scripts wrap Gradle and the app: `yarn code:fix`, `types:check`, `test`, `test:e2e`, `build` |
 | Conventional Commits with commitlint and Lefthook; work only on `main`; `commit-and-push` after QA | Same (see open decision 1) |
 | Observability from day one (OpenTelemetry to Grafana LGTM, dashboard as code), k6 scenario per endpoint | Same, with Micrometer/OpenTelemetry in Spring (see open decision 2) |
@@ -113,3 +113,5 @@ Open:
 | --- | --- |
 | 001 foundation | Done (2026-11-04) |
 | 002 local-infrastructure | Done (2026-11-04); container runtime checks are manual, see the end-of-task report |
+| 003 api-foundation | Done (2026-11-04): compiled and verified on the owner's machine; 97% line coverage, all six QA commands green, traces and metrics seen in Grafana (see `adrs/api-foundation.md`) |
+| 012 app-foundation | Done in the workspace (2026-11-04): 28 Vitest tests, strict `tsc`, `vite build`, and 2 Playwright smoke tests pass. Run `yarn install` and `yarn --cwd apps/app playwright install chromium` on your machine |

@@ -3,7 +3,7 @@
 ## Scope
 @apps/api/src/main/java/com/coffeedelivery/orders/domain - New slice; `DeliveryPolicy`, `PaymentMethod`
 @apps/api/src/main/java/com/coffeedelivery/orders/application - New; `GetCheckoutConfigUseCase`
-@apps/api/src/main/java/com/coffeedelivery/orders/interface - New; `GetCheckoutConfigRequestHandler` for `GET /api/v1/checkout-config`
+@apps/api/src/main/java/com/coffeedelivery/orders/interfaces - New; `GetCheckoutConfigRequestHandler` for `GET /api/v1/checkout-config`
 @apps/api/src/test/java/com/coffeedelivery/orders - New; unit and e2e tests
 @apps/api/load/scenarios/checkout-config.js - New
 @.docs/ARCHITECTURE.md, @.docs/BUSINESS.md - Document the checkout rules

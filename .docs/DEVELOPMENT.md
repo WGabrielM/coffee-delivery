@@ -18,7 +18,7 @@ Slice the application by domain (vertical slices), and organize each domain in l
 com.coffeedelivery.<domain>.domain
 com.coffeedelivery.<domain>.application
 com.coffeedelivery.<domain>.infrastructure
-com.coffeedelivery.<domain>.interface
+com.coffeedelivery.<domain>.interfaces
 com.coffeedelivery.shared                  logic and files used by more than one domain
 ```
 
@@ -27,13 +27,21 @@ com.coffeedelivery.shared                  logic and files used by more than one
 | `domain` | Entities, value objects, and domain rules |
 | `application` | Use cases and the ports (interfaces) they need |
 | `infrastructure` | Concrete implementations of the ports: database access, clocks, external services |
-| `interface` | Endpoints, request handlers, HTTP mapping and validation of the request shape |
+| `interfaces` | Endpoints, request handlers, HTTP mapping and validation of the request shape |
 
-- Dependencies point inward: `interface` and `infrastructure` depend on `application`; `application` depends on `domain`; `domain` depends on nothing (no Spring, no JSON).
-- A domain MUST NOT use another domain's `infrastructure` or `interface`. Shared code goes in `shared`. When a slice needs data owned by another slice, it declares its own port and implements it in its own `infrastructure`.
+- Dependencies point inward: `interfaces` and `infrastructure` depend on `application`; `application` depends on `domain`; `domain` depends on nothing (no Spring, no JSON).
+- A domain MUST NOT use another domain's `infrastructure` or `interfaces`. Shared code goes in `shared`. When a slice needs data owned by another slice, it declares its own port and implements it in its own `infrastructure`.
 - Each flow is one use case: one class in `application`, named `<Action>UseCase`, with one public method, `execute`.
-- Each endpoint is one request handler: one class in `interface`, named `<Action>RequestHandler`, with one route and one public method, `handle`. A request handler depends on exactly one use case, and a use case serves exactly one request handler (one to one).
+- Each endpoint is one request handler: one class in `interfaces`, named `<Action>RequestHandler`, with one route and one public method, `handle`. A request handler depends on exactly one use case, and a use case serves exactly one request handler (one to one).
 - `ArchitectureTest` enforces these rules; do not weaken it to make a change pass.
+
+Package names cannot be Java keywords, so the fourth layer is `interfaces` (plural), not `interface`.
+
+**Running the API.** It needs JDK 21 or newer, and Docker for the database. `yarn api:dev` loads `.env.local`, runs `gradlew bootRun` in `apps/api`, and serves on port 3000. Run `yarn infra:up` first. The API reads `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, and optionally `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://localhost:4318`) from the environment; they have no defaults in `application.yaml`. Running from an IDE needs the same variables.
+
+**Format before checking.** `yarn code:fix` applies Spotless (google-java-format). `yarn lint` fails on Java that is not formatted.
+
+**Logs.** The API writes one JSON object per line on stdout (`@timestamp`, `level`, `message`, `traceId`, `spanId`, and the key/value pairs of the event). Each request produces one line, `request completed`, with `method`, `path`, `status`, and `durationMs`; the query string is never logged.
 
 ### App (`apps/app`)
 

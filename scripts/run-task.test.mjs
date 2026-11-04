@@ -95,7 +95,7 @@ test("the API maps each task to its Gradle tasks", () => {
 test("the Gradle wrapper name follows the platform", () => {
   const context = baseContext({ exists: only("apps/api/gradlew"), platform: "win32" });
   const step = planTask("test", context).steps.find((entry) => entry.workspace === "api");
-  assert.equal(step.command, "gradlew.bat");
+  assert.equal(step.command, ".\\gradlew.bat");
 });
 
 test("the app runs the script of the same name through Yarn", () => {
