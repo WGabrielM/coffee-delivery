@@ -41,6 +41,28 @@ com.coffeedelivery.shared                  logic and files used by more than one
 - Components do not fetch data directly: features expose hooks (TanStack Query) and components receive data through props.
 - Colors, fonts, and sizes come from the theme tokens ([DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)); components contain no hex color literal.
 
+## Local infrastructure
+
+PostgreSQL and Grafana LGTM run in Docker Compose (`compose.yaml`). Install Docker (with Compose v2) first.
+
+| Command | What it does |
+| --- | --- |
+| `yarn local:setup` | `yarn install`, then `yarn env:setup`, then `yarn infra:up`. Safe to run again. |
+| `yarn env:setup` | Creates `.env.local` from `.env.example`. Never overwrites an existing `.env.local`. |
+| `yarn infra:up` | Starts both services and returns when both are healthy (Grafana takes up to a minute on the first start). |
+| `yarn infra:down` | Stops and removes the containers. The database volume is kept. |
+
+| Service | Address | Credentials |
+| --- | --- | --- |
+| PostgreSQL | `localhost:5432` (`POSTGRES_PORT`) | Database, user, and password from `.env.local` (defaults in `.env.example`) |
+| Grafana | `http://localhost:3030` | No login: the image runs with anonymous admin access, which is acceptable because the port is bound to `127.0.0.1` |
+| OpenTelemetry collector | `localhost:4317` (gRPC), `localhost:4318` (HTTP) | None |
+
+- **Credentials policy.** `.env.example` holds development-only values and is committed. `.env.local` is yours and is ignored by Git; never commit it, and never reuse these values anywhere else.
+- **Reset the database.** `yarn infra:down` keeps the data. To delete it, run `docker compose --env-file .env.local down --volumes`, then `yarn infra:up`.
+- **Check by hand.** `docker compose --env-file .env.local ps` shows `healthy` for both services; `GET http://localhost:3030/api/health` returns `200`.
+- **Another port.** If 5432 is taken, change `POSTGRES_PORT` in `.env.local` and run `yarn infra:up` again; the API reads the same variable (spec 003).
+
 ## Testing (TDD)
 
 - Write the test first, then the code that makes it pass.

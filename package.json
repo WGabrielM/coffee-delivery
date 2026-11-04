@@ -12,6 +12,10 @@
     "test:e2e": "node scripts/run-task.mjs test:e2e",
     "build": "node scripts/run-task.mjs build",
     "skills:link": "node scripts/link-skills.mjs",
+    "env:setup": "node scripts/env-setup.mjs",
+    "infra:up": "node scripts/env-setup.mjs && docker compose --env-file .env.local up --detach --wait",
+    "infra:down": "node scripts/env-setup.mjs && docker compose --env-file .env.local down",
+    "local:setup": "yarn install && yarn env:setup && yarn infra:up",
     "prepare": "lefthook install && node scripts/link-skills.mjs"
   },
   "devDependencies": {

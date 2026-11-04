@@ -112,3 +112,4 @@ Open:
 | Spec | Status |
 | --- | --- |
 | 001 foundation | Done (2026-11-04) |
+| 002 local-infrastructure | Done (2026-11-04); container runtime checks are manual, see the end-of-task report |

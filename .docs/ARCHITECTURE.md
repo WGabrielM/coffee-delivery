@@ -9,7 +9,7 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Package manager and scripts | Yarn 1 (root `package.json`), `scripts/run-task.mjs` runs each root task in every workspace | `[implemented]` |
 | Lint and format (JavaScript, TypeScript, JSON, CSS) | `oxlint` and `oxfmt` | `[implemented]` |
 | Git hooks | Lefthook: `pre-commit` runs lint-staged, `commit-msg` runs commitlint (Conventional Commits) | `[implemented]` |
-| Local infrastructure | Docker Compose: PostgreSQL and Grafana LGTM | `[planned]` (spec 002) |
+| Local infrastructure | Docker Compose: PostgreSQL 18 and Grafana LGTM, versions pinned in `compose.yaml` | `[implemented]` |
 | API | Java (LTS) and Spring Boot, built with Gradle, in `apps/api` | `[planned]` (spec 003) |
 | Database | PostgreSQL; schema and seed by Flyway migrations | `[planned]` (specs 003, 004, 009) |
 | API formatting | Spotless | `[planned]` (spec 003) |
@@ -31,7 +31,20 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Grafana | 3030 |
 | OpenTelemetry (gRPC, HTTP) | 4317, 4318 |
 
+Compose binds every published port to `127.0.0.1`, so the database and Grafana are reachable only from the developer's machine.
+
 The app calls the API through the Vite dev proxy (`/api` to `http://localhost:3000`), so the API needs no CORS settings.
+
+## Local infrastructure `[implemented]`
+
+`compose.yaml` runs two services and nothing else; the API and the app run on the host.
+
+| Service | Image | Data | Health check |
+| --- | --- | --- | --- |
+| `postgres` | `postgres:18.6-alpine` | Named volume `postgres-data` (kept by `yarn infra:down`) | `pg_isready` |
+| `grafana` | `grafana/otel-lgtm:0.39.0` (Grafana, Loki, Tempo, Prometheus, OpenTelemetry collector) | None; dashboards come from files (spec 008) | `/api/health` and the two OTLP ports |
+
+Database name, user, password, and port come from `.env.local`; the Compose file has no defaults for them. Image versions are pinned and are changed on purpose, in `compose.yaml`, with a note in the ADR.
 
 ## Repository layout
 
@@ -48,7 +61,8 @@ adrs/             [implemented] one ADR per decision
 docs/             [implemented] PLAN.md and design/ (the Figma analysis)
 infra/            [planned] Grafana provisioning and dashboards
 scripts/          [implemented] task runner, skill linker, and their tests
-compose.yaml      [planned] PostgreSQL and Grafana LGTM
+compose.yaml      [implemented] PostgreSQL and Grafana LGTM
+.env.example      [implemented] development values; `yarn env:setup` copies it to .env.local (ignored by Git)
 ```
 
 The root package only orchestrates scripts and Git hooks; each app owns its own build.

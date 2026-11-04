@@ -2,14 +2,14 @@
 
 A coffee store with a React app and a Java Spring Boot API, rebuilt from a Figma design as the capstone of the Applied AI postgraduate module (Coders University). It is built with AI, spec by spec, following the workflow in [`.docs/`](.docs/AGENTS.md).
 
-Status: under construction. The roadmap is in [`docs/PLAN.md`](docs/PLAN.md) and the work is queued in [`.specs/`](.specs). Spec 001 (this foundation) is done; the complete README arrives with spec 031.
+Status: under construction. The roadmap is in [`docs/PLAN.md`](docs/PLAN.md) and the work is queued in [`.specs/`](.specs). Specs 001 (foundation) and 002 (local infrastructure) are done; the complete README arrives with spec 031.
 
 ## Start
 
-Requirements: Node.js 22 or newer and Yarn 1 (`corepack enable`). Docker and a Java LTS are needed from spec 002 and spec 003.
+Requirements: Node.js 22 or newer and Yarn 1 (`corepack enable`). Docker (Compose v2) is needed for the local database and Grafana; a Java LTS is needed from spec 003.
 
 ```bash
-yarn install
+yarn local:setup   # install, create .env.local, start PostgreSQL and Grafana
 yarn lint
 yarn test
 ```
