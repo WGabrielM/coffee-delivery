@@ -1,0 +1,36 @@
+{
+  "name": "coffee-delivery",
+  "private": true,
+  "workspaces": [
+    "apps/app"
+  ],
+  "scripts": {
+    "code:fix": "node scripts/run-task.mjs code:fix",
+    "lint": "node scripts/run-task.mjs lint",
+    "types:check": "node scripts/run-task.mjs types:check",
+    "test": "node scripts/run-task.mjs test",
+    "test:e2e": "node scripts/run-task.mjs test:e2e",
+    "build": "node scripts/run-task.mjs build",
+    "skills:link": "node scripts/link-skills.mjs",
+    "prepare": "lefthook install && node scripts/link-skills.mjs"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
+    "lefthook": "2.2.2",
+    "lint-staged": "17.6.0",
+    "oxfmt": "0.74.0",
+    "oxlint": "1.91.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "oxlint --fix",
+      "oxfmt --write --no-error-on-unmatched-pattern"
+    ],
+    "*.{json,jsonc,css,html}": "oxfmt --write --no-error-on-unmatched-pattern"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "yarn@1.22.22"
+}

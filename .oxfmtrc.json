@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.gradle/**",
+    "**/coverage/**",
+    "**/playwright-report/**",
+    "**/test-results/**",
+    "**/*.md",
+    ".agents/**",
+    ".claude/**",
+    ".docs/**",
+    ".specs/**",
+    "plans/**",
+    "adrs/**",
+    "docs/**",
+    "yarn.lock",
+    "skills-lock.json"
+  ]
+}

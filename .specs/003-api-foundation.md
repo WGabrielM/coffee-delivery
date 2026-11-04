@@ -44,7 +44,7 @@ The team has a running, observable, architecture-checked API skeleton where ever
 - `yarn load:smoke` runs the k6 scenario for `GET /api/v1` and reports no failed check.
 
 ## What to do
-- Scaffold the project, configure Spotless (formatting) and the lint rules, and wire the Gradle tasks into the root runner: `test` for unit tests without Docker, `e2eTest` for Spring Boot tests with Testcontainers.
+- Scaffold the project, configure Spotless (formatting) and the lint rules, and provide the Gradle tasks the root runner calls (spec 001): `spotlessApply`, `spotlessCheck`, `compileJava`, `compileTestJava`, `test` (unit tests, no Docker), `e2eTest` (Spring Boot tests with Testcontainers), `jacocoTestCoverageVerification`, and `build`.
 - Write the tests first: use case unit test, e2e tests for the routes and error cases above, and the architecture rules.
 - Implement the error handling once in `shared` so every later endpoint inherits it.
 - Configure structured logging and OpenTelemetry export to `localhost:4318` through environment-driven settings.

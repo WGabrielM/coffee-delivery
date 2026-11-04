@@ -91,11 +91,24 @@ Milestone exit criteria (measurable): M1 and M2 API line coverage 80% or more an
 3. After each spec I print the mold's end-of-task report. You review; I commit when the rules say so.
 4. The ADRs, plans and specs are the evidence of how AI was used and what was decided.
 
-## 5. Open decisions
+## 5. Decisions and open items
 
-1. **Commit policy:** the mold commits and pushes to `main` at the end of every spec, without asking. Adopt it here, or commit only when you ask.
-2. **Observability scope:** full parity with the mold (OpenTelemetry to Grafana LGTM, dashboard as code, k6 scenarios) or a lighter version.
-3. **Monorepo tooling:** root Yarn scripts that wrap Gradle and the app (recommended), or Turborepo as in the mold.
-4. **Styling:** Tailwind CSS mapped to the design tokens (as in the mold) or styled-components (as in the previous version).
-5. **Heavy design files:** the `.fig` (8 MB) and the PDF (4 MB) stay untracked for now; decide whether they go to Git or `.gitignore`.
-6. **Responsive design:** the Figma has only 1440 px; tablet and mobile layouts will be proposed in spec 027 and need your approval.
+Decided on 2026-11-04:
+
+1. **Commit policy:** adopt the mold. At the end of every spec, once the QA commands pass, `commit-and-push` commits (Conventional Commits) and pushes to `main` without asking. If QA fails and cannot be fixed, nothing is committed. If Git has no credentials on the machine, the commit is made and the user pushes.
+2. **Observability:** full parity with the mold (structured logs, OpenTelemetry to Grafana LGTM, dashboard as code, one k6 scenario per endpoint).
+3. **Monorepo tooling:** root Yarn scripts wrapping Gradle and the app; Lefthook and commitlint at the root; no Turborepo. Lint and format with `oxlint` and `oxfmt`, as in the mold (spec 001).
+4. **Styling:** Tailwind CSS mapped to the Figma tokens; no shadcn.
+5. **Heavy design files:** the `.fig`, the PDF, and `image-frames.png` stay on the developer's machine and are ignored by Git (spec 001). The analysis, the extracted assets, and the reference images are tracked.
+6. **ZIP code:** the design format `00000-000` is kept (spec 010 and spec 023), although prices are in dollars.
+7. **QA commands:** six, with `yarn lint` added to the five listed in section 1, as in the mold.
+
+Open:
+
+8. **Responsive design:** the Figma has only 1440 px; tablet and mobile layouts are proposed in spec 027 and need your approval.
+
+## 6. Progress
+
+| Spec | Status |
+| --- | --- |
+| 001 foundation | Done (2026-11-04) |

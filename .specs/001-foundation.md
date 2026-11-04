@@ -3,14 +3,17 @@
 ## Scope
 @package.json - New; private root package that only orchestrates scripts and Git hooks
 @scripts/run-task.mjs - New; runs a root task in every workspace that exists and reports the ones skipped
+@scripts/link-skills.mjs - New; links every skill into `.claude/skills`
+@scripts/*.test.mjs - New; tests of the runner, the linker, and the foundation files
+@.oxlintrc.json, @.oxfmtrc.json - New; lint and format settings, as in the mold
 @commitlint.config.mjs - New; Conventional Commits
-@lefthook.yml - New; `commit-msg` runs commitlint
+@lefthook.yml - New; `pre-commit` runs lint-staged and `commit-msg` runs commitlint
 @.gitattributes - New; LF line endings for text files
 @.gitignore - New
 @AGENTS.md - New; entry point that points to `.docs/AGENTS.md`
 @.docs - New; AGENTS, RULES, BUSINESS, ARCHITECTURE, CONVENTIONS, DEVELOPMENT, DESIGN, DESIGN_SYSTEM, QA
 @.agents/skills - New; skills copied from the Module 4 mold
-@.claude/skills - New; links to `.agents/skills`
+@.claude/skills - Links to `.agents/skills`, created by `yarn skills:link` and ignored by Git
 @.claude/agents - New; reviewer and auditor agents adapted to Java and React
 @.claude/commands - New; `/health-check`, `/sync-docs` and the other mold commands
 @.specs/_template.md - New
@@ -33,12 +36,12 @@ Every later spec can be written, planned, implemented, checked and committed wit
 
 **Commit rules**
 - `echo "bad message" | yarn commitlint` exits non-zero and `echo "chore: add skeleton" | yarn commitlint` exits `0`.
-- After `yarn install`, `git commit -m "bad message"` is rejected by the Lefthook `commit-msg` hook.
+- After `yarn install`, `git commit -m "bad message"` is rejected by the Lefthook `commit-msg` hook, and a staged JavaScript or JSON file is formatted by the `pre-commit` hook.
 
 **Workflow files**
-- `.claude/skills/<name>` resolves to `.agents/skills/<name>/SKILL.md` for the 17 skills listed in `docs/PLAN.md`.
+- `.agents/skills` has the 17 skills listed in `docs/PLAN.md`, each with a `SKILL.md`; after `yarn install` (or `yarn skills:link`), `.claude/skills/<name>` resolves to `.agents/skills/<name>` for each of them, and running the link command twice changes nothing.
 - `.claude/agents` has `code-reviewer`, `docs-keeper`, `structure-auditor`, `performance-analyst`, `bug-investigator`, and `evolution-advisor`; `.claude/commands` has the mold's commands.
-- `grep -ri -E "nest|next\.js|supabase|weaviate|langchain|shadcn|turborepo" .docs .agents .claude AGENTS.md` returns no match outside skills whose subject is generic (for example `skill-creator`), and every match left is justified in the end-of-task report.
+- A test scans `.docs`, `.claude`, `AGENTS.md`, and `README.md` and finds no mention of the mold's stack or product (Nest.js, Next.js, Supabase, Weaviate, LangChain, shadcn, Turborepo, experts, Mailpit). The skills are copied from the mold unchanged except for three lines listed in the end-of-task report.
 
 **Docs**
 - `.docs/AGENTS.md` maps the other eight documents; each one describes Coffee Delivery (domain, Spring Boot slices, React app, USD, en-US, spec-driven workflow) and none describes the mold's product.
@@ -51,8 +54,8 @@ Every later spec can be written, planned, implemented, checked and committed wit
 - Copy the skills, agents, commands and documentation structure from the mold (read-only), then rewrite the content for this project. Link `.claude/skills` the same way the mold does and confirm it works on Windows.
 - Write `.docs/BUSINESS.md` from `docs/PLAN.md` and `docs/design/figma-analysis.md`: the product, the four screens, the fixed delivery fee, USD pricing, the 14 coffees, the five tags, and the rule that the server owns prices and totals.
 - Write `.docs/ARCHITECTURE.md` (layout `apps/api` and `apps/app`, slices `catalog`, `orders`, `system`, layers `domain`, `application`, `infrastructure`, `interface`, one `UseCase.execute` and one `RequestHandler.handle` per flow), `.docs/CONVENTIONS.md` (en-US, `/api/v1/*`, camelCase JSON, error shape `{ "error": { "code", "message", "fields" } }`, stable `snake_case` codes, money as integer cents in fields suffixed `InCents`), `.docs/DEVELOPMENT.md`, `.docs/QA.md`, `.docs/RULES.md`, `.docs/DESIGN.md` and `.docs/DESIGN_SYSTEM.md` (facts known today; tokens are completed in spec 013).
-- Write `scripts/run-task.mjs` so each root task calls the matching task of `apps/api` and `apps/app` when the folder exists. The root scripts are `code:fix`, `lint`, `types:check`, `test`, `test:e2e`, and `build`.
-- Add commitlint with Conventional Commits and Lefthook with the `commit-msg` hook. Work only on `main`; never skip hooks.
+- Write `scripts/run-task.mjs` so each root task calls the matching task of `apps/api` (Gradle: `spotlessApply`, `spotlessCheck`, `compileJava compileTestJava`, `test`, `e2eTest jacocoTestCoverageVerification`, `build`) and `apps/app` (the script of the same name) when the folder exists. The root scripts are `code:fix`, `lint`, `types:check`, `test`, `test:e2e`, and `build`. Lint and format the root files with `oxlint` and `oxfmt`, as the mold does.
+- Add commitlint with Conventional Commits, and Lefthook with the `pre-commit` (lint-staged) and `commit-msg` hooks. Work only on `main`; never skip hooks.
 - Decide and document in `.gitignore` that the `.fig`, the PDF and `image-frames.png` stay local, because Figma is the source and the extracted assets and reference images are committed by specs 014 and 029.
 
 ## What not to do

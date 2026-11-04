@@ -1,0 +1,76 @@
+# Development
+
+Apply these rules to every task, change, or fix that touches code.
+
+## Principles
+
+- **DRY**: do not duplicate logic. Extract it.
+- **Clean code**: small, well-named, single-purpose units.
+- **SOLID**.
+
+## Code organization
+
+### API (`apps/api`)
+
+Slice the application by domain (vertical slices), and organize each domain in layers:
+
+```
+com.coffeedelivery.<domain>.domain
+com.coffeedelivery.<domain>.application
+com.coffeedelivery.<domain>.infrastructure
+com.coffeedelivery.<domain>.interface
+com.coffeedelivery.shared                  logic and files used by more than one domain
+```
+
+| Layer | Contains |
+| --- | --- |
+| `domain` | Entities, value objects, and domain rules |
+| `application` | Use cases and the ports (interfaces) they need |
+| `infrastructure` | Concrete implementations of the ports: database access, clocks, external services |
+| `interface` | Endpoints, request handlers, HTTP mapping and validation of the request shape |
+
+- Dependencies point inward: `interface` and `infrastructure` depend on `application`; `application` depends on `domain`; `domain` depends on nothing (no Spring, no JSON).
+- A domain MUST NOT use another domain's `infrastructure` or `interface`. Shared code goes in `shared`. When a slice needs data owned by another slice, it declares its own port and implements it in its own `infrastructure`.
+- Each flow is one use case: one class in `application`, named `<Action>UseCase`, with one public method, `execute`.
+- Each endpoint is one request handler: one class in `interface`, named `<Action>RequestHandler`, with one route and one public method, `handle`. A request handler depends on exactly one use case, and a use case serves exactly one request handler (one to one).
+- `ArchitectureTest` enforces these rules; do not weaken it to make a change pass.
+
+### App (`apps/app`)
+
+- Pages in `src/pages` only compose features. Features by domain in `src/features/<domain>`. Shared presentational components in `src/components`. The API client in `src/api`; helpers in `src/lib`.
+- Components do not fetch data directly: features expose hooks (TanStack Query) and components receive data through props.
+- Colors, fonts, and sizes come from the theme tokens ([DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)); components contain no hex color literal.
+
+## Testing (TDD)
+
+- Write the test first, then the code that makes it pass.
+- Every change ships with tests covering its behavior: unit, integration, and end-to-end as applicable.
+- Test tooling is listed in [ARCHITECTURE.md](ARCHITECTURE.md). The API runs a minimum of 80% line coverage in `yarn test:e2e`.
+- Tests that need PostgreSQL use Testcontainers, so they do not depend on the local database or on its data.
+
+## Commits
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org), checked on every commit by commitlint through Lefthook (`commit-msg` hook). The `pre-commit` hook formats staged JavaScript, TypeScript, JSON, CSS, and HTML files.
+
+- Format: `<type>(<optional scope>): <subject>`, for example `feat(api): add the coffee list endpoint`.
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- Subject: imperative, lowercase start, no trailing period; the whole header is at most 100 characters.
+- Breaking change: add `!` after the type or scope (`feat!: ...`) and a `BREAKING CHANGE:` footer.
+- Work only on `main`. Do not create feature branches: commit directly to `main` and push it.
+- Fix a rejected message and commit again. Do not bypass the hook with `--no-verify`.
+
+## Observability
+
+- Use the Grafana LGTM stack for all observability.
+- Logging and observability MUST be integrated from day one, not added later.
+- The API writes structured JSON logs and exports OpenTelemetry traces and metrics to the collector on ports 4317 and 4318.
+- The `Coffee Delivery API` dashboard and its provisioning live in `infra/grafana/` and load automatically with `yarn infra:up`. Change them in the files: Grafana does not save UI edits to a provisioned dashboard. A new endpoint, database call, or outbound call MUST show up in the dashboard; add a panel in the same change when the existing ones do not cover it.
+- Every endpoint MUST get a k6 scenario in `apps/api/load/scenarios` in the same change, so it is part of every load test.
+- The project has no Grafana MCP server. To check logs, traces, or metrics by hand, open Grafana at `http://localhost:3030`.
+
+## UI
+
+- The Playwright MCP server (registered in `.mcp.json` by spec 012) lets Claude Code open the running app in a browser, resize the viewport, and take screenshots. Use it to look at any UI you build or change, and for the `screenshots/` images (`<page>_<viewport>_before.png` and `<page>_<viewport>_after.png`; desktop is 1440×900, tablet 768×1024, mobile 390×844).
+- **Accessibility (A11Y)**: all components and UI MUST be accessible (WCAG 2.2 AA): native elements first, visible focus, keyboard operation, labels, and contrast.
+- **Responsiveness**: all components and UI MUST work on desktop, tablet, and mobile. The Figma design has only desktop frames: specs 012 to 026 build the screens for the 1440 px design, and spec 027 adds the tablet and mobile layouts. From spec 027 on, every UI change keeps all three working.
+- Follow [DESIGN.md](DESIGN.md) and [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).

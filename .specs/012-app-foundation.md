@@ -31,7 +31,7 @@ The team has a running, tested, type-checked app shell where each screen spec ad
 
 ## What to do
 - Write the tests first, then scaffold the app and wire the formatter, the linter, Vitest with Testing Library, and Playwright.
-- Choose the formatter and the linter for the app, and record the choice and the reason in the ADR.
+- Use `oxlint` and `oxfmt` from the root (spec 001) for the app, adding only the React and accessibility settings the app needs.
 - Register the Playwright MCP server in `.mcp.json` so later specs can take screenshots as the mold does.
 - Add the TanStack Query provider and the router, with pages in `src/pages` and features in `src/features`.
 
