@@ -1,4 +1,4 @@
-import { getAndCheck } from "../lib/http.js";
+import { getAndCheck, think } from "../lib/http.js";
 
 // GET /api/v1
 export function getApiInfo() {
@@ -8,4 +8,5 @@ export function getApiInfo() {
       return body.name === "coffee-delivery-api" && body.version === "v1";
     },
   });
+  think();
 }

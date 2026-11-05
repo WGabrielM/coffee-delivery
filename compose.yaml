@@ -28,6 +28,10 @@ services:
       - "127.0.0.1:3030:3000"
       - "127.0.0.1:4317:4317"
       - "127.0.0.1:4318:4318"
+    volumes:
+      # The dashboard of the API is provisioned from files (spec 008): edit them, not the UI.
+      - ./infra/grafana/provisioning/dashboards/coffee-delivery.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/coffee-delivery.yaml:ro
+      - ./infra/grafana/dashboards:/otel-lgtm/coffee-delivery-dashboards:ro
     healthcheck:
       # bash, not curl: the check must not depend on a tool the image may not ship.
       test:

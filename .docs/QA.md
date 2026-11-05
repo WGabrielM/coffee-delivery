@@ -30,7 +30,7 @@ Gradle tasks behind the API commands: `spotlessApply` (`code:fix`), `spotlessChe
 | Start the API on port 3000 (loads `.env.local`; needs `yarn infra:up` first) | `yarn api:dev` | `[implemented]` |
 | Start the app on port 5173 (proxies `/api` to port 3000) | `yarn app:dev` | `[implemented]` |
 | Install the browser the app's Playwright tests use (once) | `yarn --cwd apps/app playwright install chromium` | `[implemented]` |
-| Load test one profile: `smoke`, `load`, `stress`, `spike`, `soak` | `yarn load:smoke`, `yarn load`, `yarn load:stress`, `yarn load:spike`, `yarn load:soak` | `yarn load:smoke` is `[implemented]` (spec 003, needs k6 installed); the other profiles are `[planned]` (spec 008) |
+| Load test one profile: `smoke`, `load`, `stress`, `spike`, `soak` (needs k6; options in [`apps/api/load/README.md`](../apps/api/load/README.md)) | `yarn load:smoke`, `yarn load`, `yarn load:stress`, `yarn load:spike`, `yarn load:soak` | `[implemented]` |
 | Audit the Home page with Lighthouse (desktop) | `yarn lighthouse` | `[planned]` (spec 029) |
 
 ## Rules

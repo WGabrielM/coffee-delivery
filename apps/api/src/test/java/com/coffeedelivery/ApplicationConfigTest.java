@@ -46,6 +46,14 @@ class ApplicationConfigTest {
   }
 
   @Test
+  void requestLatencyIsExportedAsAHistogramSoTheDashboardCanComputePercentiles() {
+    assertThat(
+            properties.getProperty(
+                "management.metrics.distribution.percentiles-histogram[http.server.requests]"))
+        .isEqualTo("true");
+  }
+
+  @Test
   void onlyTheHealthEndpointIsExposed() {
     assertThat(properties.getProperty("management.endpoints.web.exposure.include"))
         .isEqualTo("health");

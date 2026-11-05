@@ -100,7 +100,8 @@ Commit messages follow [Conventional Commits](https://www.conventionalcommits.or
 - Logging and observability MUST be integrated from day one, not added later.
 - The API writes structured JSON logs and exports OpenTelemetry traces and metrics to the collector on ports 4317 and 4318.
 - The `Coffee Delivery API` dashboard and its provisioning live in `infra/grafana/` and load automatically with `yarn infra:up`. Change them in the files: Grafana does not save UI edits to a provisioned dashboard. A new endpoint, database call, or outbound call MUST show up in the dashboard; add a panel in the same change when the existing ones do not cover it.
-- Every endpoint MUST get a k6 scenario in `apps/api/load/scenarios` in the same change, so it is part of every load test.
+- Every endpoint MUST get a k6 scenario in `apps/api/load/scenarios` in the same change (listed in `scenarios/index.js`, ending with `think()`), so it is part of every load test: `smoke`, `load`, `stress`, `spike`, and `soak` (see `apps/api/load/README.md`).
+- The dashboard reads the metric `http_server_requests_milliseconds_*` (labels `uri`, `method`, `status`, `outcome`), `jvm_memory_*_bytes`, and `hikaricp_connections_*`. Latency percentiles need the histogram that `management.metrics.distribution.percentiles-histogram` enables for `http.server.requests`; do not remove it.
 - The project has no Grafana MCP server. To check logs, traces, or metrics by hand, open Grafana at `http://localhost:3030`.
 
 ## UI

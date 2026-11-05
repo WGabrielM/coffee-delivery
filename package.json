@@ -18,6 +18,10 @@
     "local:setup": "yarn install && yarn env:setup && yarn infra:up",
     "api:dev": "node scripts/api-dev.mjs",
     "load:smoke": "node scripts/load.mjs smoke",
+    "load": "node scripts/load.mjs load",
+    "load:stress": "node scripts/load.mjs stress",
+    "load:spike": "node scripts/load.mjs spike",
+    "load:soak": "node scripts/load.mjs soak",
     "app:dev": "yarn --cwd apps/app dev",
     "prepare": "lefthook install && node scripts/link-skills.mjs"
   },

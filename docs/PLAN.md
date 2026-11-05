@@ -118,4 +118,5 @@ Open:
 | 005 catalog-list-coffees | Done (2026-11-04): `GET /api/v1/coffees` with unit, e2e, and k6 coverage |
 | 006 catalog-filter-by-tags | Done (2026-11-04): `?tags=` with AND logic and validation; the 7 cases of the spec are e2e tests |
 | 007 checkout-config | Done (2026-11-04): `GET /api/v1/checkout-config` from `DeliveryPolicy` and `PaymentMethod` |
+| 008 api-observability-and-load-tests | Done (2026-11-04): dashboard `Coffee Delivery API` provisioned from `infra/grafana`; five k6 profiles (`load`, `spike`, and a short `soak` run for real, all within thresholds) |
 | 012 app-foundation | Done (2026-11-04): 28 Vitest tests, strict `tsc`, `vite build`, and 2 Playwright smoke tests pass on the owner's machine too. Run `yarn install` and `yarn --cwd apps/app playwright install chromium` after cloning |

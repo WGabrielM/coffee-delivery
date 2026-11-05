@@ -1,0 +1,13 @@
+# Tells the Grafana of `yarn infra:up` to load the dashboards in the folder below.
+# compose.yaml mounts this file and the folder; the JSON files there are the source of truth.
+apiVersion: 1
+
+providers:
+  - name: Coffee Delivery
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 10
+    options:
+      path: /otel-lgtm/coffee-delivery-dashboards
+      foldersFromFilesStructure: false

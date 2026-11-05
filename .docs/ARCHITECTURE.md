@@ -14,8 +14,8 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Database | PostgreSQL; schema and seed by Flyway migrations (Flyway runs at startup; the first migrations come in specs 004 and 009) | `[implemented]` (specs 003 to 009) |
 | API formatting | Spotless with google-java-format | `[implemented]` |
 | API tests | JUnit 5 and AssertJ; `test` is unit tests without Docker, `e2eTest` is Spring Boot with Testcontainers; ArchUnit; JaCoCo (minimum 80% line coverage over both) | `[implemented]` |
-| Observability | Structured JSON logs and OpenTelemetry (Micrometer) to Grafana LGTM are `[implemented]`; the dashboard as code is `[planned]` (spec 008) | `[implemented]` / `[planned]` |
-| Load tests | k6, one scenario per endpoint; the harness and the smoke profile are `[implemented]`, the other profiles are `[planned]` (spec 008) | `[implemented]` / `[planned]` |
+| Observability | Structured JSON logs, OpenTelemetry (Micrometer) traces and metrics to Grafana LGTM, and the `Coffee Delivery API` dashboard as code in `infra/grafana` (spec 008). Logs stay on stdout: nothing ships them to Loki | `[implemented]` |
+| Load tests | k6, one scenario per endpoint, profiles `smoke`, `load`, `stress`, `spike`, and `soak` in `apps/api/load` (see its README) | `[implemented]` |
 | App | React 19, TypeScript (strict), Vite, React Router (data mode), TanStack Query, in `apps/app`; React Hook Form with Zod arrives with the checkout spec | `[implemented]` (foundation, spec 012) |
 | Styling | Tailwind CSS mapped to the Figma tokens; fonts Roboto and Baloo 2, self-hosted | `[planned]` (spec 013) |
 | App tests | Vitest with jsdom and Testing Library; Playwright (axe arrives with the screen specs) | `[implemented]` (spec 012) |
@@ -42,7 +42,7 @@ The app calls the API through the Vite dev proxy (`/api` to `http://localhost:30
 | Service | Image | Data | Health check |
 | --- | --- | --- | --- |
 | `postgres` | `postgres:18.6-alpine` | Named volume `postgres-data` (kept by `yarn infra:down`) | `pg_isready` |
-| `grafana` | `grafana/otel-lgtm:0.39.0` (Grafana, Loki, Tempo, Prometheus, OpenTelemetry collector) | None; dashboards come from files (spec 008) | `/api/health` and the two OTLP ports |
+| `grafana` | `grafana/otel-lgtm:0.39.0` (Grafana, Loki, Tempo, Prometheus, OpenTelemetry collector) | None; the `Coffee Delivery API` dashboard is provisioned from `infra/grafana` (read only mounts) | `/api/health` and the two OTLP ports |
 
 Database name, user, password, and port come from `.env.local`; the Compose file has no defaults for them. Image versions are pinned and are changed on purpose, in `compose.yaml`, with a note in the ADR.
 
@@ -59,7 +59,7 @@ apps/
 plans/            [implemented] one plan per spec execution
 adrs/             [implemented] one ADR per decision
 docs/             [implemented] PLAN.md and design/ (the Figma analysis)
-infra/            [planned] Grafana provisioning and dashboards
+infra/            [implemented] Grafana provisioning and dashboards
 scripts/          [implemented] task runner, skill linker, and their tests
 compose.yaml      [implemented] PostgreSQL and Grafana LGTM
 .env.example      [implemented] development values; `yarn env:setup` copies it to .env.local (ignored by Git)
