@@ -1,0 +1,39 @@
+# ADR: App base components
+
+- Status: Accepted and verified
+- Date: 2026-11-05
+- Spec: [.specs/015-app-base-components.md](../.specs/015-app-base-components.md)
+- Plan: [plans/015-app-base-components-plan.md](../plans/015-app-base-components-plan.md)
+
+## Context
+
+The screens (spec 016 onward) are assembled from a small set of components. The design defines Button, Counter, Input, Select, Tag, and the cart badge, but only in their default looks: it shows no focus, disabled, or error state. The project rule is WCAG 2.2 AA with native elements first, visible focus, and keyboard operation.
+
+## Decisions
+
+1. **One folder per component** in `src/components/<name>/` (`button`, `counter`, `input`, `select-option`, `tag`, `badge`) with `<Name>.tsx` and `<Name>.test.tsx`, plus an internal `icon` helper that inlines `iconSvgs[name]` (trimmed, `aria-hidden`). A test checks that the files exist.
+2. **No `className` or `style` props.** Layout goes through props (`size`, `fullWidth`), so a screen cannot restyle a component and drift from the design. If a screen needs more, the component gets a prop and a test. A test scans the folder for a `className` prop.
+3. **Button is a discriminated union.** `primary` and `secondary` take children; `icon` takes `icon`, a required `aria-label`, and no children, so a nameless icon button does not compile (three `@ts-expect-error` lines in the test fail `tsc` if they ever compile). Hover colors are not in the Figma file as values, so they come from the tokens: primary `yellow-dark`, secondary `hover`, icon `purple`.
+4. **Focus is `:focus-visible`.** Buttons, counter buttons, options, and chips get a 2 px `purple` outline with a 2 px offset only on keyboard focus (a mouse click shows none, checked in Chromium). The outline is not a shadow, so the "no shadows" rule holds. Transitions cover color, background, and border only: with `transition-colors` the outline color also faded in from white, which looked like a flash.
+5. **Counter** is a `fieldset` (the native group) with an `aria-label`, two 24×24 buttons (the WCAG 2.2 minimum target) named "Decrease quantity" and "Increase quantity", and the value in an `<output>` (a polite live region). The limits are constants (`MIN_QUANTITY` 1, `MAX_QUANTITY` 99). At a limit the button is disabled and `onChange` is not called. The parent owns the value.
+6. **Input** is a native `input` with a visually hidden `<label>` (required prop), an optional `hint`, and `error`. With an error: `error` border, `aria-invalid="true"`, and `aria-describedby` that lists the hint and the message; the message is a polite live region. The "filled" border of the design is pure CSS (`not-placeholder-shown`), so it works on uncontrolled fields; a field without a placeholder gets a single space so the selector matches. Focus is a `yellow-dark` border plus a 1 px `yellow-dark` outline, because the border alone is below 3:1 against the idle border. `ref` is a normal prop (React 19), so spec 023 can focus the first invalid field. The 12 px italic "Optional" hint is the one text of the design with no named style, so it is set on the element and not as a `type-*` utility; the italic is synthesized because only the upright Roboto faces are self-hosted.
+7. **Select option is a native radio group.** `SelectOptionGroup` is a `fieldset` with `role="radiogroup"` of `SelectOption`s, each a visually hidden `<input type="radio">` inside a `<label>` drawn as the 179×51 option. The browser gives the keyboard (one tab stop on the selected option or the first, arrow keys that move the selection and the focus and wrap) and the group works as a form field (shared `name`, a `value` each) for spec 023. The spec asks for `aria-checked`, so it is set too and always equals `checked`. A first version used `role="radio"` buttons with hand-written arrow keys; it was replaced because semantic HTML comes before ARIA and because it needed 40 lines the browser already provides. Home and End are not supported.
+8. **Tag** is one component with two variants: a `span` label and a `button` filter chip with `aria-pressed` and `onPressedChange`. The text keeps its case; the uppercase is the `type-tag` styling. The chip look (yellow border, selected yellow fill with white text) is the one proposed in DESIGN_SYSTEM.md.
+9. **Badge** renders the number, `99+` above 99, and nothing for 0, a negative number, or a non-integer. It has no label of its own; the Cart link of spec 016 names the count.
+10. **Accessibility tests use `axe-core` 4.14.0** (the one new dependency, a dev dependency of the app) through `src/test/axe.ts`, which returns one line per violated rule. Every component test file runs it over all variants and states, and a test of the helper proves it flags an unlabeled button and input. Color contrast is off in that helper (jsdom has no layout or computed colors).
+11. **A test compiles the classes.** jsdom loads no stylesheet, so a class that does not exist passes every other test and does nothing in the browser. `classes.test.tsx` renders every variant, collects the classes of the DOM, and compiles them with the theme of the app through `compile` of `tailwindcss` (already a dependency): each class must produce a rule. A mutation check confirmed it fails on a typo and on `shadow-md`.
+12. **Other guards in `components.test.ts`**: no hex, `rgb()`, `hsl()`, or arbitrary color in any component source; no fetch, TanStack Query, router, or import from `api`, `features`, or `app`; no `className` prop.
+
+## Verification
+
+- Six QA commands pass: 253 Vitest tests (130 before, 123 new: Button 16, Counter 13, Input 20, Select option 25, Tag 12, Badge 12, Icon 15, the class compilation 2, the folder scan 6, the axe helper 2), 96 root Node tests, the API suite unchanged, 5 Playwright tests on port 5173, strict `tsc`, and `vite build` (CSS 18.88 kB, 4.38 kB gzip, from 8.86 kB: the components' classes).
+- A throwaway page (deleted, not committed) rendered every state in Chromium at 1440×900. Measured: counters 72×38 and 72×32, input 200×42 with radius 4, icon button 38×38 on `#4B2995`, options 178.7×51, tag pill 79.9×21, no console error, no horizontal scroll. Arrow Right moved the selection to the next option with the purple ring; the ring shows on Tab and not after a mouse click.
+- Tool and setup notes: the Gradle e2e failed once with "Failed to clean up output files": a stale `apps/api/build` in OneDrive (the VS Code Java extension compiles there while the scripts use the folder outside OneDrive) could not be cleaned by Gradle. Deleting that git-ignored folder fixed it. Setting `coffeeBuildDir` once for every Gradle client avoids it (see the report).
+
+## Consequences
+
+- **The palette of the design is below WCAG AA in places** (calculated, recorded in DESIGN_SYSTEM.md): white on `yellow` 2.11 (primary button, selected chip), white on `yellow-dark` 3.28 (badge), `yellow-dark` on `yellow-light` 2.70 (tag), `yellow-dark` on `background` 3.15 (unselected chip), `label` on `input` 3.05 (placeholder and hint), and two input borders under 3:1. The components use the design's colors because the spec fixes them. This conflicts with the project rule of WCAG 2.2 AA and needs the owner's decision (for example a darker `yellow` for the button or a darker text color for tags); changing a token is a one-line change in `theme.css` plus its test.
+- Components are used by their folder path (`components/button/Button`); there is no barrel file, so the bundler only includes what a screen imports.
+- A screen that needs another look must ask for a prop in the component, not a `className`.
+- The select group does not support Home and End, and the counter button that reaches a limit becomes disabled and loses the keyboard focus (the spec asks for disabled).
+- New library: `axe-core` 4.14.0 (dev dependency of `apps/app`).

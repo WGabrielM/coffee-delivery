@@ -18,7 +18,7 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Load tests | k6, one scenario per endpoint, profiles `smoke`, `load`, `stress`, `spike`, and `soak` in `apps/api/load` (see its README) | `[implemented]` |
 | App | React 19, TypeScript (strict), Vite, React Router (data mode), TanStack Query, in `apps/app`; React Hook Form with Zod arrives with the checkout spec | `[implemented]` (foundation, spec 012) |
 | Styling | Tailwind CSS 4 with the Figma tokens as its only theme (`src/styles/theme.css`); fonts Roboto and Baloo 2 self-hosted with Fontsource | `[implemented]` (spec 013) |
-| App tests | Vitest with jsdom and Testing Library; Playwright (axe arrives with the screen specs) | `[implemented]` (spec 012) |
+| App tests | Vitest with jsdom and Testing Library; `axe-core` through `src/test/axe.ts` for every component (color contrast is off in jsdom and checked by calculation); Playwright | `[implemented]` (spec 012; axe in spec 015) |
 | CI | GitHub Actions | `[planned]` (spec 030) |
 
 ## Ports
@@ -229,7 +229,7 @@ The identity `id` of `order_items` keeps the lines of an order in the order they
 
 ## App architecture `[implemented]` (foundation; features arrive with specs 016 onward)
 
-- Layout of `apps/app`: `index.html`, `vite.config.ts`, `playwright.config.ts`, `src/main.tsx` (entry), `src/app` (`App`, `providers`, `routes`), `src/pages` (`HomePage`, `CheckoutPage`, `OrderPage`, `NotFoundPage`), `src/api` (`client`, `info`), `src/styles` (`index.css`, `theme.css`, `fonts.css`, `base.css`), `src/lib` (`format-money`), `src/assets` (the logo, icons, coffee photos, hero image, and illustration with a typed manifest, `index.ts`; spec 014), `src/features` (empty until the screen specs), `src/test/setup.ts`, `e2e/`.
+- Layout of `apps/app`: `index.html`, `vite.config.ts`, `playwright.config.ts`, `src/main.tsx` (entry), `src/app` (`App`, `providers`, `routes`), `src/pages` (`HomePage`, `CheckoutPage`, `OrderPage`, `NotFoundPage`), `src/api` (`client`, `info`), `src/styles` (`index.css`, `theme.css`, `fonts.css`, `base.css`), `src/lib` (`format-money`), `src/assets` (the logo, icons, coffee photos, hero image, and illustration with a typed manifest, `index.ts`; spec 014), `src/components` (the base components `badge`, `button`, `counter`, `input`, `select-option`, `tag`, and the internal `icon`, one folder each with its test; spec 015), `src/features` (empty until the screen specs), `src/test/setup.ts`, `e2e/`.
 - Routes (data mode, one table in `src/app/routes.tsx`): `/`, `/checkout`, `/orders/:id`, and `*` for the not-found page.
 - The API client (`src/api/client.ts`) offers `apiGet` and `apiPost` on the base path `/api/v1` and throws `ApiError` (`status`, `code`, `message`, `fields`). A network failure is `ApiError` with status `0` and code `network_error`; a response outside the project's error shape is `unexpected_error`.
 - `AppProviders` creates the TanStack Query client; it does not retry 4xx errors and retries other failures at most twice.

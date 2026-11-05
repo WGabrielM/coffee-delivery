@@ -68,7 +68,51 @@ Page margin 160 px (`px-page`), navbar 104 px (`h-navbar`), content width 1120 p
 | Tag | Card tag; filter chip (unselected, selected) | Radius 100, `yellow-light` fill, `yellow-dark` text. The chip is proposed: unselected has a `yellow` border and `yellow-dark` text; selected has a `yellow` fill and white text |
 | Coffee card | Catalog; cart row | Catalog 256×310; the cart row is 368×80 |
 
-States the design does not show (focus, disabled, error, selected chip) are defined by the specs that build the component and recorded here when they do.
+States the design does not show (focus, disabled, error, selected chip) are defined by the specs that build the component and recorded here when they do. The six base components below are built (spec 015) in `apps/app/src/components/<name>/`; the Cart link and the Coffee card are made of them and arrive with the screens.
+
+### Base components
+
+Every base component is presentational (no data fetching, no cart, no routing), takes no `className` or `style` (layout goes through props such as `size` and `fullWidth`), renders native elements, and has a test file with an axe check. Import them from their folder, for example `import { Button } from "../components/button/Button"`.
+
+| Component | Props | What it renders |
+| --- | --- | --- |
+| `Button` | `variant` (`primary` default, `secondary`, `icon`), `icon?`, `fullWidth?`, native button props | A native `button` (`type="button"` unless you pass `submit`). Primary: yellow, white `type-button-g`, min height 46. Secondary: `button` fill, `text` label, 32 high, optional trash icon in `purple`. Icon: 38×38 `purple-dark`, white 22 px glyph, **`aria-label` required and no children** (a type error otherwise) |
+| `Counter` | `label` (group name), `value`, `onChange(value)`, `size` (`default` 72×38, `compact` 72×32) | A `fieldset` named `label` with two 24×24 buttons, "Decrease quantity" and "Increase quantity", and the value in an `<output>` (a polite live region). Limits `MIN_QUANTITY` 1 and `MAX_QUANTITY` 99: at a limit the matching button is disabled and `onChange` is not called. The parent owns the value |
+| `Input` | `label` (required, visually hidden), `hint?`, `error?`, native input props, `ref` | A native `input` 42 high, radius 4, `input` fill. `hint` ("Optional") shows at the right in 12 px italic. `error` shows the message below in `error`, sets `aria-invalid="true"`, and links the hint and the message through `aria-describedby`. Pass `name`, `autoComplete`, `inputMode`, and `type` as you would to an `input` |
+| `SelectOptionGroup` (with `SelectOption`) | `label` (group name), `options` (`{ value, label, icon }[]`), `value`, `onChange(value)`, `name?` | A `fieldset` with `role="radiogroup"` of native radio buttons that share one `name`, each drawn as the 179×51 option of the design. At most one is selected and has `aria-checked="true"`; Tab enters the group once and the arrow keys move the selection and wrap. The parent owns the value |
+| `Tag` | `variant` (`label` default or `filter`), `children`; for `filter`: `pressed`, `onPressedChange(pressed)` | `label`: a `span` pill (`yellow-light` fill, `yellow-dark` text, `type-tag`). `filter`: a `button` with `aria-pressed`, `type-tag-l`. The text keeps its case; the uppercase is styling |
+| `Badge` | `count` | A 20×20 `yellow-dark` circle with a white number (`type-text-bold-s`). `99+` above 99; nothing for 0, a negative number, or a non-integer. It has no label: the Cart link names the count ("Cart, 3 items") |
+
+`Icon` (`components/icon`) is the internal helper that inlines `iconSvgs[name]` with `aria-hidden="true"`; use it only inside base components.
+
+#### States this spec defines (the design shows none of them)
+
+| State | Rule |
+| --- | --- |
+| Focus (buttons, counter buttons, select options, filter chip) | A 2 px `purple` outline with a 2 px offset on `:focus-visible` only, so a keyboard shows it and a mouse click does not. It is an outline, not a shadow |
+| Focus (input) | The border turns `yellow-dark` and a 1 px `yellow-dark` outline joins it (`error` when invalid), on every focus. The border alone is not enough against the idle border |
+| Disabled | Half opacity, a `not-allowed` cursor, no hover color, skipped by Tab, no click |
+| Hover | Primary `yellow-dark`; Secondary and options `hover` fill; Icon button `purple`; Counter buttons `hover` fill; unselected chip `yellow-light` fill. Only on enabled controls (`enabled:hover:`) |
+| Filled input | `yellow-dark` border while the field has text (CSS `:not(:placeholder-shown)`, so it works on an uncontrolled field) |
+| Error | `error` border and message, `aria-invalid="true"`, `aria-describedby`, message in a polite live region |
+| Selected chip | `yellow` fill with white text; unselected: `yellow` border and `yellow-dark` text |
+| Motion | Colors fade in 150 ms; none under `prefers-reduced-motion` |
+
+#### Contrast: the palette of the design is below WCAG AA in places
+
+Ratios are calculated with the WCAG formula (axe cannot judge contrast in jsdom). The components use the colors the design specifies, so these pairs are **below** the 4.5:1 that AA asks for text (3:1 for borders and icons). They need a decision of the owner (for example a darker text color for tags and chips, or a darker yellow behind white text); no component was changed on its own.
+
+| Pair | Where | Ratio | Needs |
+| --- | --- | --- | --- |
+| white on `yellow` | Primary button, selected chip | 2.11 | 4.5 |
+| white on `yellow-dark` | Primary hover, cart badge | 3.28 | 4.5 |
+| `yellow-dark` on `yellow-light` | Tag | 2.70 | 4.5 |
+| `yellow-dark` on `background` | Unselected chip | 3.15 | 4.5 |
+| `label` on `input` | Placeholder, "Optional" hint | 3.05 | 4.5 |
+| `button` on `input` | Idle input border | 1.07 | 3 |
+| `yellow-dark` on `input` | Filled input border | 2.80 | 3 |
+
+Pairs that pass: `text` on `button` 6.35, `title` on `button` 12.49, `text` on `purple-light` 6.50, `text` on `input` 6.82, `error` on `background` 5.11, white on `purple-dark` 10.24, white on `purple` 5.03, the `purple` focus ring on `background` 4.82, and the `purple` counter icons on `button` 4.00.
 
 ## Money
 
