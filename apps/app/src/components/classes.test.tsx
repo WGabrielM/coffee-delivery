@@ -7,6 +7,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 
 import { render } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { compile } from "tailwindcss";
 import { describe, expect, it } from "vitest";
 
@@ -14,6 +15,7 @@ import { Badge } from "./badge/Badge";
 import { Button } from "./button/Button";
 import { Counter } from "./counter/Counter";
 import { Input } from "./input/Input";
+import { Navbar } from "./navbar/Navbar";
 import { SelectOptionGroup } from "./select-option/SelectOptionGroup";
 import { Tag } from "./tag/Tag";
 
@@ -70,6 +72,9 @@ function renderEveryVariant() {
         Iced
       </Tag>
       <Badge count={3} />
+      <MemoryRouter>
+        <Navbar cartCount={3} />
+      </MemoryRouter>
     </>,
   );
 }

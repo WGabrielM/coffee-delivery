@@ -47,6 +47,16 @@ describe("routes", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Page not found" })).toBeInTheDocument();
   });
 
+  it("renders every route inside the layout: skip link, navbar, and main#main-content", () => {
+    for (const path of ["/", "/checkout", "/orders/abc", "/nope"]) {
+      const { unmount } = renderPath(path);
+      expect(screen.getByRole("link", { name: "Skip to content" })).toBeInTheDocument();
+      expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
+      expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
+      unmount();
+    }
+  });
+
   it("gives every page one main landmark", () => {
     for (const path of ["/", "/checkout", "/orders/abc", "/nope"]) {
       const { unmount } = renderPath(path);

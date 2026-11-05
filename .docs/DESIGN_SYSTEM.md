@@ -68,7 +68,7 @@ Page margin 160 px (`px-page`), navbar 104 px (`h-navbar`), content width 1120 p
 | Tag | Card tag; filter chip (unselected, selected) | Radius 100, `yellow-light` fill, `yellow-dark` text. The chip is proposed: unselected has a `yellow` border and `yellow-dark` text; selected has a `yellow` fill and white text |
 | Coffee card | Catalog; cart row | Catalog 256×310; the cart row is 368×80 |
 
-States the design does not show (focus, disabled, error, selected chip) are defined by the specs that build the component and recorded here when they do. The six base components below are built (spec 015) in `apps/app/src/components/<name>/`; the Cart link and the Coffee card are made of them and arrive with the screens.
+States the design does not show (focus, disabled, error, selected chip) are defined by the specs that build the component and recorded here when they do. The six base components below are built (spec 015) in `apps/app/src/components/<name>/`; the Coffee card arrives with the screens. The navbar (spec 016) is built too; see below.
 
 ### Base components
 
@@ -77,11 +77,18 @@ Every base component is presentational (no data fetching, no cart, no routing), 
 | Component | Props | What it renders |
 | --- | --- | --- |
 | `Button` | `variant` (`primary` default, `secondary`, `icon`), `icon?`, `fullWidth?`, native button props | A native `button` (`type="button"` unless you pass `submit`). Primary: yellow, white `type-button-g`, min height 46. Secondary: `button` fill, `text` label, 32 high, optional trash icon in `purple`. Icon: 38×38 `purple-dark`, white 22 px glyph, **`aria-label` required and no children** (a type error otherwise) |
-| `Counter` | `label` (group name), `value`, `onChange(value)`, `size` (`default` 72×38, `compact` 72×32) | A `fieldset` named `label` with two 24×24 buttons, "Decrease quantity" and "Increase quantity", and the value in an `<output>` (a polite live region). Limits `MIN_QUANTITY` 1 and `MAX_QUANTITY` 99: at a limit the matching button is disabled and `onChange` is not called. The parent owns the value |
+| `Counter` | `label` (group name), `value`, `onChange(value)`, `size` (`default` 72×38, `compact` 72×32) | A `fieldset` named `label` with two 24×24 buttons, "Decrease quantity" and "Increase quantity", and the value in an `<output>` (a polite live region). Limits `MIN_QUANTITY` 1 and `MAX_QUANTITY` 99: at a limit the matching button is `aria-disabled="true"` (dimmed, no hover, announced as dimmed) and `onChange` is not called; it is not `disabled`, so a keyboard user who presses Enter up to 99 keeps the focus. The parent owns the value |
 | `Input` | `label` (required, visually hidden), `hint?`, `error?`, native input props, `ref` | A native `input` 42 high, radius 4, `input` fill. `hint` ("Optional") shows at the right in 12 px italic. `error` shows the message below in `error`, sets `aria-invalid="true"`, and links the hint and the message through `aria-describedby`. Pass `name`, `autoComplete`, `inputMode`, and `type` as you would to an `input` |
-| `SelectOptionGroup` (with `SelectOption`) | `label` (group name), `options` (`{ value, label, icon }[]`), `value`, `onChange(value)`, `name?` | A `fieldset` with `role="radiogroup"` of native radio buttons that share one `name`, each drawn as the 179×51 option of the design. At most one is selected and has `aria-checked="true"`; Tab enters the group once and the arrow keys move the selection and wrap. The parent owns the value |
+| `SelectOptionGroup` (with `SelectOption`) | `label` (group name), `options` (`{ value, label, icon }[]`), `value`, `onChange(value)`, `name?` | A `fieldset` with `role="radiogroup"` of native radio buttons that share one `name`, each drawn as the 179×51 option of the design. At most one is selected and has `aria-checked="true"`; Tab enters the group once, the arrow keys move the selection and wrap, and Home and End jump to the first and last option. The parent owns the value |
 | `Tag` | `variant` (`label` default or `filter`), `children`; for `filter`: `pressed`, `onPressedChange(pressed)` | `label`: a `span` pill (`yellow-light` fill, `yellow-dark` text, `type-tag`). `filter`: a `button` with `aria-pressed`, `type-tag-l`. The text keeps its case; the uppercase is styling |
 | `Badge` | `count` | A 20×20 `yellow-dark` circle with a white number (`type-text-bold-s`). `99+` above 99; nothing for 0, a negative number, or a non-integer. It has no label: the Cart link names the count ("Cart, 3 items") |
+
+### Navbar and layout (spec 016)
+
+| Piece | Props | What it renders |
+| --- | --- | --- |
+| `Navbar` (`components/navbar`) | `cartCount?` (default 0; not a positive whole number counts as 0) | `header` (white, `px-page`) with `nav` named "Main" (104 high, at most 1120 wide, centered): the logo link to `/` named "Coffee Delivery, home" (85×40, the image is decorative); the location pill (38 high, 8 padding, radius 6, `purple-light` fill, `purple` pin, `purple-dark` `type-text-regular-s` text "Porto Alegre, RS"; text, not a control); the cart link to `/checkout` (38×38, `yellow-light` fill, `yellow-dark` 22 px cart icon) named "Cart, empty", "Cart, 1 item", or "Cart, N items", with the `Badge` on its top right corner (8 px out) when the count is above 0. Both links have the keyboard focus ring. It is the only component that imports the router |
+| `AppLayout` (`app/app-layout.tsx`) | none | The "Skip to content" link (hidden until it has focus, then fixed at the top left), the `Navbar` (count 0 until spec 021), and `main#main-content` (`tabIndex` -1, so the skip link moves the focus) around the `Outlet`. Every route renders inside it, so pages render no `main` of their own |
 
 `Icon` (`components/icon`) is the internal helper that inlines `iconSvgs[name]` with `aria-hidden="true"`; use it only inside base components.
 
@@ -91,8 +98,8 @@ Every base component is presentational (no data fetching, no cart, no routing), 
 | --- | --- |
 | Focus (buttons, counter buttons, select options, filter chip) | A 2 px `purple` outline with a 2 px offset on `:focus-visible` only, so a keyboard shows it and a mouse click does not. It is an outline, not a shadow |
 | Focus (input) | The border turns `yellow-dark` and a 1 px `yellow-dark` outline joins it (`error` when invalid), on every focus. The border alone is not enough against the idle border |
-| Disabled | Half opacity, a `not-allowed` cursor, no hover color, skipped by Tab, no click |
-| Hover | Primary `yellow-dark`; Secondary and options `hover` fill; Icon button `purple`; Counter buttons `hover` fill; unselected chip `yellow-light` fill. Only on enabled controls (`enabled:hover:`) |
+| Disabled | Half opacity, a `not-allowed` cursor, no hover color, skipped by Tab, no click. The counter buttons at a limit are the exception: `aria-disabled` instead of `disabled`, so they keep the focus (same look, no click) |
+| Hover | Primary `yellow-dark`; Secondary and options `hover` fill; Icon button `purple`; Counter buttons `hover` fill; unselected chip `yellow-light` fill. Only on enabled controls (`enabled:hover:`; `not-aria-disabled:hover:` on the counter buttons) |
 | Filled input | `yellow-dark` border while the field has text (CSS `:not(:placeholder-shown)`, so it works on an uncontrolled field) |
 | Error | `error` border and message, `aria-invalid="true"`, `aria-describedby`, message in a polite live region |
 | Selected chip | `yellow` fill with white text; unselected: `yellow` border and `yellow-dark` text |

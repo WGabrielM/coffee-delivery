@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { type KeyboardEvent, useId } from "react";
 
 import type { IconName } from "../../assets";
 import { SelectOption } from "./SelectOption";
@@ -24,7 +24,7 @@ type SelectOptionGroupProps<T extends string> = {
  * A radio group of single-choice options (the payment methods). At most one option is selected. The
  * options are native radio buttons with one name, so the browser does the keyboard work: Tab enters
  * the group once (on the selected option, or the first when none is selected), and the arrow keys
- * move the selection and the focus, wrapping at the ends.
+ * move the selection and the focus, wrapping at the ends. Home and End jump to the first and last.
  */
 export function SelectOptionGroup<T extends string>({
   label,
@@ -35,10 +35,24 @@ export function SelectOptionGroup<T extends string>({
 }: SelectOptionGroupProps<T>) {
   const generatedName = useId();
 
+  // Native radios have the arrow keys but not Home and End, which the ARIA radio group pattern adds.
+  function jumpToEnd(event: KeyboardEvent<HTMLFieldSetElement>) {
+    if (event.key !== "Home" && event.key !== "End") return;
+    if (options.length === 0) return;
+    const radios = event.currentTarget.querySelectorAll<HTMLInputElement>("input[type='radio']");
+    const target = event.key === "Home" ? radios[0] : radios[radios.length - 1];
+    const option = event.key === "Home" ? options[0] : options[options.length - 1];
+    if (!target || !option) return;
+    event.preventDefault();
+    target.focus();
+    if (option.value !== value) onChange(option.value);
+  }
+
   return (
     <fieldset
       role="radiogroup"
       aria-label={label}
+      onKeyDown={jumpToEnd}
       className="grid min-w-0 auto-cols-fr grid-flow-col gap-3"
     >
       {options.map((option) => (

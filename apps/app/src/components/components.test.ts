@@ -21,6 +21,7 @@ describe("src/components", () => {
         "button/Button.tsx",
         "counter/Counter.tsx",
         "input/Input.tsx",
+        "navbar/Navbar.tsx",
         "select-option/SelectOption.tsx",
         "select-option/SelectOptionGroup.tsx",
         "tag/Tag.tsx",
@@ -37,6 +38,7 @@ describe("src/components", () => {
         "button/Button.test.tsx",
         "counter/Counter.test.tsx",
         "input/Input.test.tsx",
+        "navbar/Navbar.test.tsx",
         "select-option/SelectOptionGroup.test.tsx",
         "tag/Tag.test.tsx",
       ]),
@@ -61,14 +63,22 @@ describe("src/components", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("does not fetch data, read the cart, or route: components are presentational", () => {
+  it("does not fetch data or read the cart: components are presentational", () => {
     const offenders = sources.filter((file) =>
-      /\bfetch\(|@tanstack|react-router|from "\.\.\/\.\.\/(?:api|features|app)/.test(
+      /\bfetch\(|@tanstack|from "\.\.\/\.\.\/(?:api|features|app)/.test(
         readFileSync(join(components, file), "utf8"),
       ),
     );
 
     expect(offenders).toEqual([]);
+  });
+
+  it("imports the router only in the navbar, whose links must not reload the page", () => {
+    const withRouter = sources.filter((file) =>
+      /react-router/.test(readFileSync(join(components, file), "utf8")),
+    );
+
+    expect(withRouter).toEqual(["navbar/Navbar.tsx"]);
   });
 
   it("takes no className prop: a screen cannot restyle a component", () => {

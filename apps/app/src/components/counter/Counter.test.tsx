@@ -1,9 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { accessibilityViolations } from "../../test/axe";
 import { Counter, MAX_QUANTITY, MIN_QUANTITY } from "./Counter";
+
+/** A parent that owns the value, one step below the maximum. */
+function Controlled() {
+  const [value, setValue] = useState(MAX_QUANTITY - 1);
+  return <Counter label="Quantity" value={value} onChange={setValue} />;
+}
 
 describe("Counter", () => {
   it("has the limits of the business rule: 1 to 99", () => {
@@ -44,35 +51,65 @@ describe("Counter", () => {
     expect(screen.getByRole("status")).toHaveTextContent("3");
   });
 
-  it("disables Decrease at the minimum and never calls onChange below 1", async () => {
+  it("marks Decrease unavailable at the minimum and never calls onChange below 1", async () => {
     const onChange = vi.fn<(value: number) => void>();
     render(<Counter label="Quantity" value={MIN_QUANTITY} onChange={onChange} />);
 
     const decrease = screen.getByRole("button", { name: "Decrease quantity" });
     await userEvent.click(decrease);
 
-    expect(decrease).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Increase quantity" })).toBeEnabled();
+    expect(decrease).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "Increase quantity" })).not.toHaveAttribute(
+      "aria-disabled",
+    );
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("disables Increase at the maximum and never calls onChange above 99", async () => {
+  it("marks Increase unavailable at the maximum and never calls onChange above 99", async () => {
     const onChange = vi.fn<(value: number) => void>();
     render(<Counter label="Quantity" value={MAX_QUANTITY} onChange={onChange} />);
 
     const increase = screen.getByRole("button", { name: "Increase quantity" });
     await userEvent.click(increase);
 
-    expect(increase).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Decrease quantity" })).toBeEnabled();
+    expect(increase).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "Decrease quantity" })).not.toHaveAttribute(
+      "aria-disabled",
+    );
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("keeps both buttons enabled between the limits", () => {
+  it("keeps the keyboard focus on the button that reaches a limit", async () => {
+    render(<Controlled />);
+    const increase = screen.getByRole("button", { name: "Increase quantity" });
+    increase.focus();
+
+    await userEvent.keyboard("{Enter}");
+
+    expect(screen.getByRole("status")).toHaveTextContent(String(MAX_QUANTITY));
+    expect(increase).toHaveAttribute("aria-disabled", "true");
+    expect(increase).toHaveFocus();
+  });
+
+  it("dims an unavailable button and removes its hover", () => {
+    render(<Counter label="Quantity" value={MIN_QUANTITY} onChange={() => {}} />);
+
+    expect(screen.getByRole("button", { name: "Decrease quantity" })).toHaveClass(
+      "aria-disabled:opacity-50",
+      "aria-disabled:cursor-not-allowed",
+      "not-aria-disabled:hover:bg-hover",
+    );
+  });
+
+  it("keeps both buttons available between the limits", () => {
     render(<Counter label="Quantity" value={2} onChange={() => {}} />);
 
-    expect(screen.getByRole("button", { name: "Decrease quantity" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Increase quantity" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Decrease quantity" })).not.toHaveAttribute(
+      "aria-disabled",
+    );
+    expect(screen.getByRole("button", { name: "Increase quantity" })).not.toHaveAttribute(
+      "aria-disabled",
+    );
   });
 
   it("works from the keyboard", async () => {

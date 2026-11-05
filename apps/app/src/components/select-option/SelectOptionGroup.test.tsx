@@ -251,6 +251,34 @@ describe("SelectOptionGroup", () => {
       expect(screen.getByRole("radio", { name: "Cash" })).toBeChecked();
     });
 
+    it("jumps to the first option with Home and to the last with End", async () => {
+      const onChange = vi.fn<(value: Payment) => void>();
+      render(<Controlled initial="DEBIT_CARD" onChange={onChange} />);
+      await userEvent.tab();
+
+      await userEvent.keyboard("{End}");
+
+      expect(screen.getByRole("radio", { name: "Cash" })).toBeChecked();
+      expect(screen.getByRole("radio", { name: "Cash" })).toHaveFocus();
+
+      await userEvent.keyboard("{Home}");
+
+      expect(screen.getByRole("radio", { name: "Credit card" })).toBeChecked();
+      expect(screen.getByRole("radio", { name: "Credit card" })).toHaveFocus();
+      expect(onChange.mock.calls.map(([value]) => value)).toEqual(["CASH", "CREDIT_CARD"]);
+    });
+
+    it("does not call onChange when Home or End lands on the option already selected", async () => {
+      const onChange = vi.fn<(value: Payment) => void>();
+      render(<Controlled initial="CASH" onChange={onChange} />);
+      await userEvent.tab();
+
+      await userEvent.keyboard("{End}");
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByRole("radio", { name: "Cash" })).toHaveFocus();
+    });
+
     it("selects the focused option with Space", async () => {
       render(<Controlled />);
       await userEvent.tab();

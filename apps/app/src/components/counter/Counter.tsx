@@ -23,17 +23,19 @@ type StepProps = {
 };
 
 // 24×24 is the smallest target WCAG 2.2 allows (2.5.8); the icon inside is 14 px.
+// At a limit the button is `aria-disabled`, not `disabled`: a disabled button drops the keyboard
+// focus, so a person who presses Enter on "Increase" up to 99 would be thrown back to the page.
 function Step({ label, icon, disabled, onClick }: StepProps) {
   return (
     <button
       type="button"
       aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
+      aria-disabled={disabled || undefined}
+      onClick={disabled ? undefined : onClick}
       className={
         "inline-flex size-6 items-center justify-center rounded-button text-purple transition-[color,background-color,border-color] motion-reduce:transition-none " +
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple " +
-        "enabled:hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
+        "not-aria-disabled:hover:bg-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
       }
     >
       <Icon name={icon} className="size-3.5" />

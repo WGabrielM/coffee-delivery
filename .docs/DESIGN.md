@@ -20,7 +20,7 @@ The interface follows the Coffee Delivery design in Figma. The light theme is th
 
 ## Layout rules (desktop, 1440 px)
 
-- Page margin 160 px, so the content is 1120 px wide. Navbar 104 px high on white.
+- Page margin 160 px, so the content is 1120 px wide. Navbar 104 px high on white (spec 016): the logo starts at x=160 (85×40), the location pill is 38 px high and the cart link 38×38 ends at x=1280, 12 px apart; the badge is a 20×20 circle on the top right corner of the cart link. Every page is wrapped by `AppLayout` (skip link, navbar, `main#main-content`).
 - Home grid: four columns of 256 px cards, 32 px between columns, 40 px between rows. The last row has two cards, aligned to the left.
 - Checkout: left column 640 px at x=160, right column 448 px at x=832. Form rows: 12 px between columns, 16 px between rows.
 - Corners: buttons, counter, location pill, and payment options 6 px; inputs 4 px; tags 100 px; round icons 1000 px; coffee card 6/36/6/36 px (top-left, top-right, bottom-right, bottom-left); order summary card 6/44/6/44 px; form cards 6 px; success order card 6/36/6/36 px with a 1 px gradient border from `#DBAC2C` to `#8047F8`.
