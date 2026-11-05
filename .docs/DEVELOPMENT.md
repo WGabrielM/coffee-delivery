@@ -39,6 +39,8 @@ Package names cannot be Java keywords, so the fourth layer is `interfaces` (plur
 
 **Running the API.** It needs JDK 21 or newer, and Docker for the database. `yarn api:dev` loads `.env.local`, runs `gradlew bootRun` in `apps/api`, and serves on port 3000. Run `yarn infra:up` first. The API reads `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, and optionally `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://localhost:4318`) from the environment; they have no defaults in `application.yaml`. Running from an IDE needs the same variables.
 
+**Repository in a synced folder (OneDrive).** Gradle fails with `Failed to clean up stale outputs` or `Unable to delete directory` when `apps/api/build` is synced. Set the environment variable `ORG_GRADLE_PROJECT_coffeeBuildDir` to a folder outside the repository whose last segment is `build` (for example `%LOCALAPPDATA%\coffee-delivery-api\build`); `ArchitectureTest` needs that name to tell test classes from main classes.
+
 **Format before checking.** `yarn code:fix` applies Spotless (google-java-format). `yarn lint` fails on Java that is not formatted.
 
 **Logs.** The API writes one JSON object per line on stdout (`@timestamp`, `level`, `message`, `traceId`, `spanId`, and the key/value pairs of the event). Each request produces one line, `request completed`, with `method`, `path`, `status`, and `durationMs`; the query string is never logged.

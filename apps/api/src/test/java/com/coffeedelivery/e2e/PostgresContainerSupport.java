@@ -7,7 +7,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /** One PostgreSQL container for the whole end-to-end JVM, started on first use. */
-abstract class PostgresContainerSupport {
+public abstract class PostgresContainerSupport {
 
   /** Keep equal to the image in compose.yaml; a root test compares them. */
   static final String POSTGRES_IMAGE = "postgres:18.6-alpine";

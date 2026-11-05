@@ -13,6 +13,12 @@ version = "0.1.0"
 
 repositories { mavenCentral() }
 
+// Optional: `-PcoffeeBuildDir=<folder>` (or the environment variable ORG_GRADLE_PROJECT_coffeeBuildDir)
+// puts the build output outside the repository. A repository inside a OneDrive folder needs it:
+// OneDrive turns old build files into placeholders that Gradle cannot delete. The last folder must
+// be named `build`, because ArchUnit's DoNotIncludeTests finds test classes by `/build/classes/`.
+providers.gradleProperty("coffeeBuildDir").orNull?.let { layout.buildDirectory.set(file(it)) }
+
 dependencies {
   implementation(platform(SpringBootPlugin.BOM_COORDINATES))
 
@@ -39,8 +45,8 @@ tasks.withType<JavaCompile>().configureEach {
 // (Spring Boot tests with a Testcontainers PostgreSQL).
 tasks.test { useJUnitPlatform { excludeTags("e2e") } }
 
-val e2eTest by
-  tasks.registering(Test::class) {
+val e2eTest =
+  tasks.register<Test>("e2eTest") {
     description = "Runs the end-to-end tests (Spring Boot with Testcontainers; needs Docker)."
     group = "verification"
     testClassesDirs = sourceSets.test.get().output.classesDirs
