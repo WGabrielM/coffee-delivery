@@ -32,6 +32,10 @@ yarn-error.log*
 # Playwright MCP console and snapshot logs
 .playwright-mcp
 
+# Playwright CLI skill artifacts (snapshots, traces, screenshots)
+.playwright-cli
+output/playwright
+
 # k6 load test results
 apps/api/load/results
 
