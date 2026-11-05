@@ -24,7 +24,7 @@ Every screen must be built from one set of design values, so the app matches the
 
 ## Verification
 
-- Six QA commands pass: 96 Vitest tests, 82 root Node tests, the API suite unchanged, 5 Playwright tests (run on port 5174 because 5173 is held by another project's server on this machine), strict `tsc`, and `vite build` (CSS 6.65 kB, 2.07 kB gzip).
+- Six QA commands pass: 96 Vitest tests, 82 root Node tests, the API suite unchanged, 5 Playwright tests (run on port 5174 because 5173 is held by another project's server on this machine), strict `tsc`, and `vite build` (CSS 8.86 kB, 2.25 kB gzip; corrected in spec 014, the 6.65 kB first reported could not be reproduced).
 - The built CSS defines exactly 18 `--color-*` variables and none of `--color-red`, `--shadow-md`, `--text-xl`, or `--radius-lg`.
 
 ## Consequences

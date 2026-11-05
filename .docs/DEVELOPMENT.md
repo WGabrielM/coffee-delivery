@@ -54,6 +54,7 @@ Package names cannot be Java keywords, so the fourth layer is `interfaces` (plur
 - Components do not fetch data directly: features expose hooks (TanStack Query) and components receive data through props.
 - Colors, fonts, and sizes come from the theme tokens ([DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)); components contain no hex color literal (a root test fails on one outside `src/styles/theme.css`). Style with Tailwind classes that use the token names: `bg-card`, `text-title`, `type-title-xl`, `px-page`, `rounded-button`. The default Tailwind palette, font sizes, radii, and shadows do not exist, so `bg-red-500` or `shadow-md` do not compile.
 - Money is drawn with `formatMoney` or `formatMoneyParts` from `src/lib/format-money.ts`; never format an amount by hand.
+- Images and icons come from `src/assets/index.ts` only (`coffeeImages[slug]`, `iconSvgs[name]`, `logo`, `heroImage`, `deliveryIllustration`); never import a file from a folder of `src/assets` directly and never add an icon library. Do not edit a generated asset: regenerate it with `node scripts/extract-figma-assets.mjs` (the `.fig` is on your machine only; see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)). Without the `.fig`, the committed assets are enough to build.
 
 ## Local infrastructure
 

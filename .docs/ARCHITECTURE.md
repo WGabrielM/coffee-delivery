@@ -58,9 +58,9 @@ apps/
 .specs/           [implemented] specs to implement
 plans/            [implemented] one plan per spec execution
 adrs/             [implemented] one ADR per decision
-docs/             [implemented] PLAN.md and design/ (the Figma analysis)
+docs/             [implemented] PLAN.md and design/ (the Figma analysis, the asset mapping, the contact sheet of the coffee photos)
 infra/            [implemented] Grafana provisioning and dashboards
-scripts/          [implemented] task runner, skill linker, and their tests
+scripts/          [implemented] task runner, skill linker, the Figma asset extractor (`extract-figma-assets.mjs`, `lib/`), and their tests
 compose.yaml      [implemented] PostgreSQL and Grafana LGTM
 .env.example      [implemented] development values; `yarn env:setup` copies it to .env.local (ignored by Git)
 ```
@@ -229,11 +229,12 @@ The identity `id` of `order_items` keeps the lines of an order in the order they
 
 ## App architecture `[implemented]` (foundation; features arrive with specs 016 onward)
 
-- Layout of `apps/app`: `index.html`, `vite.config.ts`, `playwright.config.ts`, `src/main.tsx` (entry), `src/app` (`App`, `providers`, `routes`), `src/pages` (`HomePage`, `CheckoutPage`, `OrderPage`, `NotFoundPage`), `src/api` (`client`, `info`), `src/styles` (`index.css`, `theme.css`, `fonts.css`, `base.css`), `src/lib` (`format-money`), `src/features` (empty until the screen specs), `src/test/setup.ts`, `e2e/`.
+- Layout of `apps/app`: `index.html`, `vite.config.ts`, `playwright.config.ts`, `src/main.tsx` (entry), `src/app` (`App`, `providers`, `routes`), `src/pages` (`HomePage`, `CheckoutPage`, `OrderPage`, `NotFoundPage`), `src/api` (`client`, `info`), `src/styles` (`index.css`, `theme.css`, `fonts.css`, `base.css`), `src/lib` (`format-money`), `src/assets` (the logo, icons, coffee photos, hero image, and illustration with a typed manifest, `index.ts`; spec 014), `src/features` (empty until the screen specs), `src/test/setup.ts`, `e2e/`.
 - Routes (data mode, one table in `src/app/routes.tsx`): `/`, `/checkout`, `/orders/:id`, and `*` for the not-found page.
 - The API client (`src/api/client.ts`) offers `apiGet` and `apiPost` on the base path `/api/v1` and throws `ApiError` (`status`, `code`, `message`, `fields`). A network failure is `ApiError` with status `0` and code `network_error`; a response outside the project's error shape is `unexpected_error`.
 - `AppProviders` creates the TanStack Query client; it does not retry 4xx errors and retries other failures at most twice.
 
 - Pages in `src/pages`; features by domain in `src/features` (`catalog`, `cart`, `checkout`, `orders`); shared components in `src/components`; the API client in `src/api`; helpers in `src/lib`; assets in `src/assets`.
 - Server state is read with TanStack Query. The cart is client state (a reducer in a context, saved in `localStorage`) and holds only coffee ids and quantities.
-- Coffee photos are found by the coffee `slug`; the API sends no image.
+- Coffee photos are found by the coffee `slug`; the API sends no image. `coffeeImages[slug]` in `src/assets` is that lookup, and a test checks that its slugs are the ones of the catalog seed.
+- Assets are generated, not drawn by hand: `node scripts/extract-figma-assets.mjs` reads the local `.fig` and writes `src/assets` (see DESIGN_SYSTEM.md). The `.fig` is never needed to build.

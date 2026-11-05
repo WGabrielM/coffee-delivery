@@ -2,3 +2,6 @@
 @import "./fonts.css";
 @import "./theme.css";
 @import "./base.css";
+
+/* The assets hold SVG markup, not class names: scanning them made words such as "transform" classes. */
+@source not "../assets";

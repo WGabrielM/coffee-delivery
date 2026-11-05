@@ -97,6 +97,10 @@ test("Tailwind is wired into Vite and the styles are loaded by the entry point",
   }
 });
 
+test("Tailwind does not scan the assets: SVG attributes such as transform would become classes", () => {
+  assert.match(read("apps/app/src/styles/index.css"), /@source not "\.\.\/assets";/);
+});
+
 test("the fonts are self-hosted: no font host in the styles or the HTML", () => {
   const files = [
     "apps/app/index.html",
