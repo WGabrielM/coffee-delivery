@@ -162,7 +162,14 @@ Flyway applies the migrations in `apps/api/src/main/resources/db/migration` at s
 
 The seed has 5 tags and 14 coffees at 990 cents (the copy is in [BUSINESS.md](BUSINESS.md)). The database stores no image: the app finds photos by `slug`.
 
-**Orders** `[planned]` (spec 009): `orders` (address, payment method, `subtotal_in_cents`, `delivery_fee_in_cents`, `total_in_cents`, `status`, `created_at`) and `order_items` (`coffee_id`, `coffee_name`, `unit_price_in_cents`, `quantity`, `line_total_in_cents`).
+**Orders** `[implemented]` (spec 009; migration `V3__create_orders_tables.sql`). An order keeps a snapshot of what was sold, so a later catalog change never alters it. There is no user column: the product has no accounts.
+
+| Table | Columns | Rules |
+| --- | --- | --- |
+| `orders` | `id` (UUID), `status`, `payment_method`, `zip_code`, `street`, `number`, `complement` (nullable), `neighborhood`, `city`, `state`, `subtotal_in_cents`, `delivery_fee_in_cents`, `total_in_cents`, `created_at` (`timestamptz`, default now) | `status` is only `confirmed`; `payment_method` is `credit_card`, `debit_card`, or `cash`; `state` is two uppercase letters; the subtotal and the fee are not negative; `total_in_cents` equals `subtotal_in_cents + delivery_fee_in_cents` |
+| `order_items` | `id` (bigint identity), `order_id`, `coffee_id`, `coffee_name`, `unit_price_in_cents`, `quantity`, `line_total_in_cents` | `order_id` references `orders` (deleted with it); `coffee_id` references `coffees` (deleting a coffee that was ordered fails); one line per coffee in an order; `quantity` is 1 to 99; the unit price is not negative; `line_total_in_cents` equals the unit price times the quantity |
+
+The identity `id` of `order_items` keeps the lines of an order in the order they were created. The sum of the lines equal to `subtotal_in_cents` is guaranteed by the use case (spec 010), not by a column check.
 
 ## App architecture `[implemented]` (foundation; features arrive with specs 016 onward)
 
