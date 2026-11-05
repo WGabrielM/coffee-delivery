@@ -117,4 +117,5 @@ Open:
 | 004 catalog-data-model | Done (2026-11-04): migrations V1 and V2, 5 tags and 14 coffees at 990 cents, verified by `CatalogMigrationE2ETest` |
 | 005 catalog-list-coffees | Done (2026-11-04): `GET /api/v1/coffees` with unit, e2e, and k6 coverage |
 | 006 catalog-filter-by-tags | Done (2026-11-04): `?tags=` with AND logic and validation; the 7 cases of the spec are e2e tests |
+| 007 checkout-config | Done (2026-11-04): `GET /api/v1/checkout-config` from `DeliveryPolicy` and `PaymentMethod` |
 | 012 app-foundation | Done (2026-11-04): 28 Vitest tests, strict `tsc`, `vite build`, and 2 Playwright smoke tests pass on the owner's machine too. Run `yarn install` and `yarn --cwd apps/app playwright install chromium` after cloning |
