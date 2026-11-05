@@ -1,6 +1,6 @@
 # Design system
 
-Tokens and components of the Coffee Delivery design. The values come from `docs/design/figma-analysis.md`. The theme in `apps/app` (spec 013) exposes them under the names below; components use the names, never the hex values.
+Tokens and components of the Coffee Delivery design. The values come from `docs/design/figma-analysis.md`. The theme in `apps/app/src/styles/theme.css` (spec 013) exposes them under the names below; components use the names, never the hex values. Each color is a Tailwind color named after the token: `bg-card`, `text-title`, `border-button`, `fill-purple`, and so on. Only these 18 colors exist; the default Tailwind palette is removed.
 
 ## Colors
 
@@ -25,11 +25,15 @@ Tokens and components of the Coffee Delivery design. The values come from `docs/
 | `hero-blob` | `#EBC136` | Decorative yellow shapes in the hero |
 | `error` | `#CC2937` | Invalid input border and message (defined by the design, not drawn in the four screens) |
 
+In CSS the colors are variables named `--color-<token>` (`--color-yellow-dark`), the same names as in the table.
+
 Hero benefit icon colors: purchase `yellow-dark`, packaging `text`, delivery `yellow`, freshness `purple`.
 
 ## Typography
 
-Families: **Roboto** (body) and **Baloo 2** (titles), both self-hosted.
+Families: **Roboto** (body, `--font-body`) and **Baloo 2** (titles, `--font-title`), both self-hosted with Fontsource (Roboto 400 and 700, Baloo 2 700 and 800; the `latin` and `latin-ext` subsets). The page requests no font from an outside host.
+
+Each style is a utility named `type-<style>` that sets family, weight, size, line height, letter spacing, and case together: `type-title-xl`, `type-title-l`, `type-title-m`, `type-title-s`, `type-title-xs`, `type-text-regular-l|m|s`, `type-text-bold-l|m|s`, `type-subtitle-xl`, `type-button-g`, `type-button-s`, `type-tag`, `type-tag-l`. Sizes are `rem` (px / 16). The default Tailwind font sizes (`text-xl`) do not exist.
 
 | Style | Font | Weight | Size (px) | Line height | Case |
 | --- | --- | --- | --- | --- | --- |
@@ -50,7 +54,7 @@ Usage: hero title Title XL; "Our coffees" and the confirmation title Title L; co
 
 ## Spacing and shape
 
-Page margin 160 px, navbar 104 px, radii and layout as listed in [DESIGN.md](DESIGN.md). Paddings: location pill 8, primary button 12 vertical, counter 8 horizontal, card tag 8×4, input 12, payment option 16, checkout cards 40. Borders are 1 px: input `button`, active or filled input `yellow-dark`, selected payment option `purple`.
+Page margin 160 px (`px-page`), navbar 104 px (`h-navbar`), content width 1120 px (`max-w-content`). Radii: input 4 (`rounded-input`), button, counter, pill, and Select 6 (`rounded-button`), tag 100 (`rounded-tag`), round icon 1000 (`rounded-round`); card corners `rounded-coffee-card` (6/36/6/36), `rounded-summary-card` (6/44/6/44), and `rounded-order-card` (6/36/6/36). There are no shadows. Layout as listed in [DESIGN.md](DESIGN.md). Paddings: location pill 8, primary button 12 vertical, counter 8 horizontal, card tag 8×4, input 12, payment option 16, checkout cards 40. Borders are 1 px: input `button`, active or filled input `yellow-dark`, selected payment option `purple`.
 
 ## Components
 
@@ -65,6 +69,10 @@ Page margin 160 px, navbar 104 px, radii and layout as listed in [DESIGN.md](DES
 | Coffee card | Catalog; cart row | Catalog 256×310; the cart row is 368×80 |
 
 States the design does not show (focus, disabled, error, selected chip) are defined by the specs that build the component and recorded here when they do.
+
+## Money
+
+`formatMoney(990)` is `$9.90` and `formatMoneyParts(990)` is `{ symbol: "$", amount: "9.90" }` (`src/lib/format-money.ts`). The price draws the symbol small (Text Regular S) next to the amount (Subtitle XL). Both accept only non-negative whole cents and throw `RangeError` otherwise.
 
 ## Icons
 

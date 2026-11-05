@@ -12,7 +12,7 @@
 ## Context
 Part of: Coffee Delivery capstone.
 Depends on: @.specs/012-app-foundation.md
-The validated tokens are in `docs/design/figma-analysis.md` section 4: 16 brand and base colors, two font families (Roboto and Baloo 2), 13 text styles, a 160 px page margin, and fixed radii; the design has no shadows. The product shows prices in USD, with the symbol small next to a large amount.
+The validated tokens are in `docs/design/figma-analysis.md` section 4: 16 brand and base colors, two font families (Roboto and Baloo 2), 16 text styles, a 160 px page margin, and fixed radii; the design has no shadows. The product shows prices in USD, with the symbol small next to a large amount.
 
 ## Business needs
 Every screen is built from one set of design values, so the app matches the design and stays consistent as it grows.
@@ -23,7 +23,7 @@ Every screen is built from one set of design values, so the app matches the desi
 - The page background is `#FAFAFA` and the default text color is `#574F4D` (Playwright asserts the computed styles of `body`).
 
 **Typography**
-- The theme defines the 13 text styles of the design (Title XL, L, M, S, XS; Text Regular L, M, S; Text Bold L, M, S; Subtitle XL; and the button, tag, and tag-large styles listed in the analysis) with family, weight, size, line height, and case; a unit test asserts them.
+- The theme defines the 16 text styles of the design (Title XL, L, M, S, XS; Text Regular L, M, S; Text Bold L, M, S; Subtitle XL; Button G and S; Tag and Tag L, as listed in the analysis) with family, weight, size, line height, letter spacing, and case; a unit test asserts them.
 - Roboto (400 and 700) and Baloo 2 (700 and 800) are served from the app bundle; a Playwright test records the requests of the home page and finds none to a font host outside the app origin.
 
 **Money**

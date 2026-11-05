@@ -24,7 +24,8 @@ The interface follows the Coffee Delivery design in Figma. The light theme is th
 - Home grid: four columns of 256 px cards, 32 px between columns, 40 px between rows. The last row has two cards, aligned to the left.
 - Checkout: left column 640 px at x=160, right column 448 px at x=832. Form rows: 12 px between columns, 16 px between rows.
 - Corners: buttons, counter, location pill, and payment options 6 px; inputs 4 px; tags 100 px; round icons 1000 px; coffee card 6/36/6/36 px (top-left, top-right, bottom-right, bottom-left); order summary card 6/44/6/44 px; form cards 6 px; success order card 6/36/6/36 px with a 1 px gradient border from `#DBAC2C` to `#8047F8`.
-- No shadows. The hero has soft, blurred yellow and purple shapes in the background.
+- No shadows. The theme removes every shadow utility (`shadow-*`, `drop-shadow-*`, `text-shadow-*`), so a shadow cannot be added by accident. The hero has soft, blurred yellow and purple shapes in the background.
+- The tokens are in `apps/app/src/styles/theme.css` and are listed with their Tailwind names in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). Measures: page margin 160 px (`px-page`), content width 1120 px (`max-w-content`), navbar height 104 px (`h-navbar`). Borders are 1 px. Text sizes are in `rem` (px / 16), so the browser font-size setting is respected.
 - Tablet and mobile layouts are not in the design; spec 027 derives them.
 
 ## Accessibility

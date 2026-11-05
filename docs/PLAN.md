@@ -123,3 +123,4 @@ Open:
 | 010 orders-create | Done (2026-11-04): `POST /api/v1/orders` priced on the server, validated, stored atomically; 1 + 2 coffees + fee = 3320 verified at three levels |
 | 011 orders-get | Done (2026-11-04): `GET /api/v1/orders/{id}` returns the stored snapshot, same body as the `201`; API line coverage 99% |
 | 012 app-foundation | Done (2026-11-04): 28 Vitest tests, strict `tsc`, `vite build`, and 2 Playwright smoke tests pass on the owner's machine too. Run `yarn install` and `yarn --cwd apps/app playwright install chromium` after cloning |
+| 013 app-design-tokens | Done (2026-11-05): Tailwind 4 theme with the 18 Figma colors, 16 text styles, layout tokens, no shadows; Roboto and Baloo 2 self-hosted; `formatMoney`. 96 Vitest, 82 root, 5 Playwright tests; CSS 6.65 kB (2.07 kB gzip) |

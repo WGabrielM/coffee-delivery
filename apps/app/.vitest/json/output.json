@@ -1,0 +1,1159 @@
+{
+  "numTotalTestSuites": 20,
+  "numPassedTestSuites": 20,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 96,
+  "numPassedTests": 96,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1793873390842,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet returns the parsed body of a 2xx response",
+          "status": "passed",
+          "title": "returns the parsed body of a 2xx response",
+          "duration": 6.887299999999414,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet puts the path after the /api/v1 base",
+          "status": "passed",
+          "title": "puts the path after the /api/v1 base",
+          "duration": 0.73700000000008,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet passes the abort signal to fetch",
+          "status": "passed",
+          "title": "passes the abort signal to fetch",
+          "duration": 0.690599999999904,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet returns undefined for 204 No Content",
+          "status": "passed",
+          "title": "returns undefined for 204 No Content",
+          "duration": 1.299099999999271,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet throws an ApiError with status, code, message, and fields for the error shape",
+          "status": "passed",
+          "title": "throws an ApiError with status, code, message, and fields for the error shape",
+          "duration": 1.304399999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet leaves fields undefined when the error has none",
+          "status": "passed",
+          "title": "leaves fields undefined when the error has none",
+          "duration": 0.7762000000002445,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet turns an error response that is not in the project's shape into unexpected_error",
+          "status": "passed",
+          "title": "turns an error response that is not in the project's shape into unexpected_error",
+          "duration": 0.8474999999998545,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet turns a network failure into network_error with status 0",
+          "status": "passed",
+          "title": "turns a network failure into network_error with status 0",
+          "duration": 0.5518000000001848,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiGet"],
+          "fullName": "apiGet does not hide an abort as a network error",
+          "status": "passed",
+          "title": "does not hide an abort as a network error",
+          "duration": 0.8594000000002779,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiPost"],
+          "fullName": "apiPost sends the body as JSON and returns the parsed 201 body",
+          "status": "passed",
+          "title": "sends the body as JSON and returns the parsed 201 body",
+          "duration": 1.141099999999824,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["apiPost"],
+          "fullName": "apiPost throws an ApiError for a 422 response",
+          "status": "passed",
+          "title": "throws an ApiError for a 422 response",
+          "duration": 0.6367000000000189,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873395034,
+      "endTime": 1793873395050.6367,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/api/client.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "reads the API root",
+          "status": "passed",
+          "title": "reads the API root",
+          "duration": 5.854900000000271,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873395026,
+      "endTime": 1793873395031.855,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/api/info.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["index.html"],
+          "fullName": "index.html declares English",
+          "status": "passed",
+          "title": "declares English",
+          "duration": 1.6539999999999964,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["index.html"],
+          "fullName": "index.html has the title Coffee Delivery",
+          "status": "passed",
+          "title": "has the title Coffee Delivery",
+          "duration": 0.22730000000001382,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["index.html"],
+          "fullName": "index.html has a responsive viewport and mounts the app in #root",
+          "status": "passed",
+          "title": "has a responsive viewport and mounts the app in #root",
+          "duration": 0.342899999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873391881,
+      "endTime": 1793873391883.343,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/app/document.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["AppProviders"],
+          "fullName": "AppProviders gives children a TanStack Query client",
+          "status": "passed",
+          "title": "gives children a TanStack Query client",
+          "duration": 21.388100000000122,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createQueryClient"],
+          "fullName": "createQueryClient does not retry a client error",
+          "status": "passed",
+          "title": "does not retry a client error",
+          "duration": 0.41119999999955326,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createQueryClient"],
+          "fullName": "createQueryClient retries a network failure and a server error, twice at most",
+          "status": "passed",
+          "title": "retries a network failure and a server error, twice at most",
+          "duration": 0.28369999999995343,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createQueryClient"],
+          "fullName": "createQueryClient creates a separate client each time",
+          "status": "passed",
+          "title": "creates a separate client each time",
+          "duration": 0.6930999999995038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873395162,
+      "endTime": 1793873395185.693,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/app/providers.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["routes"],
+          "fullName": "routes renders the home page at /",
+          "status": "passed",
+          "title": "renders the home page at /",
+          "duration": 103.91300000000047,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["routes"],
+          "fullName": "routes renders the checkout placeholder at /checkout",
+          "status": "passed",
+          "title": "renders the checkout placeholder at /checkout",
+          "duration": 6.415299999999661,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["routes"],
+          "fullName": "routes renders the order confirmation placeholder with the order id at /orders/:orderId",
+          "status": "passed",
+          "title": "renders the order confirmation placeholder with the order id at /orders/:orderId",
+          "duration": 7.102100000000064,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["routes"],
+          "fullName": "routes renders the not-found page with a link to / for an unknown path",
+          "status": "passed",
+          "title": "renders the not-found page with a link to / for an unknown path",
+          "duration": 9.204099999999926,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["routes"],
+          "fullName": "routes treats a deeper unknown path as not found too",
+          "status": "passed",
+          "title": "treats a deeper unknown path as not found too",
+          "duration": 4.386700000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["routes"],
+          "fullName": "routes gives every page one main landmark",
+          "status": "passed",
+          "title": "gives every page one main landmark",
+          "duration": 13.009000000000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873395162,
+      "endTime": 1793873395306.009,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/app/routes.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["vite config"],
+          "fullName": "vite config serves the dev server on port 5173 and fails instead of choosing another port",
+          "status": "passed",
+          "title": "serves the dev server on port 5173 and fails instead of choosing another port",
+          "duration": 1.6279999999997017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["vite config"],
+          "fullName": "vite config proxies /api to the API on port 3000",
+          "status": "passed",
+          "title": "proxies /api to the API on port 3000",
+          "duration": 0.21519999999964057,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["vite config"],
+          "fullName": "vite config runs the preview server on the same port and proxy",
+          "status": "passed",
+          "title": "runs the preview server on the same port and proxy",
+          "duration": 0.1900999999998021,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873395361,
+      "endTime": 1793873395363.215,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/app/vite-config.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats 990 cents as $9.90",
+          "status": "passed",
+          "title": "formats 990 cents as $9.90",
+          "duration": 3.368999999999687,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats 3320 cents as $33.20",
+          "status": "passed",
+          "title": "formats 3320 cents as $33.20",
+          "duration": 0.3779000000004089,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats 0 cents as $0.00",
+          "status": "passed",
+          "title": "formats 0 cents as $0.00",
+          "duration": 0.3405000000002474,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats 123456 cents as $1,234.56",
+          "status": "passed",
+          "title": "formats 123456 cents as $1,234.56",
+          "duration": 0.29399999999986903,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats 1 cents as $0.01",
+          "status": "passed",
+          "title": "formats 1 cents as $0.01",
+          "duration": 0.291599999999562,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats 350 cents as $3.50",
+          "status": "passed",
+          "title": "formats 350 cents as $3.50",
+          "duration": 0.21600000000034925,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats 100000000 cents as $1,000,000.00",
+          "status": "passed",
+          "title": "formats 100000000 cents as $1,000,000.00",
+          "duration": 0.13169999999990978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney formats the example order: 1 + 2 coffees at 990 plus the 350 fee",
+          "status": "passed",
+          "title": "formats the example order: 1 + 2 coffees at 990 plus the 350 fee",
+          "duration": 0.1327000000001135,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney rejects 990.5: amounts are non-negative whole cents",
+          "status": "passed",
+          "title": "rejects 990.5: amounts are non-negative whole cents",
+          "duration": 0.3116999999992913,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney rejects NaN: amounts are non-negative whole cents",
+          "status": "passed",
+          "title": "rejects NaN: amounts are non-negative whole cents",
+          "duration": 0.18869999999969878,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney rejects Infinity: amounts are non-negative whole cents",
+          "status": "passed",
+          "title": "rejects Infinity: amounts are non-negative whole cents",
+          "duration": 0.1297999999997046,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney rejects -1: amounts are non-negative whole cents",
+          "status": "passed",
+          "title": "rejects -1: amounts are non-negative whole cents",
+          "duration": 0.09140000000024884,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoney"],
+          "fullName": "formatMoney rejects 9007199254740992: amounts are non-negative whole cents",
+          "status": "passed",
+          "title": "rejects 9007199254740992: amounts are non-negative whole cents",
+          "duration": 0.08250000000043656,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoneyParts"],
+          "fullName": "formatMoneyParts splits the symbol from the amount so a price can draw them at different sizes",
+          "status": "passed",
+          "title": "splits the symbol from the amount so a price can draw them at different sizes",
+          "duration": 1.0784000000003289,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoneyParts"],
+          "fullName": "formatMoneyParts keeps the grouping separator and the cents in the amount",
+          "status": "passed",
+          "title": "keeps the grouping separator and the cents in the amount",
+          "duration": 0.259900000000016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoneyParts"],
+          "fullName": "formatMoneyParts joins back to the same text as formatMoney",
+          "status": "passed",
+          "title": "joins back to the same text as formatMoney",
+          "duration": 0.3058000000000902,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["formatMoneyParts"],
+          "fullName": "formatMoneyParts rejects what formatMoney rejects",
+          "status": "passed",
+          "title": "rejects what formatMoney rejects",
+          "duration": 0.1734999999998763,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873395068,
+      "endTime": 1793873395076.306,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/lib/format-money.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors white is #FFFFFF",
+          "status": "passed",
+          "title": "white is #FFFFFF",
+          "duration": 2.2148999999999432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors background is #FAFAFA",
+          "status": "passed",
+          "title": "background is #FAFAFA",
+          "duration": 0.2573000000002139,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors card is #F3F2F2",
+          "status": "passed",
+          "title": "card is #F3F2F2",
+          "duration": 0.22180000000025757,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors input is #EDEDED",
+          "status": "passed",
+          "title": "input is #EDEDED",
+          "duration": 0.21280000000024302,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors button is #E6E5E5",
+          "status": "passed",
+          "title": "button is #E6E5E5",
+          "duration": 0.24179999999978463,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors hover is #D7D5D5",
+          "status": "passed",
+          "title": "hover is #D7D5D5",
+          "duration": 0.17309999999997672,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors label is #8D8686",
+          "status": "passed",
+          "title": "label is #8D8686",
+          "duration": 0.12550000000010186,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors text is #574F4D",
+          "status": "passed",
+          "title": "text is #574F4D",
+          "duration": 0.13439999999991414,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors subtitle is #403937",
+          "status": "passed",
+          "title": "subtitle is #403937",
+          "duration": 0.2187999999996464,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors title is #272221",
+          "status": "passed",
+          "title": "title is #272221",
+          "duration": 0.3485000000000582,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors purple-light is #EBE5F9",
+          "status": "passed",
+          "title": "purple-light is #EBE5F9",
+          "duration": 0.20049999999991996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors purple is #8047F8",
+          "status": "passed",
+          "title": "purple is #8047F8",
+          "duration": 0.14589999999952852,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors purple-dark is #4B2995",
+          "status": "passed",
+          "title": "purple-dark is #4B2995",
+          "duration": 0.13609999999971478,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors yellow-light is #F1E9C9",
+          "status": "passed",
+          "title": "yellow-light is #F1E9C9",
+          "duration": 0.1331000000000131,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors yellow is #DBAC2C",
+          "status": "passed",
+          "title": "yellow is #DBAC2C",
+          "duration": 0.12160000000039872,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors yellow-dark is #C47F17",
+          "status": "passed",
+          "title": "yellow-dark is #C47F17",
+          "duration": 0.13760000000002037,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors hero-blob is #EBC136",
+          "status": "passed",
+          "title": "hero-blob is #EBC136",
+          "duration": 0.13500000000021828,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors error is #CC2937",
+          "status": "passed",
+          "title": "error is #CC2937",
+          "duration": 0.17249999999967258,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["colors"],
+          "fullName": "colors defines exactly the 18 design colors and drops the default palette",
+          "status": "passed",
+          "title": "defines exactly the 18 design colors and drops the default palette",
+          "duration": 1.0862999999999374,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography names the two font families, Roboto for the body and Baloo 2 for titles",
+          "status": "passed",
+          "title": "names the two font families, Roboto for the body and Baloo 2 for titles",
+          "duration": 0.46090000000003783,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography defines the 16 text styles of the analysis",
+          "status": "passed",
+          "title": "defines the 16 text styles of the analysis",
+          "duration": 1.0502999999998792,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-title-xl",
+          "status": "passed",
+          "title": "type-title-xl",
+          "duration": 0.5204999999996289,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-title-l",
+          "status": "passed",
+          "title": "type-title-l",
+          "duration": 0.22960000000057335,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-title-m",
+          "status": "passed",
+          "title": "type-title-m",
+          "duration": 0.1485000000002401,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-title-s",
+          "status": "passed",
+          "title": "type-title-s",
+          "duration": 0.1313000000000102,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-title-xs",
+          "status": "passed",
+          "title": "type-title-xs",
+          "duration": 0.12179999999989377,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-text-regular-l",
+          "status": "passed",
+          "title": "type-text-regular-l",
+          "duration": 0.11830000000009022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-text-regular-m",
+          "status": "passed",
+          "title": "type-text-regular-m",
+          "duration": 0.11850000000049477,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-text-regular-s",
+          "status": "passed",
+          "title": "type-text-regular-s",
+          "duration": 0.12229999999999563,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-text-bold-l",
+          "status": "passed",
+          "title": "type-text-bold-l",
+          "duration": 0.1550999999999476,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-text-bold-m",
+          "status": "passed",
+          "title": "type-text-bold-m",
+          "duration": 0.14699999999993452,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-text-bold-s",
+          "status": "passed",
+          "title": "type-text-bold-s",
+          "duration": 0.11239999999997963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-subtitle-xl",
+          "status": "passed",
+          "title": "type-subtitle-xl",
+          "duration": 0.10459999999966385,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-button-g",
+          "status": "passed",
+          "title": "type-button-g",
+          "duration": 0.13300000000072032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-button-s",
+          "status": "passed",
+          "title": "type-button-s",
+          "duration": 0.14660000000003492,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-tag",
+          "status": "passed",
+          "title": "type-tag",
+          "duration": 0.13609999999971478,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography type-tag-l",
+          "status": "passed",
+          "title": "type-tag-l",
+          "duration": 0.1426000000001295,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography has no text style outside the design",
+          "status": "passed",
+          "title": "has no text style outside the design",
+          "duration": 0.26229999999941356,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["typography"],
+          "fullName": "typography drops the default Tailwind font sizes so only the design scale exists",
+          "status": "passed",
+          "title": "drops the default Tailwind font sizes so only the design scale exists",
+          "duration": 0.10439999999925931,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --spacing-page is 160px",
+          "status": "passed",
+          "title": "--spacing-page is 160px",
+          "duration": 0.10050000000046566,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --spacing-navbar is 104px",
+          "status": "passed",
+          "title": "--spacing-navbar is 104px",
+          "duration": 0.06950000000051659,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --container-content is 1120px",
+          "status": "passed",
+          "title": "--container-content is 1120px",
+          "duration": 0.06660000000010768,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --radius-* is initial",
+          "status": "passed",
+          "title": "--radius-* is initial",
+          "duration": 0.06460000000060973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --radius-input is 4px",
+          "status": "passed",
+          "title": "--radius-input is 4px",
+          "duration": 0.08719999999993888,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --radius-button is 6px",
+          "status": "passed",
+          "title": "--radius-button is 6px",
+          "duration": 0.0945000000001528,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --radius-tag is 100px",
+          "status": "passed",
+          "title": "--radius-tag is 100px",
+          "duration": 0.0819999999994252,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape --radius-round is 1000px",
+          "status": "passed",
+          "title": "--radius-round is 1000px",
+          "duration": 0.15569999999934225,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape rounded-coffee-card has the asymmetric corners of the design",
+          "status": "passed",
+          "title": "rounded-coffee-card has the asymmetric corners of the design",
+          "duration": 0.17510000000038417,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape rounded-summary-card has the asymmetric corners of the design",
+          "status": "passed",
+          "title": "rounded-summary-card has the asymmetric corners of the design",
+          "duration": 0.1032999999997628,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape rounded-order-card has the asymmetric corners of the design",
+          "status": "passed",
+          "title": "rounded-order-card has the asymmetric corners of the design",
+          "duration": 0.11529999999947904,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["layout and shape"],
+          "fullName": "layout and shape has no shadows: the design has none, so no shadow utility can be used",
+          "status": "passed",
+          "title": "has no shadows: the design has none, so no shadow utility can be used",
+          "duration": 0.3245999999999185,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1793873395044,
+      "endTime": 1793873395056.3247,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/LITTLE-MONSTER/OneDrive/Code/My-Projects/coffee-delivery/apps/app/src/styles/theme.test.ts"
+    }
+  ]
+}

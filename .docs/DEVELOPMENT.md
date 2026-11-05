@@ -52,7 +52,8 @@ Package names cannot be Java keywords, so the fourth layer is `interfaces` (plur
 - **Browser for Playwright.** After `yarn install`, run `yarn --cwd apps/app playwright install chromium` once. If you already have a Chromium, set `PLAYWRIGHT_CHROMIUM_PATH` to its executable instead. The `test:e2e` command starts the dev server itself and needs port 5173 free: it never reuses a server that is already running there, so stop `yarn app:dev` (or another project's server) first.
 - Pages in `src/pages` only compose features. Features by domain in `src/features/<domain>`. Shared presentational components in `src/components`. The API client in `src/api`; helpers in `src/lib`.
 - Components do not fetch data directly: features expose hooks (TanStack Query) and components receive data through props.
-- Colors, fonts, and sizes come from the theme tokens ([DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)); components contain no hex color literal.
+- Colors, fonts, and sizes come from the theme tokens ([DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)); components contain no hex color literal (a root test fails on one outside `src/styles/theme.css`). Style with Tailwind classes that use the token names: `bg-card`, `text-title`, `type-title-xl`, `px-page`, `rounded-button`. The default Tailwind palette, font sizes, radii, and shadows do not exist, so `bg-red-500` or `shadow-md` do not compile.
+- Money is drawn with `formatMoney` or `formatMoneyParts` from `src/lib/format-money.ts`; never format an amount by hand.
 
 ## Local infrastructure
 

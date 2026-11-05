@@ -1,6 +1,6 @@
 // Guards the root side of the app foundation (spec 012): workspace, scripts, and the MCP config.
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -86,4 +86,43 @@ test("Playwright never reuses a server it did not start (another project may hol
   const config = read("apps/app/playwright.config.ts");
   assert.match(config, /reuseExistingServer: false/);
   assert.doesNotMatch(config, /reuseExistingServer: !/);
+});
+
+test("Tailwind is wired into Vite and the styles are loaded by the entry point", () => {
+  assert.match(read("apps/app/vite.config.ts"), /tailwindcss\(\)/);
+  assert.match(read("apps/app/src/main.tsx"), /import "\.\/styles\/index\.css"/);
+  const index = read("apps/app/src/styles/index.css");
+  for (const part of ["tailwindcss", "./fonts.css", "./theme.css", "./base.css"]) {
+    assert.ok(index.includes(`"${part}"`), `index.css does not import ${part}`);
+  }
+});
+
+test("the fonts are self-hosted: no font host in the styles or the HTML", () => {
+  const files = [
+    "apps/app/index.html",
+    "apps/app/src/styles/fonts.css",
+    "apps/app/src/styles/index.css",
+  ];
+  for (const file of files) {
+    assert.doesNotMatch(read(file), /fonts\.googleapis|fonts\.gstatic|use\.typekit|cdnjs/i, file);
+  }
+  assert.match(read("apps/app/src/styles/fonts.css"), /@fontsource\/roboto\/latin-400/);
+  assert.match(read("apps/app/src/styles/fonts.css"), /@fontsource\/baloo-2\/latin-800/);
+});
+
+test("no source file of the app has a hex color except the theme (colors come from tokens)", () => {
+  const found = [];
+  const walk = (directory) => {
+    for (const entry of readdirSync(join(root, directory), { withFileTypes: true })) {
+      const path = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) walk(path);
+      else if (/\.(tsx?|css|html)$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) {
+        if (!path.endsWith("styles/theme.css") && /#[0-9a-fA-F]{3,8}\b/.test(read(path))) {
+          found.push(path);
+        }
+      }
+    }
+  };
+  walk("apps/app/src");
+  assert.deepEqual(found, []);
 });

@@ -1,0 +1,13 @@
+@layer base {
+  html {
+    font-family: var(--font-body);
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+}

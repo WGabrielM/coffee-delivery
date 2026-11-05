@@ -1,0 +1,12 @@
+/*
+ * Self-hosted fonts (Fontsource): nothing is loaded from a font host. A browser downloads a subset
+ * file only when a character of the page needs it. Roboto 400 and 700, Baloo 2 700 and 800.
+ */
+@import "@fontsource/roboto/latin-400.css";
+@import "@fontsource/roboto/latin-ext-400.css";
+@import "@fontsource/roboto/latin-700.css";
+@import "@fontsource/roboto/latin-ext-700.css";
+@import "@fontsource/baloo-2/latin-700.css";
+@import "@fontsource/baloo-2/latin-ext-700.css";
+@import "@fontsource/baloo-2/latin-800.css";
+@import "@fontsource/baloo-2/latin-ext-800.css";
