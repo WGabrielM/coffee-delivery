@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -71,6 +72,16 @@ class ApiExceptionHandlerTest {
   }
 
   @Test
+  void aValidationFailedExceptionIsABadRequestWithItsFields() throws Exception {
+    mvc.perform(get("/invalid"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("validation_failed"))
+        .andExpect(jsonPath("$.error.message").value("The request has invalid fields."))
+        .andExpect(jsonPath("$.error.fields.tags").value("Unknown tag: hot."))
+        .andExpect(jsonPath("$.error.fields.other").value("Another problem."));
+  }
+
+  @Test
   void anUnexpectedExceptionIsAGenericServerErrorWithoutInternals() throws Exception {
     MvcResult result =
         mvc.perform(get("/boom"))
@@ -114,6 +125,14 @@ class ApiExceptionHandlerTest {
     @GetMapping("/unavailable")
     String unavailable() {
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "internal reason");
+    }
+
+    @GetMapping("/invalid")
+    String invalid() {
+      Map<String, String> fields = new java.util.LinkedHashMap<>();
+      fields.put("tags", "Unknown tag: hot.");
+      fields.put("other", "Another problem.");
+      throw new ValidationFailedException(fields);
     }
 
     @GetMapping("/boom")

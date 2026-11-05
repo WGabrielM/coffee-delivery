@@ -30,6 +30,14 @@ public class ApiExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
   }
 
+  @ExceptionHandler(ValidationFailedException.class)
+  public ResponseEntity<ErrorBody> handleValidationFailed(ValidationFailedException exception) {
+    ErrorBody body =
+        ErrorBody.withFields(
+            ErrorCode.VALIDATION_FAILED, exception.getMessage(), exception.fields());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorBody> handleAny(Exception exception) {
     if (exception instanceof ErrorResponse errorResponse) {

@@ -5,10 +5,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.coffeedelivery.catalog.application.CatalogFixtures;
 import com.coffeedelivery.catalog.application.InMemoryCoffeeRepository;
 import com.coffeedelivery.catalog.application.ListCoffeesUseCase;
 import com.coffeedelivery.catalog.domain.Coffee;
 import com.coffeedelivery.catalog.domain.Tag;
+import com.coffeedelivery.shared.error.ApiExceptionHandler;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -61,10 +63,67 @@ class ListCoffeesRequestHandlerTest {
         .andExpect(jsonPath("$.coffees.length()").value(0));
   }
 
+  @Test
+  void aMissingOrBlankTagsParameterListsEverything() throws Exception {
+    MockMvc mvc = mvc(CatalogFixtures.catalog());
+
+    mvc.perform(get("/api/v1/coffees")).andExpect(jsonPath("$.coffees.length()").value(4));
+    mvc.perform(get("/api/v1/coffees").param("tags", ""))
+        .andExpect(jsonPath("$.coffees.length()").value(4));
+    mvc.perform(get("/api/v1/coffees").param("tags", "  "))
+        .andExpect(jsonPath("$.coffees.length()").value(4));
+  }
+
+  @Test
+  void aCommaSeparatedListFiltersWithAndLogic() throws Exception {
+    mvc(CatalogFixtures.catalog())
+        .perform(get("/api/v1/coffees").param("tags", "special,iced"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.coffees.length()").value(1))
+        .andExpect(jsonPath("$.coffees[0].slug").value("cuban"))
+        .andExpect(jsonPath("$.coffees[0].tags.length()").value(3));
+  }
+
+  @Test
+  void spacesAroundSlugsAndEmptyElementsAreIgnored() throws Exception {
+    mvc(CatalogFixtures.catalog())
+        .perform(get("/api/v1/coffees").param("tags", " special , ,iced,"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.coffees.length()").value(1));
+  }
+
+  @Test
+  void aTagCombinationWithNoCoffeeIsAnEmptyList() throws Exception {
+    mvc(CatalogFixtures.catalog())
+        .perform(get("/api/v1/coffees").param("tags", "traditional,alcoholic"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.coffees.length()").value(0));
+  }
+
+  @Test
+  void anUnknownTagIsABadRequestNamingTheTag() throws Exception {
+    mvc(CatalogFixtures.catalog())
+        .perform(get("/api/v1/coffees").param("tags", "special,hot"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("validation_failed"))
+        .andExpect(
+            jsonPath("$.error.fields.tags").value(org.hamcrest.Matchers.containsString("hot")));
+  }
+
+  @Test
+  void repeatedTagsParametersAreRejected() throws Exception {
+    mvc(CatalogFixtures.catalog())
+        .perform(get("/api/v1/coffees").param("tags", "special").param("tags", "iced"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("validation_failed"))
+        .andExpect(jsonPath("$.error.fields.tags").isNotEmpty());
+  }
+
   private static MockMvc mvc(List<Coffee> coffees) {
     return MockMvcBuilders.standaloneSetup(
             new ListCoffeesRequestHandler(
                 new ListCoffeesUseCase(new InMemoryCoffeeRepository(coffees))))
+        .setControllerAdvice(new ApiExceptionHandler())
         .build();
   }
 }
