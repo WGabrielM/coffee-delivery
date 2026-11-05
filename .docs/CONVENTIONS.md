@@ -45,7 +45,7 @@ Details:
   }
   ```
 
-  `code` is a stable `snake_case` identifier, `message` is an en-US sentence a person can read, and `fields` appears only for validation errors. Its keys are JSON paths (`paymentMethod`, `address.zipCode`, `items`); a body that is not valid JSON uses the key `body`. Messages are fixed sentences: they never contain exception messages, class names, or stack traces. `ApiExceptionHandler` (`shared.error`) builds every error; do not build one by hand in an endpoint.
+  `code` is a stable `snake_case` identifier, `message` is an en-US sentence a person can read, and `fields` appears only for validation errors. Its keys are JSON paths (`paymentMethod`, `address.zipCode`, `items`, `items[0].quantity`); a body that is not valid JSON uses the key `body`. Messages are fixed sentences: they never contain exception messages, class names, or stack traces. `ApiExceptionHandler` (`shared.error`) builds every error; do not build one by hand in an endpoint.
 
 | Status | Code | Used when |
 | --- | --- | --- |

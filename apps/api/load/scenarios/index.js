@@ -3,3 +3,4 @@
 export { getApiInfo } from "./get-api-info.js";
 export { listCoffees } from "./coffees-list.js";
 export { getCheckoutConfig } from "./checkout-config.js";
+export { createOrder } from "./orders-create.js";

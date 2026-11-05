@@ -82,6 +82,59 @@ class ApiExceptionHandlerTest {
   }
 
   @Test
+  void anUnprocessableContentExceptionIs422WithItsFields() throws Exception {
+    mvc.perform(get("/unprocessable"))
+        .andExpect(status().isUnprocessableContent())
+        .andExpect(jsonPath("$.error.code").value("unprocessable_content"))
+        .andExpect(jsonPath("$.error.message").isNotEmpty())
+        .andExpect(jsonPath("$.error.fields.items").value("These coffees are not in the catalog."));
+  }
+
+  @Test
+  void aNotFoundExceptionIs404WithoutFields() throws Exception {
+    mvc.perform(get("/missing"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error.code").value("not_found"))
+        .andExpect(jsonPath("$.error.message").value("The requested resource was not found."))
+        .andExpect(jsonPath("$.error.fields").doesNotExist());
+  }
+
+  @Test
+  void aValueOfTheWrongTypeNamesItsJsonPathInsteadOfTheBody() throws Exception {
+    mvc.perform(
+            post("/typed").contentType(MediaType.APPLICATION_JSON).content("{\"count\":\"abc\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("validation_failed"))
+        .andExpect(jsonPath("$.error.fields.count").isNotEmpty())
+        .andExpect(jsonPath("$.error.fields.body").doesNotExist());
+  }
+
+  @Test
+  void theJsonPathOfANestedValueIncludesTheArrayIndex() throws Exception {
+    mvc.perform(
+            post("/typed")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"children\":[{\"count\":1},{\"count\":\"x\"}]}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.fields['children[1].count']").isNotEmpty());
+  }
+
+  @Test
+  void aTypeErrorMessageNeverCarriesInternals() throws Exception {
+    MvcResult result =
+        mvc.perform(
+                post("/typed")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"count\":\"abc\"}"))
+            .andReturn();
+
+    assertThat(result.getResponse().getContentAsString())
+        .doesNotContain("java.lang")
+        .doesNotContain("Integer")
+        .doesNotContain("com.coffeedelivery");
+  }
+
+  @Test
   void anUnexpectedExceptionIsAGenericServerErrorWithoutInternals() throws Exception {
     MvcResult result =
         mvc.perform(get("/boom"))
@@ -125,6 +178,24 @@ class ApiExceptionHandlerTest {
     @GetMapping("/unavailable")
     String unavailable() {
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "internal reason");
+    }
+
+    record Typed(Integer count, java.util.List<Typed> children) {}
+
+    @PostMapping("/typed")
+    Typed typed(@RequestBody Typed typed) {
+      return typed;
+    }
+
+    @GetMapping("/unprocessable")
+    String unprocessable() {
+      throw new UnprocessableContentException(
+          Map.of("items", "These coffees are not in the catalog."));
+    }
+
+    @GetMapping("/missing")
+    String missing() {
+      throw new NotFoundException();
     }
 
     @GetMapping("/invalid")

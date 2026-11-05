@@ -79,7 +79,7 @@ apps/api/src/main/java/com/coffeedelivery/
   shared/        error handling and common configuration
 ```
 
-Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, `infrastructure`, and `interfaces`. The fourth layer is `interfaces`, not `interface`, because `interface` is a reserved word in Java and cannot be a package name. `system`, `catalog`, and `orders` (checkout configuration only, for now) exist so far; `shared` holds the error handling (`shared.error`) and request logging (`shared.logging`).
+Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, `infrastructure`, and `interfaces`. The fourth layer is `interfaces`, not `interface`, because `interface` is a reserved word in Java and cannot be a package name. `system`, `catalog`, and `orders` (checkout configuration and order creation so far) exist so far; `shared` holds the error handling (`shared.error`) and request logging (`shared.logging`).
 
 - `domain` has entities and rules and depends on nothing but the language. `application` has the use cases (`<Action>UseCase.execute`) and the ports they need. `infrastructure` implements the ports (database access). `interfaces` has the request handlers (`<Action>RequestHandler.handle`, one per endpoint) and the HTTP mapping.
 - Slices do not use each other's `infrastructure` or `interfaces`. `orders` reads coffee prices through its own `CoffeePriceLookup` port, not through `catalog` classes.
@@ -93,7 +93,7 @@ Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `applicati
 | `GET /api/v1` `[implemented]` | 003 | API name and version |
 | `GET /api/v1/coffees` (`?tags=`) `[implemented]` | 005, 006 | List coffees, optionally filtered by tags (AND logic) |
 | `GET /api/v1/checkout-config` `[implemented]` | 007 | Currency, delivery fee, delivery estimate, payment methods |
-| `POST /api/v1/orders` `[planned]` | 010 | Create an order |
+| `POST /api/v1/orders` `[implemented]` | 010 | Create an order |
 | `GET /api/v1/orders/{id}` `[planned]` | 011 | Read an order |
 
 ### `GET /api/v1/coffees` `[implemented]`
@@ -147,6 +147,52 @@ The checkout page reads the delivery fee, the estimate, and the payment methods 
   "paymentMethods": ["credit_card", "debit_card", "cash"]
 }
 ```
+
+### `POST /api/v1/orders` `[implemented]`
+
+Creates a confirmed order. The server prices it: it reads each coffee name and price from the catalog, computes the line totals, the subtotal, the fee (350 cents), and the total, and ignores any price sent by the client (a `priceInCents`, `unitPriceInCents`, or `totalInCents` anywhere in the body is an unknown property and is dropped). The order and its lines are stored in one transaction.
+
+Request (`complement` is optional; text is trimmed; `quantity` must be a JSON whole number from 1 to 99; each coffee appears once):
+
+```json
+{
+  "items": [
+    { "coffeeId": "0c2a4a52-6a4f-4d0e-9d6e-5c1d3d2b9f10", "quantity": 1 },
+    { "coffeeId": "7d1f6b3e-2f0a-4c55-8f7e-1a9b4c0d2e33", "quantity": 2 }
+  ],
+  "address": {
+    "zipCode": "01310-100", "street": "Paulista Avenue", "number": "1000", "complement": "Apt 12",
+    "neighborhood": "Bela Vista", "city": "Sao Paulo", "state": "SP"
+  },
+  "paymentMethod": "credit_card"
+}
+```
+
+Response `201` with `Location: /api/v1/orders/{id}` (spec 011 returns the same body for that URL):
+
+```json
+{
+  "id": "3b9f0c1e-5d2a-4e7b-9a41-0f6c8d7e2a15",
+  "status": "confirmed",
+  "items": [
+    { "coffeeId": "0c2a4a52-6a4f-4d0e-9d6e-5c1d3d2b9f10", "name": "Latte", "quantity": 1, "unitPriceInCents": 990, "lineTotalInCents": 990 },
+    { "coffeeId": "7d1f6b3e-2f0a-4c55-8f7e-1a9b4c0d2e33", "name": "Cuban", "quantity": 2, "unitPriceInCents": 990, "lineTotalInCents": 1980 }
+  ],
+  "address": {
+    "zipCode": "01310-100", "street": "Paulista Avenue", "number": "1000", "complement": "Apt 12",
+    "neighborhood": "Bela Vista", "city": "Sao Paulo", "state": "SP"
+  },
+  "paymentMethod": "credit_card",
+  "subtotalInCents": 2970,
+  "deliveryFeeInCents": 350,
+  "totalInCents": 3320,
+  "currency": "USD",
+  "estimatedDeliveryMinutes": { "min": 20, "max": 30 },
+  "createdAt": "2026-11-04T12:00:00.123456Z"
+}
+```
+
+Errors: `400 validation_failed` with one entry in `fields` per problem, keyed by JSON path (`items`, `items[0].coffeeId`, `items[0].quantity`, `address.zipCode`, `address.state`, `paymentMethod`, ...; a value of the wrong JSON type is reported at its path); `422 unprocessable_content` with `fields.items` naming the ids that are not in the catalog; `405` for another method on `/api/v1/orders`.
 
 ## Data model
 

@@ -31,6 +31,7 @@
 - Quantity is a whole number from 1 to 99 per coffee. An order has at least one coffee, and each coffee appears once.
 - The cart lives in the browser. Reloading the page keeps it; clearing the browser data empties it.
 - The checkout rules live in one place on the server (`DeliveryPolicy`, `PaymentMethod`) and are published by `GET /api/v1/checkout-config`: currency USD, a fixed delivery fee of 350 cents, an estimate of 20 to 30 minutes, and the payment methods `credit_card`, `debit_card`, and `cash`. There are no taxes, tips, or discounts.
+- An order is checked in full before anything is stored, and every problem is reported at once. A coffee that is not in the catalog is refused (422), and the whole order is stored or nothing is.
 - Example: 1 coffee at `$9.90` plus 2 coffees at `$9.90` plus the `$3.50` fee gives a total of `$33.20`.
 
 ## Catalog

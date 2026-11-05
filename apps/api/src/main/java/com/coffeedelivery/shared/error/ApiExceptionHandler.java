@@ -10,6 +10,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.MismatchedInputException;
 
 /**
  * The one place that turns exceptions into the project's error shape. Later endpoints inherit it.
@@ -22,12 +24,33 @@ public class ApiExceptionHandler {
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<ErrorBody> handleUnreadableBody(HttpMessageNotReadableException exception) {
+    String path = jsonPath(exception.getCause());
+    ErrorBody body =
+        path.isEmpty()
+            ? ErrorBody.withFields(
+                ErrorCode.VALIDATION_FAILED,
+                "The request body is missing or is not valid JSON.",
+                Map.of("body", "Send a valid JSON body."))
+            : ErrorBody.withFields(
+                ErrorCode.VALIDATION_FAILED,
+                "The request has invalid fields.",
+                Map.of(path, "Enter a valid value."));
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+  }
+
+  @ExceptionHandler(UnprocessableContentException.class)
+  public ResponseEntity<ErrorBody> handleUnprocessableContent(
+      UnprocessableContentException exception) {
     ErrorBody body =
         ErrorBody.withFields(
-            ErrorCode.VALIDATION_FAILED,
-            "The request body is missing or is not valid JSON.",
-            Map.of("body", "Send a valid JSON body."));
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+            ErrorCode.UNPROCESSABLE_CONTENT, exception.getMessage(), exception.fields());
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(body);
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<ErrorBody> handleNotFound(NotFoundException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(ErrorBody.of(ErrorCode.NOT_FOUND, exception.getMessage()));
   }
 
   @ExceptionHandler(ValidationFailedException.class)
@@ -70,6 +93,25 @@ public class ApiExceptionHandler {
           default -> ErrorBody.of(ErrorCode.BAD_REQUEST, "The request could not be processed.");
         };
     return ResponseEntity.status(status).headers(errorResponse.getHeaders()).body(body);
+  }
+
+  /**
+   * The JSON path of the value Jackson could not read, like {@code items[0].quantity}, or an empty
+   * string when the body is not JSON at all or the problem is not tied to one value.
+   */
+  private static String jsonPath(Throwable cause) {
+    if (!(cause instanceof MismatchedInputException mismatched) || mismatched.getPath().isEmpty()) {
+      return "";
+    }
+    StringBuilder path = new StringBuilder();
+    for (JacksonException.Reference reference : mismatched.getPath()) {
+      if (reference.getIndex() >= 0) {
+        path.append('[').append(reference.getIndex()).append(']');
+      } else if (reference.getPropertyName() != null) {
+        path.append(path.isEmpty() ? "" : ".").append(reference.getPropertyName());
+      }
+    }
+    return path.toString();
   }
 
   private static ResponseEntity<ErrorBody> unexpected(HttpStatusCode status) {
