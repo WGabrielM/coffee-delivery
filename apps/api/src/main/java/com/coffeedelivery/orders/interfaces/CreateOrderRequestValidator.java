@@ -22,9 +22,6 @@ import tools.jackson.databind.JsonNode;
  */
 final class CreateOrderRequestValidator {
 
-  private static final Pattern UUID_FORMAT =
-      Pattern.compile(
-          "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
   private static final Pattern ZIP_CODE = Pattern.compile("\\d{5}-\\d{3}");
   private static final Pattern STATE = Pattern.compile("[A-Z]{2}");
   private static final int MAX_COMPLEMENT_LENGTH = 60;
@@ -81,7 +78,7 @@ final class CreateOrderRequestValidator {
   }
 
   private static UUID coffeeId(String value) {
-    return value != null && UUID_FORMAT.matcher(value).matches() ? UUID.fromString(value) : null;
+    return UuidText.parse(value).orElse(null);
   }
 
   /** The quantity when it is a JSON whole number from 1 to 99, otherwise null. */

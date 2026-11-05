@@ -3,10 +3,11 @@ import { check, sleep } from "k6";
 
 import { BASE_URL, THINK_SECONDS } from "./config.js";
 
-// GET a path of the API and run the given checks on the response.
-export function getAndCheck(path, checks) {
-  const response = http.get(`${BASE_URL}${path}`, { tags: { name: path } });
-  check(response, { [`GET ${path} responds 200`]: (r) => r.status === 200, ...checks });
+// GET a path of the API and run the given checks on the response. The metrics are grouped under
+// `name` (the path by default), so a path with an id does not create one series per id.
+export function getAndCheck(path, checks, name = path) {
+  const response = http.get(`${BASE_URL}${path}`, { tags: { name } });
+  check(response, { [`GET ${name} responds 200`]: (r) => r.status === 200, ...checks });
   return response;
 }
 

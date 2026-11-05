@@ -12,7 +12,7 @@ Start the API first (`yarn infra:up`, then `yarn api:dev`) and run a profile fro
 | `spike` | `yarn load:spike` | 10 VUs, a jump to 100 VUs in 10 s held for 1 min, back to 10 VUs, then ramp down | about 3 min |
 | `soak` | `yarn load:soak` | Ramp to 10 VUs in 1 min, hold for `SOAK_DURATION`, ramp down 1 min: looks for leaks | 30 min by default |
 
-Scenarios that write (`orders-create.js`) store real rows in the database the API uses, so a local run adds orders. They are harmless; to start clean, reset the database (see `.docs/DEVELOPMENT.md`).
+Scenarios that write (`orders-create.js`, and the one-time setup of `orders-get.js`) store real rows in the database the API uses, so a local run adds orders. They are harmless; to start clean, reset the database (see `.docs/DEVELOPMENT.md`).
 
 ## Thresholds
 

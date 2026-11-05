@@ -121,4 +121,5 @@ Open:
 | 008 api-observability-and-load-tests | Done (2026-11-04): dashboard `Coffee Delivery API` provisioned from `infra/grafana`; five k6 profiles (`load`, `spike`, and a short `soak` run for real, all within thresholds) |
 | 009 orders-data-model | Done (2026-11-04): migration V3 for `orders` and `order_items` with a price snapshot; 23 SQL tests, one per rule |
 | 010 orders-create | Done (2026-11-04): `POST /api/v1/orders` priced on the server, validated, stored atomically; 1 + 2 coffees + fee = 3320 verified at three levels |
+| 011 orders-get | Done (2026-11-04): `GET /api/v1/orders/{id}` returns the stored snapshot, same body as the `201`; API line coverage 99% |
 | 012 app-foundation | Done (2026-11-04): 28 Vitest tests, strict `tsc`, `vite build`, and 2 Playwright smoke tests pass on the owner's machine too. Run `yarn install` and `yarn --cwd apps/app playwright install chromium` after cloning |

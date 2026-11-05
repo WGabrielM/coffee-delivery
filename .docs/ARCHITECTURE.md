@@ -79,7 +79,7 @@ apps/api/src/main/java/com/coffeedelivery/
   shared/        error handling and common configuration
 ```
 
-Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, `infrastructure`, and `interfaces`. The fourth layer is `interfaces`, not `interface`, because `interface` is a reserved word in Java and cannot be a package name. `system`, `catalog`, and `orders` (checkout configuration and order creation so far) exist so far; `shared` holds the error handling (`shared.error`) and request logging (`shared.logging`).
+Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, `infrastructure`, and `interfaces`. The fourth layer is `interfaces`, not `interface`, because `interface` is a reserved word in Java and cannot be a package name. `system`, `catalog`, and `orders` exist; `shared` holds the error handling (`shared.error`) and request logging (`shared.logging`).
 
 - `domain` has entities and rules and depends on nothing but the language. `application` has the use cases (`<Action>UseCase.execute`) and the ports they need. `infrastructure` implements the ports (database access). `interfaces` has the request handlers (`<Action>RequestHandler.handle`, one per endpoint) and the HTTP mapping.
 - Slices do not use each other's `infrastructure` or `interfaces`. `orders` reads coffee prices through its own `CoffeePriceLookup` port, not through `catalog` classes.
@@ -94,7 +94,7 @@ Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `applicati
 | `GET /api/v1/coffees` (`?tags=`) `[implemented]` | 005, 006 | List coffees, optionally filtered by tags (AND logic) |
 | `GET /api/v1/checkout-config` `[implemented]` | 007 | Currency, delivery fee, delivery estimate, payment methods |
 | `POST /api/v1/orders` `[implemented]` | 010 | Create an order |
-| `GET /api/v1/orders/{id}` `[planned]` | 011 | Read an order |
+| `GET /api/v1/orders/{id}` `[implemented]` | 011 | Read an order |
 
 ### `GET /api/v1/coffees` `[implemented]`
 
@@ -193,6 +193,16 @@ Response `201` with `Location: /api/v1/orders/{id}` (spec 011 returns the same b
 ```
 
 Errors: `400 validation_failed` with one entry in `fields` per problem, keyed by JSON path (`items`, `items[0].coffeeId`, `items[0].quantity`, `address.zipCode`, `address.state`, `paymentMethod`, ...; a value of the wrong JSON type is reported at its path); `422 unprocessable_content` with `fields.items` naming the ids that are not in the catalog; `405` for another method on `/api/v1/orders`.
+
+### `GET /api/v1/orders/{id}` `[implemented]`
+
+Returns the order exactly as it was confirmed: the same body as the `201` of `POST /api/v1/orders` (same `OrderResponse`). Amounts, names, and prices come from the stored snapshot, so a later catalog change never alters the answer. The order is a public resource addressed by an unguessable UUID, because the product has no accounts.
+
+An id that does not exist returns `404` and `not_found`; an id that is not a UUID is also `404` `not_found` (to the client there is no such order):
+
+```json
+{ "error": { "code": "not_found", "message": "The requested resource was not found." } }
+```
 
 ## Data model
 

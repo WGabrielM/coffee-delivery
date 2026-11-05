@@ -2,7 +2,7 @@
 
 A coffee store with a React app and a Java Spring Boot API, rebuilt from a Figma design as the capstone of the Applied AI postgraduate module (Coders University). It is built with AI, spec by spec, following the workflow in [`.docs/`](.docs/AGENTS.md).
 
-Status: under construction. The roadmap is in [`docs/PLAN.md`](docs/PLAN.md) and the work is queued in [`.specs/`](.specs). Specs 001 (foundation), 002 (local infrastructure), and 003 (API foundation) are done; the complete README arrives with spec 031.
+Status: under construction. The roadmap is in [`docs/PLAN.md`](docs/PLAN.md) and the work is queued in [`.specs/`](.specs). Specs 001 to 011 (the repository, the local infrastructure, and the whole API: catalog, checkout configuration, orders, the Grafana dashboard, and the load tests) and 012 (the app foundation) are done; the complete README arrives with spec 031.
 
 ## Start
 
