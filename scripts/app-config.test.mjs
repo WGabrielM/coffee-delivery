@@ -81,3 +81,9 @@ test("the app sources contain no hex color literal (colors come from tokens, spe
     assert.doesNotMatch(read(`apps/app/${file}`), /#[0-9a-fA-F]{3,8}\b/, `${file} has a hex color`);
   }
 });
+
+test("Playwright never reuses a server it did not start (another project may hold port 5173)", () => {
+  const config = read("apps/app/playwright.config.ts");
+  assert.match(config, /reuseExistingServer: false/);
+  assert.doesNotMatch(config, /reuseExistingServer: !/);
+});
