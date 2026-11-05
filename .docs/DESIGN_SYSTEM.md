@@ -83,6 +83,10 @@ Every base component is presentational (no data fetching, no cart, no routing), 
 | `Tag` | `variant` (`label` default or `filter`), `children`; for `filter`: `pressed`, `onPressedChange(pressed)` | `label`: a `span` pill (`yellow-light` fill, `yellow-dark` text, `type-tag`). `filter`: a `button` with `aria-pressed`, `type-tag-l`. The text keeps its case; the uppercase is styling |
 | `Badge` | `count` | A 20×20 `yellow-dark` circle with a white number (`type-text-bold-s`). `99+` above 99; nothing for 0, a negative number, or a non-integer. It has no label: the Cart link names the count ("Cart, 3 items") |
 
+### Hero (spec 017)
+
+`Hero` (`features/home/hero/Hero.tsx`) is a feature component, not a base component: no props, no data. A `section` with the title (the page h1), the subtitle, a list of four benefits, and the decorative cup image (`alt=""`), over blurred shapes drawn with `bg-hero-blob/30`, `bg-purple-light`, and `blur-[100px]`. Measures in [DESIGN.md](DESIGN.md).
+
 ### Navbar and layout (spec 016)
 
 | Piece | Props | What it renders |

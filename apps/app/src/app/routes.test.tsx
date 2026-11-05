@@ -13,7 +13,12 @@ describe("routes", () => {
   it("renders the home page at /", () => {
     renderAt("/");
 
-    expect(screen.getByRole("heading", { level: 1, name: "Coffee Delivery" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Find the perfect coffee for any time of day",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("renders the checkout placeholder at /checkout", () => {

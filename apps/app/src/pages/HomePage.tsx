@@ -1,3 +1,5 @@
+import { Hero } from "../features/home/hero/Hero";
+
 export function HomePage() {
-  return <h1>Coffee Delivery</h1>;
+  return <Hero />;
 }
