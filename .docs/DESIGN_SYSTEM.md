@@ -68,7 +68,7 @@ Page margin 160 px (`px-page`), navbar 104 px (`h-navbar`), content width 1120 p
 | Tag | Card tag; filter chip (unselected, selected) | Radius 100, `yellow-light` fill, `yellow-dark` text. The chip is proposed: unselected has a `yellow` border and `yellow-dark` text; selected has a `yellow` fill and white text |
 | Coffee card | Catalog; cart row | Catalog 256×310; the cart row is 368×80 |
 
-States the design does not show (focus, disabled, error, selected chip) are defined by the specs that build the component and recorded here when they do. The six base components below are built (spec 015) in `apps/app/src/components/<name>/`; the Coffee card arrives with the screens. The navbar (spec 016) is built too; see below.
+States the design does not show (focus, disabled, error, selected chip) are defined by the specs that build the component and recorded here when they do. The six base components below are built (spec 015) in `apps/app/src/components/<name>/`; the Coffee card is built in spec 018 (see below). The navbar (spec 016) is built too; see below.
 
 ### Base components
 
@@ -86,6 +86,15 @@ Every base component is presentational (no data fetching, no cart, no routing), 
 ### Hero (spec 017)
 
 `Hero` (`features/home/hero/Hero.tsx`) is a feature component, not a base component: no props, no data. A `section` with the title (the page h1), the subtitle, a list of four benefits, and the decorative cup image (`alt=""`), over blurred shapes drawn with `bg-hero-blob/30`, `bg-purple-light`, and `blur-[100px]`. Measures in [DESIGN.md](DESIGN.md).
+
+### Coffee list and card (spec 018)
+
+| Piece | Props | What it renders |
+| --- | --- | --- |
+| `CoffeeCard` (`features/catalog/coffee-card`) | `coffee` (`Coffee` of `features/catalog/api`) | An `article` named by its `h3` (the coffee name), 256×310, `bg-card`, `rounded-coffee-card`. The photo is `coffeeImages[slug]` with the name as `alt` (120×120, round, `-mt-5`); a slug with no photo gets an empty round placeholder of the same size. Tags are the `Tag` label, in the order of the API. The description is `label`. The price is `formatMoneyParts` (a small symbol and a large amount). It has no counter and no cart button until spec 021 |
+| `CoffeeList` (`features/catalog/coffee-list`) | none | A `section` named by its `h2` "Our coffees" with `aria-busy` while the first request runs. Loading: a `status` with a spinner (stopped under reduced motion) and "Loading coffees…". Error: an `alert` with "We couldn't load the coffees." and a "Try again" button that repeats the request. Empty: "No coffees found." Data: a `ul` grid with one `li` per card |
+
+The data comes from `useCoffees()` (`features/catalog/api.ts`), a TanStack Query hook with the key `["coffees", tags]` (an empty tag list until spec 019). The description (`label` on `card`, 3.2:1) is one of the palette pairs below AA; it is not changed (owner decision pending, see the contrast table).
 
 ### Navbar and layout (spec 016)
 
@@ -120,10 +129,11 @@ Ratios are calculated with the WCAG formula (axe cannot judge contrast in jsdom)
 | `yellow-dark` on `yellow-light` | Tag | 2.70 | 4.5 |
 | `yellow-dark` on `background` | Unselected chip | 3.15 | 4.5 |
 | `label` on `input` | Placeholder, "Optional" hint | 3.05 | 4.5 |
+| `label` on `card` | Coffee description (14 px) | 3.19 | 4.5 |
 | `button` on `input` | Idle input border | 1.07 | 3 |
 | `yellow-dark` on `input` | Filled input border | 2.80 | 3 |
 
-Pairs that pass: `text` on `button` 6.35, `title` on `button` 12.49, `text` on `purple-light` 6.50, `text` on `input` 6.82, `error` on `background` 5.11, white on `purple-dark` 10.24, white on `purple` 5.03, the `purple` focus ring on `background` 4.82, and the `purple` counter icons on `button` 4.00.
+Pairs that pass: `text` on `button` 6.35, `title` on `button` 12.49, `text` on `purple-light` 6.50, `text` on `input` 6.82, `text` on `card` 7.14 (the price), `subtitle` on `card` 10.11 (the coffee name), `error` on `background` 5.11, white on `purple-dark` 10.24, white on `purple` 5.03, the `purple` focus ring on `background` 4.82, and the `purple` counter icons on `button` 4.00.
 
 ## Money
 

@@ -1,12 +1,21 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeCoffeesApi, renderWithQuery } from "../test/coffees";
 import { routes } from "./routes";
 
+// The home page reads the catalog, so every test has a query client and a fake API.
+beforeEach(() => {
+  fakeCoffeesApi();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 function renderAt(path: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [path] });
-  render(<RouterProvider router={router} />);
+  renderPath(path);
 }
 
 describe("routes", () => {
@@ -19,6 +28,13 @@ describe("routes", () => {
         name: "Find the perfect coffee for any time of day",
       }),
     ).toBeInTheDocument();
+  });
+
+  it("renders the coffee list under the hero at /", async () => {
+    renderAt("/");
+
+    expect(screen.getByRole("heading", { level: 2, name: "Our coffees" })).toBeInTheDocument();
+    expect(await screen.findAllByRole("article")).toHaveLength(3);
   });
 
   it("renders the checkout placeholder at /checkout", () => {
@@ -73,5 +89,5 @@ describe("routes", () => {
 
 function renderPath(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
-  return render(<RouterProvider router={router} />);
+  return renderWithQuery(<RouterProvider router={router} />);
 }

@@ -1,10 +1,15 @@
 import { createRequire } from "node:module";
 
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const require = createRequire(import.meta.url);
 
 test.use({ viewport: { width: 1440, height: 900 } });
+
+// The home page has the coffee list under the hero, so these tests look only inside the hero: the
+// section that holds the h1.
+const hero = (page: Page) =>
+  page.locator("section", { has: page.getByRole("heading", { level: 1 }) });
 
 // These tests run without the API: the hero needs no data.
 test("the title and the subtitle have the fonts, sizes, and colors of the design", async ({
@@ -51,7 +56,7 @@ test("the hero starts at the 160 px margin: 544 px intro, then the 476 by 360 cu
   await page.goto("/");
 
   const intro = await page.getByRole("heading", { level: 1 }).locator("xpath=..").boundingBox();
-  const image = await page.locator("main img").boundingBox();
+  const image = await hero(page).locator("img").boundingBox();
 
   expect(intro?.x).toBeCloseTo(160, 0);
   expect(intro?.width).toBeCloseTo(544, 0);
@@ -64,7 +69,7 @@ test("the hero starts at the 160 px margin: 544 px intro, then the 476 by 360 cu
 test("the four benefits make a 2 by 2 grid of 32 px circles", async ({ page }) => {
   await page.goto("/");
 
-  const items = page.getByRole("listitem");
+  const items = hero(page).getByRole("listitem");
   await expect(items).toHaveCount(4);
   const boxes = await items.evaluateAll((elements) =>
     elements.map((element) => {
@@ -101,7 +106,7 @@ test("the blurred shapes do not reduce the contrast of any text (axe color-contr
         };
       }
     ).axe;
-    const { violations } = await axe.run(document.querySelector("main"), {
+    const { violations } = await axe.run(document.querySelector("section:has(h1)"), {
       runOnly: ["color-contrast"],
     });
     return violations.flatMap((violation) => violation.nodes.map((node) => node.html));

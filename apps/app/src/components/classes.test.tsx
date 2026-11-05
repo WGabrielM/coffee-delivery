@@ -6,10 +6,19 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { compile } from "tailwindcss";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { CoffeeList } from "../features/catalog/coffee-list/CoffeeList";
+import {
+  fakeCoffeesApi,
+  fakeFailingApi,
+  fakePendingApi,
+  renderWithQuery,
+  sampleCoffees,
+} from "../test/coffees";
 
 import { Badge } from "./badge/Badge";
 import { Button } from "./button/Button";
@@ -79,12 +88,49 @@ function renderEveryVariant() {
   );
 }
 
+/** The classes of the coffee list in each of its states, and of a card with no photo. */
+async function catalogClasses(): Promise<string[]> {
+  const found: string[] = [];
+  const collect = (root: HTMLElement) =>
+    found.push(...[...root.querySelectorAll("*")].flatMap((element) => [...element.classList]));
+
+  fakePendingApi();
+  let view = renderWithQuery(<CoffeeList />);
+  collect(view.container);
+  view.unmount();
+
+  fakeCoffeesApi([...sampleCoffees, { ...sampleCoffees[0]!, id: "x", slug: "no-photo", tags: [] }]);
+  view = renderWithQuery(<CoffeeList />);
+  await screen.findByRole("list");
+  collect(view.container);
+  view.unmount();
+
+  fakeFailingApi();
+  view = renderWithQuery(<CoffeeList />);
+  await screen.findByRole("alert");
+  collect(view.container);
+  view.unmount();
+
+  fakeCoffeesApi([]);
+  view = renderWithQuery(<CoffeeList />);
+  await screen.findByText("No coffees found.");
+  collect(view.container);
+  view.unmount();
+
+  return found;
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe("the classes of the base components", () => {
   it("each exist in the theme of the app and produce CSS", async () => {
     const { container } = renderEveryVariant();
-    const classes = new Set(
-      [...container.querySelectorAll("*")].flatMap((element) => [...element.classList]),
-    );
+    const classes = new Set([
+      ...[...container.querySelectorAll("*")].flatMap((element) => [...element.classList]),
+      ...(await catalogClasses()),
+    ]);
     const compiler = await compile('@import "tailwindcss"; @import "./theme.css";', {
       base: styles,
       loadStylesheet,
