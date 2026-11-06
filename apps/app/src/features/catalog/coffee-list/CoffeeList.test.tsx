@@ -7,8 +7,10 @@ import {
   coffeesResponse,
   fakeCoffeesApi,
   fakeFailingApi,
+  fakeFilteringApi,
   fakePendingApi,
   renderWithQuery,
+  requestedUrls,
   sampleCoffees,
 } from "../../../test/coffees";
 import { CoffeeList } from "./CoffeeList";
@@ -185,5 +187,203 @@ describe("CoffeeList with no coffee", () => {
       "aria-busy",
       "false",
     );
+  });
+});
+
+function names() {
+  return screen.queryAllByRole("heading", { level: 3 }).map((heading) => heading.textContent);
+}
+
+const chip = (name: string) => screen.getByRole("button", { name });
+const everyCoffee = ["Traditional Espresso", "Cuban", "Latte"];
+
+describe("CoffeeList filters", () => {
+  it("puts the five chips at the right of the title, in the same row", async () => {
+    fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+
+    const title = screen.getByRole("heading", { level: 2, name: "Our coffees" });
+    const group = screen.getByRole("group", { name: "Filter by tag" });
+
+    expect(title.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(title.parentElement).toContainElement(group);
+    expect(title.parentElement).toHaveClass("flex", "items-center", "justify-between");
+    await screen.findByRole("list");
+  });
+
+  it("keeps the chips while the first request runs", () => {
+    fakePendingApi();
+    renderWithQuery(<CoffeeList />);
+
+    const group = screen.getByRole("group", { name: "Filter by tag" });
+
+    expect(within(group).getAllByRole("button")).toHaveLength(5);
+  });
+
+  it("asks the server for the selected tags in chip order: Iced then Special is tags=special,iced", async () => {
+    const user = userEvent.setup();
+    const fetchMock = fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+
+    await user.click(chip("Iced"));
+    await waitFor(() => expect(names()).toEqual(["Cuban"]));
+    await user.click(chip("Special"));
+    await waitFor(() => expect(requestedUrls(fetchMock)).toHaveLength(3));
+
+    expect(requestedUrls(fetchMock)).toEqual([
+      "/api/v1/coffees",
+      "/api/v1/coffees?tags=iced",
+      "/api/v1/coffees?tags=special,iced",
+    ]);
+  });
+
+  it("shows only the coffees the server returns, and all of them again after Clear filters", async () => {
+    const user = userEvent.setup();
+    const fetchMock = fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+    expect(names()).toEqual(everyCoffee);
+
+    await user.click(chip("Special"));
+    await waitFor(() => expect(names()).toEqual(["Cuban"]));
+
+    await user.click(chip("Clear filters"));
+    await waitFor(() => expect(names()).toEqual(everyCoffee));
+    expect(requestedUrls(fetchMock).at(-1)).toBe("/api/v1/coffees");
+    for (const name of ["Traditional", "Special", "With milk", "Alcoholic", "Iced"]) {
+      expect(chip(name)).toHaveAttribute("aria-pressed", "false");
+    }
+  });
+
+  it("asks for the list without tags when the last chip is unselected", async () => {
+    const user = userEvent.setup();
+    const fetchMock = fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+
+    await user.click(chip("Special"));
+    await waitFor(() => expect(names()).toEqual(["Cuban"]));
+    await user.click(chip("Special"));
+    await waitFor(() => expect(names()).toEqual(everyCoffee));
+
+    expect(requestedUrls(fetchMock).at(-1)).toBe("/api/v1/coffees");
+    expect(screen.queryByRole("button", { name: "Clear filters" })).not.toBeInTheDocument();
+  });
+
+  it("says No coffees match the selected filters. for an empty result, with a second Clear filters button", async () => {
+    const user = userEvent.setup();
+    fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+
+    await user.click(chip("Traditional"));
+    await user.click(chip("Alcoholic"));
+
+    expect(await screen.findByText("No coffees match the selected filters.")).toBeInTheDocument();
+    expect(screen.queryByText("No coffees found.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Clear filters" })).toHaveLength(2);
+  });
+
+  it("clears every chip from the empty state and shows the list again", async () => {
+    const user = userEvent.setup();
+    fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+    await user.click(chip("Traditional"));
+    await user.click(chip("Alcoholic"));
+    const message = await screen.findByText("No coffees match the selected filters.");
+
+    await user.click(
+      within(message.parentElement as HTMLElement).getByRole("button", { name: "Clear filters" }),
+    );
+
+    await waitFor(() => expect(names()).toEqual(everyCoffee));
+    for (const name of ["Traditional", "Alcoholic"]) {
+      expect(chip(name)).toHaveAttribute("aria-pressed", "false");
+    }
+    expect(screen.queryByRole("button", { name: "Clear filters" })).not.toBeInTheDocument();
+  });
+
+  it("keeps saying No coffees found. for an empty catalog with no chip selected", async () => {
+    fakeFilteringApi([]);
+    renderWithQuery(<CoffeeList />);
+
+    expect(await screen.findByText("No coffees found.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Clear filters" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the previous cards on screen while the new list loads", async () => {
+    const user = userEvent.setup();
+    const fetchMock = fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+
+    fetchMock.mockImplementation(() => new Promise<Response>(() => {}));
+    await user.click(chip("Special"));
+
+    expect(names()).toEqual(everyCoffee);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Our coffees" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+  });
+
+  it("announces the result count in a polite live region", async () => {
+    const user = userEvent.setup();
+    fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+
+    const count = await screen.findByText("3 coffees");
+    expect(count).toHaveAttribute("aria-live", "polite");
+    expect(count).toHaveClass("sr-only");
+
+    await user.click(chip("Special"));
+
+    await waitFor(() => expect(count).toHaveTextContent("1 coffee"));
+    expect(count).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("announces 0 coffees for an empty filtered result", async () => {
+    const user = userEvent.setup();
+    fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    const count = await screen.findByText("3 coffees");
+
+    await user.click(chip("Traditional"));
+    await user.click(chip("Alcoholic"));
+
+    await waitFor(() => expect(count).toHaveTextContent("0 coffees"));
+  });
+
+  it("keeps the chips and shows the error when the filtered request fails", async () => {
+    const user = userEvent.setup();
+    const fetchMock = fakeFilteringApi();
+    renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+
+    fetchMock.mockImplementation(async () =>
+      Response.json(
+        { error: { code: "unavailable", message: "Try again later." } },
+        { status: 503 },
+      ),
+    );
+    await user.click(chip("Special"));
+
+    expect(await screen.findByText("We couldn't load the coffees.")).toBeInTheDocument();
+    expect(chip("Special")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("has no accessibility violation with a chip selected", async () => {
+    const user = userEvent.setup();
+    fakeFilteringApi();
+    const { container } = renderWithQuery(<CoffeeList />);
+    await screen.findByRole("list");
+    await user.click(chip("Special"));
+    await waitFor(() => expect(names()).toEqual(["Cuban"]));
+
+    expect(await accessibilityViolations(container)).toEqual([]);
   });
 });

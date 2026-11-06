@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { apiGet, type RequestOptions } from "../../api";
 
@@ -22,19 +22,30 @@ interface CoffeesResponse {
   coffees: Coffee[];
 }
 
-/** GET /api/v1/coffees: the whole catalog, in the order of the API. */
-export async function listCoffees(options?: RequestOptions): Promise<Coffee[]> {
-  const { coffees } = await apiGet<CoffeesResponse>("/coffees", options);
+/**
+ * GET /api/v1/coffees: the catalog in the order of the API. With tags, the server keeps the coffees
+ * that have all of them (`?tags=special,iced`); the app never filters by itself.
+ */
+export async function listCoffees(
+  tags: readonly string[] = [],
+  options?: RequestOptions,
+): Promise<Coffee[]> {
+  const query = tags.length > 0 ? `?tags=${tags.map(encodeURIComponent).join(",")}` : "";
+  const { coffees } = await apiGet<CoffeesResponse>(`/coffees${query}`, options);
   return coffees;
 }
 
-// No tag filter yet: spec 019 passes the chosen tags as the argument of `useCoffees`.
 const NO_TAGS: readonly string[] = [];
 
-/** The coffees of the catalog. The cache key is `["coffees", tags]`. */
-export function useCoffees() {
+/**
+ * The coffees that have all the given tags (all of them for an empty list). The cache key is
+ * `["coffees", tags]`, so pass the tags in a stable order (the order of the chips). While the list of
+ * new tags loads, the previous list stays as `data` and `isPlaceholderData` is true.
+ */
+export function useCoffees(tags: readonly string[] = NO_TAGS) {
   return useQuery({
-    queryKey: ["coffees", NO_TAGS],
-    queryFn: ({ signal }) => listCoffees({ signal }),
+    queryKey: ["coffees", tags],
+    queryFn: ({ signal }) => listCoffees(tags, { signal }),
+    placeholderData: keepPreviousData,
   });
 }

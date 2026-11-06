@@ -36,7 +36,7 @@ Gradle tasks behind the API commands: `spotlessApply` (`code:fix`), `spotlessChe
 ## Rules
 
 - A `[planned]` command does not exist yet. Until it does, run its `[implemented]` replacement if one is listed.
-- The app e2e tests of the home coffee list (`home-coffees.spec.ts`) call the real API: run `yarn infra:up` and `yarn api:dev` (port 3000) before `yarn test:e2e`. The other app e2e tests run without it.
+- The app e2e tests of the home coffee list (`home-coffees.spec.ts`, `home-filters.spec.ts`) call the real API: run `yarn infra:up` and `yarn api:dev` (port 3000) before `yarn test:e2e`. The other app e2e tests run without it.
 - `yarn test:e2e` will need the local database: run `yarn infra:up` first. Without it the API tests that need Postgres use Testcontainers and need only Docker.
 - When you add a command, mark it `[implemented]` here in the same change and delete the `[implemented]` commands it replaces.
 - Before reporting done, complete the manual QA steps and the end-of-task report defined in [RULES.md](RULES.md).

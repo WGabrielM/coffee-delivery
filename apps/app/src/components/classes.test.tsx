@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { compile } from "tailwindcss";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -102,6 +102,8 @@ async function catalogClasses(): Promise<string[]> {
   fakeCoffeesApi([...sampleCoffees, { ...sampleCoffees[0]!, id: "x", slug: "no-photo", tags: [] }]);
   view = renderWithQuery(<CoffeeList />);
   await screen.findByRole("list");
+  fireEvent.click(within(view.container).getByRole("button", { name: "Special" })); // a selected chip and Clear filters
+  await screen.findByRole("button", { name: "Clear filters" });
   collect(view.container);
   view.unmount();
 
@@ -114,6 +116,9 @@ async function catalogClasses(): Promise<string[]> {
   fakeCoffeesApi([]);
   view = renderWithQuery(<CoffeeList />);
   await screen.findByText("No coffees found.");
+  collect(view.container);
+  fireEvent.click(within(view.container).getByRole("button", { name: "Special" }));
+  await screen.findByText("No coffees match the selected filters.");
   collect(view.container);
   view.unmount();
 

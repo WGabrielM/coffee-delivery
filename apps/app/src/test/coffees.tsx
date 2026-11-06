@@ -91,3 +91,26 @@ export function renderWithQuery(ui: ReactElement, client = createTestQueryClient
     ...render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>),
   };
 }
+
+/**
+ * Answers like the server: `?tags=a,b` keeps the coffees that have every tag (AND), no `tags`
+ * returns all of them. Returns the mock, so a test can read the URLs that were requested.
+ */
+export function fakeFilteringApi(catalog: Coffee[] = sampleCoffees) {
+  const fetchMock = vi.fn<typeof fetch>(async (input) => {
+    const wanted = (new URL(String(input), "http://localhost").searchParams.get("tags") ?? "")
+      .split(",")
+      .filter(Boolean);
+    const coffees = catalog.filter((coffee) =>
+      wanted.every((slug) => coffee.tags.some((tag) => tag.slug === slug)),
+    );
+    return json({ coffees });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+/** The URLs the app asked for, as `/api/v1/coffees` plus the query string. */
+export function requestedUrls(fetchMock: ReturnType<typeof fakeFilteringApi>): string[] {
+  return fetchMock.mock.calls.map(([input]) => String(input));
+}
