@@ -29,7 +29,8 @@
 - Prices are in US dollars. Every coffee costs `$9.90`; the delivery fee is `$3.50`. Amounts are integers in cents everywhere except on screen.
 - The server owns prices and totals. It reads prices from the catalog and ignores any price sent by the client. A stored order keeps the prices it was confirmed with.
 - Quantity is a whole number from 1 to 99 per coffee. An order has at least one coffee, and each coffee appears once.
-- The cart lives in the browser. Reloading the page keeps it; clearing the browser data empties it.
+- The cart lives in the browser (`localStorage`, key `coffee-delivery:cart:v1`). Reloading the page keeps it; clearing the browser data empties it. It is not shared between tabs or devices.
+- The cart keeps only coffee ids and quantities, never prices or names, so a saved cart cannot show a stale price. Adding a coffee that is already in the cart makes its quantity grow, up to 99; the extra is dropped. A saved cart that is damaged is read line by line: the valid lines stay, the others are ignored.
 - The checkout rules live in one place on the server (`DeliveryPolicy`, `PaymentMethod`) and are published by `GET /api/v1/checkout-config`: currency USD, a fixed delivery fee of 350 cents, an estimate of 20 to 30 minutes, and the payment methods `credit_card`, `debit_card`, and `cash`. There are no taxes, tips, or discounts.
 - An order is checked in full before anything is stored, and every problem is reported at once. A coffee that is not in the catalog is refused (422), and the whole order is stored or nothing is.
 - Example: 1 coffee at `$9.90` plus 2 coffees at `$9.90` plus the `$3.50` fee gives a total of `$33.20`.

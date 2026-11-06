@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
 import { ApiError } from "../api/client";
+import { CartProvider } from "../features/cart/cart-context";
 
 const MAX_RETRIES = 2;
 
@@ -22,5 +23,9 @@ export function createQueryClient(): QueryClient {
 
 export function AppProviders({ children }: { children: ReactNode }) {
   const [client] = useState(createQueryClient);
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      <CartProvider>{children}</CartProvider>
+    </QueryClientProvider>
+  );
 }
