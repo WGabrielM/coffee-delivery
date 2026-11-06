@@ -1,17 +1,33 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, expect, it } from "vitest";
 
+import { CART_STORAGE_KEY } from "../features/cart/cart-storage";
+import { useCart } from "../features/cart/cart-context";
 import { accessibilityViolations } from "../test/axe";
+import { renderWithCart } from "../test/coffees";
 import { AppLayout } from "./app-layout";
+
+// A page that adds to the cart, the way a coffee card does.
+function Page() {
+  const { add } = useCart();
+  return (
+    <>
+      <h1>Page content</h1>
+      <button type="button" onClick={() => add("latte-id", 2)}>
+        Add two
+      </button>
+    </>
+  );
+}
 
 function renderLayout() {
   const router = createMemoryRouter(
-    [{ element: <AppLayout />, children: [{ path: "/", element: <h1>Page content</h1> }] }],
+    [{ element: <AppLayout />, children: [{ path: "/", element: <Page /> }] }],
     { initialEntries: ["/"] },
   );
-  return render(<RouterProvider router={router} />);
+  return renderWithCart(<RouterProvider router={router} />);
 }
 
 describe("AppLayout", () => {
@@ -67,10 +83,38 @@ describe("AppLayout", () => {
     expect(header.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("shows an empty cart until the cart state is wired", () => {
+  it("shows an empty cart when nothing was added", () => {
     renderLayout();
 
     expect(screen.getByRole("link", { name: "Cart, empty" })).toBeInTheDocument();
+  });
+
+  it("shows the total quantity of the cart on the badge and follows every change", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+
+    await user.click(screen.getByRole("button", { name: "Add two" }));
+
+    const link = screen.getByRole("link", { name: "Cart, 2 items" });
+    expect(link).toHaveTextContent("2");
+
+    await user.click(screen.getByRole("button", { name: "Add two" }));
+
+    expect(screen.getByRole("link", { name: "Cart, 4 items" })).toHaveTextContent("4");
+  });
+
+  it("shows the cart that was saved before, after a reload", () => {
+    localStorage.setItem(
+      CART_STORAGE_KEY,
+      JSON.stringify([
+        { coffeeId: "latte-id", quantity: 2 },
+        { coffeeId: "espresso-id", quantity: 1 },
+      ]),
+    );
+
+    renderLayout();
+
+    expect(screen.getByRole("link", { name: "Cart, 3 items" })).toBeInTheDocument();
   });
 
   it("passes an axe check", async () => {

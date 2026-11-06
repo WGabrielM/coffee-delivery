@@ -1,6 +1,11 @@
+import { useState } from "react";
+
 import { coffeeImages, COFFEE_SLUGS, type CoffeeSlug } from "../../../assets";
+import { Button } from "../../../components/button/Button";
+import { Counter, MIN_QUANTITY } from "../../../components/counter/Counter";
 import { Tag } from "../../../components/tag/Tag";
 import { formatMoneyParts } from "../../../lib/format-money";
+import { useCart } from "../../cart/cart-context";
 import type { Coffee } from "../api";
 
 function hasPhoto(slug: string): slug is CoffeeSlug {
@@ -11,13 +16,27 @@ function hasPhoto(slug: string): slug is CoffeeSlug {
 const photo = "-mt-5 size-30 shrink-0 rounded-round";
 
 /**
- * A coffee of the catalog: photo, tags, name, description, and price. The card is 256 by 310. The
- * counter and the cart button go to the right of the price in spec 021, so the purchase row already
- * has the height of the counter.
+ * A coffee of the catalog: photo, tags, name, description, and a purchase row with the price, the
+ * quantity counter, and the cart button. The card is 256 by 310. The counter value belongs to the
+ * card (it is not the cart): adding puts that quantity in the cart and sets the counter back to 1.
  */
 export function CoffeeCard({ coffee }: { coffee: Coffee }) {
   const { symbol, amount } = formatMoneyParts(coffee.priceInCents);
   const headingId = `coffee-${coffee.slug}`;
+  const { add } = useCart();
+  const [quantity, setQuantity] = useState(MIN_QUANTITY);
+  // `repeat` flips on every addition. A live region speaks a change of text, so the same words twice
+  // would stay silent; a trailing no-break space makes the second one a change.
+  const [announcement, setAnnouncement] = useState({ text: "", repeat: false });
+
+  function addToCart() {
+    add(coffee.id, quantity);
+    setAnnouncement((previous) => ({
+      text: `Added ${quantity} × ${coffee.name} to cart`,
+      repeat: !previous.repeat,
+    }));
+    setQuantity(MIN_QUANTITY);
+  }
 
   return (
     <article
@@ -49,7 +68,20 @@ export function CoffeeCard({ coffee }: { coffee: Coffee }) {
           <span className="type-text-regular-s text-text">{symbol}</span>
           <span className="type-subtitle-xl text-text">{amount}</span>
         </p>
+        <div className="flex items-center gap-2">
+          <Counter label={`Quantity of ${coffee.name}`} value={quantity} onChange={setQuantity} />
+          <Button
+            variant="icon"
+            icon="shopping-cart-fill"
+            aria-label={`Add ${coffee.name} to cart`}
+            onClick={addToCart}
+          />
+        </div>
       </div>
+      <p aria-live="polite" className="sr-only">
+        {announcement.text}
+        {announcement.repeat ? " " : ""}
+      </p>
     </article>
   );
 }

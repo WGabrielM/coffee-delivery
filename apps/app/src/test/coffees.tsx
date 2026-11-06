@@ -7,6 +7,7 @@ import type { ReactElement } from "react";
 import { vi } from "vitest";
 
 import type { Coffee } from "../features/catalog/api";
+import { CartProvider } from "../features/cart/cart-context";
 
 export const traditionalEspresso: Coffee = {
   id: "2f6ffcd1-99dc-4734-83ea-6f17e7929870",
@@ -85,10 +86,19 @@ export function createTestQueryClient(): QueryClient {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
 }
 
+/** A render with the cart, which is what every card and the layout read. */
+export function renderWithCart(ui: ReactElement) {
+  return render(<CartProvider>{ui}</CartProvider>);
+}
+
 export function renderWithQuery(ui: ReactElement, client = createTestQueryClient()) {
   return {
     client,
-    ...render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>),
+    ...render(
+      <QueryClientProvider client={client}>
+        <CartProvider>{ui}</CartProvider>
+      </QueryClientProvider>,
+    ),
   };
 }
 

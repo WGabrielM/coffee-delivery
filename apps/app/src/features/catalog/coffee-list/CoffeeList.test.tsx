@@ -64,7 +64,7 @@ describe("CoffeeList with data", () => {
       "aria-busy",
       "false",
     );
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByText("Loading coffees…")).not.toBeInTheDocument();
   });
 
   it("has no accessibility violation", async () => {
@@ -324,7 +324,7 @@ describe("CoffeeList filters", () => {
     await user.click(chip("Special"));
 
     expect(names()).toEqual(everyCoffee);
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByText("Loading coffees…")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Our coffees" })).toHaveAttribute(
       "aria-busy",
       "true",
