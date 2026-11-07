@@ -37,7 +37,7 @@ describe("routes", () => {
     expect(await screen.findAllByRole("article")).toHaveLength(3);
   });
 
-  it("renders the checkout placeholder at /checkout", () => {
+  it("renders the checkout page at /checkout", () => {
     renderAt("/checkout");
 
     expect(screen.getByRole("heading", { level: 1, name: "Checkout" })).toBeInTheDocument();

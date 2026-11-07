@@ -1,16 +1,12 @@
 import { useState } from "react";
 
-import { coffeeImages, COFFEE_SLUGS, type CoffeeSlug } from "../../../assets";
 import { Button } from "../../../components/button/Button";
 import { Counter, MIN_QUANTITY } from "../../../components/counter/Counter";
 import { Tag } from "../../../components/tag/Tag";
 import { formatMoneyParts } from "../../../lib/format-money";
 import { useCart } from "../../cart/cart-context";
 import type { Coffee } from "../api";
-
-function hasPhoto(slug: string): slug is CoffeeSlug {
-  return (COFFEE_SLUGS as readonly string[]).includes(slug);
-}
+import { CoffeePhoto } from "../coffee-photo/CoffeePhoto";
 
 // The photo is 120 px round and sits 20 px above the top edge of the card.
 const photo = "-mt-5 size-30 shrink-0 rounded-round";
@@ -43,17 +39,7 @@ export function CoffeeCard({ coffee }: { coffee: Coffee }) {
       aria-labelledby={headingId}
       className="flex h-77.5 w-64 flex-col items-center rounded-coffee-card bg-card px-5 pb-5"
     >
-      {hasPhoto(coffee.slug) ? (
-        <img
-          src={coffeeImages[coffee.slug]}
-          alt={coffee.name}
-          width={120}
-          height={120}
-          className={photo}
-        />
-      ) : (
-        <div data-photo-placeholder aria-hidden="true" className={`${photo} bg-hover`} />
-      )}
+      <CoffeePhoto slug={coffee.slug} name={coffee.name} size={120} className={photo} />
       <div className="mt-3 flex min-h-5 flex-wrap justify-center gap-1">
         {coffee.tags.map((tag) => (
           <Tag key={tag.slug}>{tag.name}</Tag>
