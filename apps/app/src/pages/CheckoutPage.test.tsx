@@ -61,15 +61,29 @@ describe("CheckoutPage with coffees in the cart", () => {
     await screen.findByRole("list");
   });
 
-  it("draws the heading Complete your order in Title XS and leaves the column ready for the form", async () => {
+  it("draws the heading Complete your order in Title XS, with the address card under it", async () => {
     fakeCheckoutApi();
     renderCheckout(exampleCart);
 
     const heading = screen.getByRole("heading", { level: 2, name: "Complete your order" });
 
     expect(heading).toHaveClass("type-title-xs", "text-subtitle");
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    const left = screen.getByRole("region", { name: "Complete your order" });
+    expect(within(left).getByRole("group", { name: "Delivery address" })).toBeInTheDocument();
+    expect(within(left).getAllByRole("textbox")).toHaveLength(7);
     await screen.findByRole("list");
+  });
+
+  it("puts both columns in one form, so the summary can submit the address (spec 025)", async () => {
+    fakeCheckoutApi();
+    const { container } = renderCheckout(exampleCart);
+    await screen.findByRole("list");
+
+    const forms = container.querySelectorAll("form");
+
+    expect(forms).toHaveLength(1);
+    expect(forms[0]).toContainElement(screen.getByRole("textbox", { name: "ZIP code" }));
+    expect(forms[0]).toContainElement(screen.getByRole("button", { name: "Confirm order" }));
   });
 
   it("shows no empty-cart message", async () => {
@@ -122,11 +136,13 @@ describe("CheckoutPage with an empty cart", () => {
 
   it("shows neither the form column nor the summary", () => {
     fakeCheckoutApi();
-    renderCheckout([]);
+    const { container } = renderCheckout([]);
 
+    expect(container.querySelector("form")).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Complete your order" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Selected coffees" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Confirm order" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 
   it("keeps the level 1 and shows the empty badge on the navbar", () => {

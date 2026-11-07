@@ -9,9 +9,9 @@ type InputProps = NativeProps & {
   /** The accessible name. It is drawn visually hidden: the design shows the placeholder instead. */
   label: string;
   /** A hint at the right of the field, for example "Optional". */
-  hint?: string;
+  hint?: string | undefined;
   /** The message shown below the field. Setting it marks the field invalid. */
-  error?: string;
+  error?: string | undefined;
 };
 
 const field =

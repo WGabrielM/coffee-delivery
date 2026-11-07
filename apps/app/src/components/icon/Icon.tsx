@@ -2,7 +2,7 @@ import { iconSvgs, type IconName } from "../../assets";
 
 type IconProps = {
   name: IconName;
-  /** Size and color of the icon, for example `size-4 text-purple`. Only the base components pass it. */
+  /** Size and color of the icon, for example `size-4 text-purple`. Only the base components and `FormCard` pass it. */
   className?: string;
 };
 

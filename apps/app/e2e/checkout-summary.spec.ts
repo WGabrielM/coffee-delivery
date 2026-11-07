@@ -1,8 +1,12 @@
-import { createRequire } from "node:module";
+import { expect, test, type Page } from "@playwright/test";
 
-import { expect, test, type Locator, type Page } from "@playwright/test";
-
-const require = createRequire(import.meta.url);
+import {
+  axeViolations,
+  boxOf,
+  fillTheCart,
+  openCheckoutWithTheCart,
+  summary,
+} from "./checkout-helpers";
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -12,36 +16,9 @@ const TOLERANCE = 2;
 
 const CART_KEY = "coffee-delivery:cart:v1";
 
-const card = (page: Page, name: string) => page.getByRole("article", { name });
-const addButton = (page: Page, name: string) =>
-  card(page, name).getByRole("button", { name: `Add ${name} to cart` });
 const row = (page: Page, name: string) => page.getByRole("listitem", { name });
-const summary = (page: Page) => page.getByRole("region", { name: "Selected coffees" });
 const valueOf = (page: Page, label: string) =>
   summary(page).getByText(label, { exact: true }).locator("xpath=following-sibling::dd");
-
-async function boxOf(locator: Locator) {
-  const box = await locator.boundingBox();
-  if (!box) throw new Error("The element has no box.");
-  return box;
-}
-
-/** The cart of the spec: Latte × 2 and Traditional Espresso × 1, put in through the home page. */
-async function fillTheCart(page: Page) {
-  await page.goto("/");
-  await expect(page.getByRole("article")).toHaveCount(14);
-  await card(page, "Latte").getByRole("button", { name: "Increase quantity" }).click();
-  await addButton(page, "Latte").click();
-  await addButton(page, "Traditional Espresso").click();
-  await expect(page.getByRole("link", { name: "Cart, 3 items" })).toBeVisible();
-}
-
-async function openCheckoutWithTheCart(page: Page) {
-  await fillTheCart(page);
-  await page.getByRole("link", { name: "Cart, 3 items" }).click();
-  await expect(page).toHaveURL(/\/checkout$/);
-  await expect(summary(page).getByRole("list")).toBeVisible();
-}
 
 test("a cart of Latte × 2 and Traditional Espresso × 1 shows $19.80, $9.90, items $29.70, delivery $3.50, total $33.20", async ({
   page,
@@ -242,52 +219,13 @@ test("a real browser axe scan of the page reports no violation (color contrast i
   page,
 }) => {
   await openCheckoutWithTheCart(page);
-  await page.evaluate(() => document.fonts.ready);
-  await page.addScriptTag({ path: require.resolve("axe-core") });
 
-  const result = await page.evaluate(async () => {
-    const axe = (
-      window as unknown as {
-        axe: {
-          run: (
-            context: Document,
-            options: { rules: Record<string, { enabled: boolean }> },
-          ) => Promise<{ violations: { id: string; nodes: { html: string }[] }[] }>;
-        };
-      }
-    ).axe;
-    // Some palette pairs are below AA by the owner's choice (DESIGN_SYSTEM.md), so that rule is left
-    // out here.
-    const { violations } = await axe.run(document, {
-      rules: { "color-contrast": { enabled: false } },
-    });
-    return violations.map((violation) => `${violation.id}: ${violation.nodes[0]?.html}`);
-  });
-
-  expect(result).toEqual([]);
+  expect(await axeViolations(page)).toEqual([]);
 });
 
 test("an empty cart page has no axe violation either", async ({ page }) => {
   await page.goto("/checkout");
   await expect(page.getByRole("heading", { name: "Your cart is empty" })).toBeVisible();
-  await page.addScriptTag({ path: require.resolve("axe-core") });
 
-  const result = await page.evaluate(async () => {
-    const axe = (
-      window as unknown as {
-        axe: {
-          run: (
-            context: Document,
-            options: { rules: Record<string, { enabled: boolean }> },
-          ) => Promise<{ violations: { id: string }[] }>;
-        };
-      }
-    ).axe;
-    const { violations } = await axe.run(document, {
-      rules: { "color-contrast": { enabled: false } },
-    });
-    return violations.map((violation) => violation.id);
-  });
-
-  expect(result).toEqual([]);
+  expect(await axeViolations(page)).toEqual([]);
 });

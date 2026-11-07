@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
 import { useCart } from "../features/cart/cart-context";
+import { AddressCard } from "../features/checkout/address-card/AddressCard";
+import { CheckoutForm } from "../features/checkout/checkout-form/CheckoutForm";
 import { OrderSummary } from "../features/checkout/order-summary/OrderSummary";
 
 /**
@@ -35,9 +37,11 @@ function EmptyCart({ moveFocus }: { moveFocus: boolean }) {
 }
 
 /**
- * The checkout: the form on the left (specs 023 and 024), 640 px wide at x=160, and the summary of
- * the cart on the right, 448 px wide at x=832, at 1440 px. An empty cart shows only a message and a
- * link to the coffees. Tablet and mobile layouts are spec 027.
+ * The checkout: the form on the left (the address card, spec 023; the payment card arrives in spec
+ * 024), 640 px wide at x=160, and the summary of the cart on the right, 448 px wide at x=832, at
+ * 1440 px. Both columns are inside one form, so the summary's Confirm order button can submit it
+ * (spec 025). An empty cart shows only a message and a link to the coffees, and no form. Tablet and
+ * mobile layouts are spec 027.
  */
 export function CheckoutPage() {
   const { lines } = useCart();
@@ -51,14 +55,17 @@ export function CheckoutPage() {
       <div className="mx-auto max-w-content">
         <h1 className="sr-only">Checkout</h1>
         {hasLines ? (
-          <div className="grid grid-cols-[640px_448px] gap-x-8">
-            <section aria-labelledby="complete-order-heading">
-              <h2 id="complete-order-heading" className="type-title-xs text-subtitle">
-                Complete your order
-              </h2>
-            </section>
-            <OrderSummary />
-          </div>
+          <CheckoutForm>
+            <div className="grid grid-cols-[640px_448px] gap-x-8">
+              <section aria-labelledby="complete-order-heading" className="flex flex-col gap-4">
+                <h2 id="complete-order-heading" className="type-title-xs text-subtitle">
+                  Complete your order
+                </h2>
+                <AddressCard />
+              </section>
+              <OrderSummary />
+            </div>
+          </CheckoutForm>
         ) : (
           <EmptyCart moveFocus={hadLines} />
         )}
