@@ -5,8 +5,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api";
 import { createTestQueryClient } from "../../test/coffees";
-import { checkoutConfig, fakeCheckoutApi } from "../../test/checkout";
-import { getCheckoutConfig, useCheckoutConfig } from "./api";
+import { checkoutConfig, fakeCheckoutApi, postedOrders, sampleOrder } from "../../test/checkout";
+import { latte } from "../../test/coffees";
+import {
+  createOrder,
+  getCheckoutConfig,
+  useCheckoutConfig,
+  useCreateOrder,
+  type OrderRequest,
+} from "./api";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -67,5 +74,70 @@ describe("useCheckoutConfig", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(client.getQueryData(["checkout-config"])).toEqual(checkoutConfig);
+  });
+});
+
+const request: OrderRequest = {
+  items: [{ coffeeId: latte.id, quantity: 2 }],
+  address: {
+    zipCode: "90250-440",
+    street: "Rua João Daniel Martinelli",
+    number: "102",
+    complement: "",
+    neighborhood: "Farrapos",
+    city: "Porto Alegre",
+    state: "RS",
+  },
+  paymentMethod: "credit_card",
+};
+
+describe("createOrder", () => {
+  it("posts the request to /api/v1/orders as JSON and returns the order", async () => {
+    const fetchMock = fakeCheckoutApi();
+
+    await expect(createOrder(request)).resolves.toEqual(sampleOrder);
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("/api/v1/orders");
+    expect(init?.method).toBe("POST");
+    expect(new Headers(init?.headers).get("Content-Type")).toBe("application/json");
+    expect(postedOrders(fetchMock)).toEqual([request]);
+  });
+
+  it("throws the ApiError of a 400 with its fields", async () => {
+    fakeCheckoutApi({
+      orderOutcome: { kind: "validation", fields: { "address.zipCode": "Enter a ZIP code." } },
+    });
+
+    await expect(createOrder(request)).rejects.toMatchObject({
+      status: 400,
+      code: "validation_failed",
+      fields: { "address.zipCode": "Enter a ZIP code." },
+    });
+  });
+});
+
+describe("useCreateOrder", () => {
+  it("sends one request when mutated, and gives the order", async () => {
+    const fetchMock = fakeCheckoutApi();
+    const { result } = renderHook(() => useCreateOrder(), {
+      wrapper: wrapperFor(createTestQueryClient()),
+    });
+
+    const order = await result.current.mutateAsync(request);
+
+    expect(order.id).toBe(sampleOrder.id);
+    expect(postedOrders(fetchMock)).toHaveLength(1);
+  });
+
+  it("does not retry a failed request by itself", async () => {
+    const fetchMock = fakeCheckoutApi({ orderOutcome: { kind: "server-error" } });
+    const { result } = renderHook(() => useCreateOrder(), {
+      wrapper: wrapperFor(createTestQueryClient()),
+    });
+
+    await expect(result.current.mutateAsync(request)).rejects.toBeInstanceOf(ApiError);
+
+    expect(postedOrders(fetchMock)).toHaveLength(1);
   });
 });

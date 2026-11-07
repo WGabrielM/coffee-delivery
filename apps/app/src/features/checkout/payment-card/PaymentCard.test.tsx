@@ -1,6 +1,5 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { useWatch } from "react-hook-form";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -10,8 +9,8 @@ import {
   checkoutConfig,
   configRequests,
   fakeCheckoutApi,
+  renderCheckoutPage,
 } from "../../../test/checkout";
-import { createTestQueryClient } from "../../../test/coffees";
 import { CheckoutForm } from "../checkout-form/CheckoutForm";
 import type { CheckoutFormValues } from "../checkout-form/checkout-form-schema";
 import { PaymentCard } from "./PaymentCard";
@@ -27,14 +26,12 @@ function FormValue() {
 }
 
 function renderCard() {
-  return render(
-    <QueryClientProvider client={createTestQueryClient()}>
-      <CheckoutForm>
-        <PaymentCard />
-        <FormValue />
-        <button type="submit">Send</button>
-      </CheckoutForm>
-    </QueryClientProvider>,
+  return renderCheckoutPage(
+    <CheckoutForm>
+      <PaymentCard />
+      <FormValue />
+      <button type="submit">Send</button>
+    </CheckoutForm>,
   );
 }
 

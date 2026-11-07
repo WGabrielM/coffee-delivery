@@ -234,7 +234,7 @@ describe("OrderSummary with data", () => {
     expect(screen.getByText("In the cart: 2")).toBeInTheDocument();
   });
 
-  it("has the Confirm order button, full width, enabled, that sends nothing yet", async () => {
+  it("has the Confirm order button as a submit button, full width, enabled, that sends nothing outside a form", async () => {
     const fetchMock = fakeCheckoutApi();
     const user = userEvent.setup({ delay: null });
     renderSummary();
@@ -245,6 +245,8 @@ describe("OrderSummary with data", () => {
     await user.click(confirm);
 
     expect(confirm).toBeEnabled();
+    expect(confirm).toHaveAttribute("type", "submit");
+    expect(confirm).not.toHaveAttribute("aria-busy");
     expect(confirm).toHaveClass("w-full", "bg-yellow");
     expect(fetchMock.mock.calls).toHaveLength(requests);
   });

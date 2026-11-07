@@ -7,6 +7,7 @@ import { useCart } from "../../cart/cart-context";
 import { useCoffees } from "../../catalog/api";
 import { CoffeePhoto } from "../../catalog/coffee-photo/CoffeePhoto";
 import { useCheckoutConfig } from "../api";
+import { useSubmitState } from "../checkout-form/submit-state";
 import { priceOrder, type PricedRow } from "./pricing";
 
 type RowProps = {
@@ -53,6 +54,24 @@ function SummaryRow({ row, onQuantityChange, onRemove }: RowProps) {
   );
 }
 
+/** The message after a failed order. It takes the focus: the Confirm order button had it. */
+function SubmitAlert({ message }: { message: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  return (
+    <div
+      role="alert"
+      ref={ref}
+      tabIndex={-1}
+      className="mt-6 type-text-regular-m text-error focus:outline-none"
+    >
+      {message}
+    </div>
+  );
+}
+
 function Totals({
   itemsTotalInCents,
   deliveryFeeInCents,
@@ -85,8 +104,8 @@ function Totals({
 
 /**
  * The right column of the checkout: the coffees of the cart with their quantities, the items total,
- * the delivery fee of the server, the total, and the Confirm order button (it sends nothing until
- * spec 025). Names and prices come from the catalog, so a line whose coffee the catalog no longer
+ * the delivery fee of the server, the total, and the Confirm order button, which submits the checkout
+ * form around it (it does nothing outside a form). Names and prices come from the catalog, so a line whose coffee the catalog no longer
  * has is removed from the cart once the catalog has loaded.
  */
 export function OrderSummary() {
@@ -94,6 +113,7 @@ export function OrderSummary() {
   const catalog = useCoffees();
   const config = useCheckoutConfig();
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const { isSubmitting, alertMessage } = useSubmitState();
 
   const coffees = catalog.data;
   const deliveryFee = config.data?.deliveryFeeInCents;
@@ -170,8 +190,14 @@ export function OrderSummary() {
             Loading your order…
           </output>
         )}
+        {alertMessage === undefined ? null : <SubmitAlert message={alertMessage} />}
         <div className="mt-6">
-          <Button fullWidth disabled={order === undefined || order.rows.length === 0}>
+          <Button
+            type="submit"
+            fullWidth
+            disabled={order === undefined || order.rows.length === 0 || isSubmitting}
+            aria-busy={isSubmitting || undefined}
+          >
             Confirm order
           </Button>
         </div>

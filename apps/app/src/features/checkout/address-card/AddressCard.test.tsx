@@ -1,13 +1,14 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { accessibilityViolations } from "../../../test/axe";
+import { renderCheckoutPage } from "../../../test/checkout";
 import { CheckoutForm } from "../checkout-form/CheckoutForm";
 import { AddressCard } from "./AddressCard";
 
 function renderCard() {
-  return render(
+  return renderCheckoutPage(
     <CheckoutForm>
       <AddressCard />
       <button type="submit">Send</button>
