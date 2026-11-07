@@ -43,13 +43,13 @@ describe("routes", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Checkout" })).toBeInTheDocument();
   });
 
-  it("renders the order confirmation placeholder with the order id at /orders/:orderId", () => {
+  it("renders the order page at /orders/:orderId, which asks the API for that order", () => {
     renderAt("/orders/abc");
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Order confirmation" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("abc")).toBeInTheDocument();
+    expect(screen.getByText("Loading your order…")).toBeInTheDocument();
   });
 
   it("renders the not-found page with a link to / for an unknown path", () => {

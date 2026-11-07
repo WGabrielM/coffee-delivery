@@ -22,7 +22,7 @@
 3. In the checkout the visitor reviews the coffees, changes quantities or removes items, and sees the items total, the delivery fee, and the total.
 4. The visitor enters the address (ZIP code, street, number, optional complement, neighborhood, city, state) and chooses a payment method.
 5. The visitor confirms. If the form has a problem, the page shows it and sends nothing. Otherwise the app sends the cart lines, the address, and the payment method once; the server checks the request, prices the order itself, stores it, and answers with the confirmed order. The app then empties the cart and opens the confirmation page; Back does not return to the form.
-6. The confirmation page shows where the order goes, the delivery estimate (20 to 30 minutes), and the payment method.
+6. The confirmation page shows where the order goes (street, number, neighborhood, city, state; not the complement), the delivery estimate (20 to 30 minutes, from the order), and the payment method ("Credit card", "Debit card", or "Cash"). It reads the order from the server by its id, so reloading it, or opening the same link again, shows the same page; it shows no prices, items, or totals. An id the server does not know shows "Order not found" with a link back to the coffees.
 
 ## Rules
 
