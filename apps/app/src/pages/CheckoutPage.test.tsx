@@ -74,6 +74,23 @@ describe("CheckoutPage with coffees in the cart", () => {
     await screen.findByRole("list");
   });
 
+  it("puts the payment card under the address card, 12 px apart, with three options", async () => {
+    fakeCheckoutApi();
+    renderCheckout(exampleCart);
+
+    const left = screen.getByRole("region", { name: "Complete your order" });
+    const address = within(left).getByRole("group", { name: "Delivery address" });
+    const payment = within(left).getByRole("group", { name: "Payment" });
+
+    expect(
+      address.compareDocumentPosition(payment) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(address.parentElement).toBe(payment.parentElement);
+    expect(address.parentElement).toHaveClass("flex", "flex-col", "gap-3");
+    expect(await within(payment).findAllByRole("radio")).toHaveLength(3);
+    await screen.findByRole("list");
+  });
+
   it("puts both columns in one form, so the summary can submit the address (spec 025)", async () => {
     fakeCheckoutApi();
     const { container } = renderCheckout(exampleCart);

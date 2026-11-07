@@ -356,3 +356,55 @@ describe("SelectOptionGroup", () => {
     expect(await accessibilityViolations(container)).toEqual([]);
   });
 });
+
+function Invalid() {
+  return (
+    <SelectOptionGroup
+      label="Payment method"
+      options={options}
+      value={undefined}
+      onChange={() => {}}
+      error="Choose a payment method"
+    />
+  );
+}
+
+describe("SelectOptionGroup with an error", () => {
+  it("shows the message below the options in the error color", () => {
+    render(<Invalid />);
+
+    const message = screen.getByText("Choose a payment method");
+
+    expect(message).toHaveClass("type-text-regular-s", "text-error");
+    expect(
+      screen.getByRole("radiogroup", { name: "Payment method" }).compareDocumentPosition(message) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("marks the group invalid and links it to the message", () => {
+    render(<Invalid />);
+
+    const group = screen.getByRole("radiogroup", { name: "Payment method" });
+    const message = screen.getByText("Choose a payment method");
+
+    expect(group).toHaveAttribute("aria-invalid", "true");
+    expect(group).toHaveAttribute("aria-describedby", message.id);
+    expect(group).toHaveAccessibleDescription("Choose a payment method");
+  });
+
+  it("is not invalid and has no description without an error", () => {
+    render(<Controlled />);
+
+    const group = screen.getByRole("radiogroup", { name: "Payment method" });
+
+    expect(group).not.toHaveAttribute("aria-invalid");
+    expect(group).not.toHaveAttribute("aria-describedby");
+  });
+
+  it("has no accessibility violation with the error", async () => {
+    const { container } = render(<Invalid />);
+
+    expect(await accessibilityViolations(container)).toEqual([]);
+  });
+});

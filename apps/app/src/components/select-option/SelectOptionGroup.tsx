@@ -18,6 +18,8 @@ type SelectOptionGroupProps<T extends string> = {
   onChange: (value: T) => void;
   /** The form field name, for example `paymentMethod`. A unique name is generated when omitted. */
   name?: string;
+  /** The message shown below the options. Setting it marks the group invalid (`aria-invalid`). */
+  error?: string | undefined;
 };
 
 /**
@@ -32,8 +34,10 @@ export function SelectOptionGroup<T extends string>({
   value,
   onChange,
   name,
+  error,
 }: SelectOptionGroupProps<T>) {
   const generatedName = useId();
+  const errorId = useId();
 
   // Native radios have the arrow keys but not Home and End, which the ARIA radio group pattern adds.
   function jumpToEnd(event: KeyboardEvent<HTMLFieldSetElement>) {
@@ -49,23 +53,32 @@ export function SelectOptionGroup<T extends string>({
   }
 
   return (
-    <fieldset
-      role="radiogroup"
-      aria-label={label}
-      onKeyDown={jumpToEnd}
-      className="grid min-w-0 auto-cols-fr grid-flow-col gap-3"
-    >
-      {options.map((option) => (
-        <SelectOption
-          key={option.value}
-          name={name ?? generatedName}
-          value={option.value}
-          label={option.label}
-          icon={option.icon}
-          checked={option.value === value}
-          onSelect={() => onChange(option.value)}
-        />
-      ))}
-    </fieldset>
+    <div>
+      <fieldset
+        role="radiogroup"
+        aria-label={label}
+        aria-invalid={error === undefined ? undefined : true}
+        aria-describedby={error === undefined ? undefined : errorId}
+        onKeyDown={jumpToEnd}
+        className="grid min-w-0 auto-cols-fr grid-flow-col gap-3"
+      >
+        {options.map((option) => (
+          <SelectOption
+            key={option.value}
+            name={name ?? generatedName}
+            value={option.value}
+            label={option.label}
+            icon={option.icon}
+            checked={option.value === value}
+            onSelect={() => onChange(option.value)}
+          />
+        ))}
+      </fieldset>
+      {error === undefined ? null : (
+        <p id={errorId} aria-live="polite" className="mt-1 type-text-regular-s text-error">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
