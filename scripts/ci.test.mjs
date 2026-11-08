@@ -148,7 +148,10 @@ test("no action uses a moving reference", () => {
 test("Java, Node, and Yarn versions are explicit and match the project", () => {
   assert.match(ci, /java-version: "21"/);
   assert.match(ci, /distribution: temurin/);
-  assert.match(ci, /node-version: "22\.22\.1"/);
+  // The Node of CI is the least that the dependencies accept (jsdom needs 22.22.2). The engines
+  // of the package.json files stay at 22.12, so a machine with an older 22.x can still run yarn.
+  assert.match(ci, /node-version: "22\.22\.2"/);
+  assert.match(read("package.json"), /"node": ">=22\.12"/);
   // Yarn comes from the packageManager field through Corepack.
   assert.match(read("package.json"), /"packageManager": "yarn@1\.22\.22"/);
   assert.match(ci, /corepack enable/);
