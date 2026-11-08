@@ -11,7 +11,7 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Git hooks | Lefthook: `pre-commit` runs lint-staged, `commit-msg` runs commitlint (Conventional Commits) | `[implemented]` |
 | Local infrastructure | Docker Compose: PostgreSQL 18 and Grafana LGTM, versions pinned in `compose.yaml` | `[implemented]` |
 | API | Java 21 or newer and Spring Boot 4.1, built with Gradle 9 (wrapper), in `apps/api` | `[implemented]` |
-| Database | PostgreSQL; schema and seed by Flyway migrations (Flyway runs at startup; the first migrations come in specs 004 and 009) | `[implemented]` (specs 003 to 009) |
+| Database | PostgreSQL; schema and seed by Flyway migrations `V1` to `V3` (Flyway runs at startup) | `[implemented]` (specs 003 to 009) |
 | API formatting | Spotless with google-java-format | `[implemented]` |
 | API tests | JUnit 5 and AssertJ; `test` is unit tests without Docker, `e2eTest` is Spring Boot with Testcontainers; ArchUnit; JaCoCo (minimum 80% line coverage over both) | `[implemented]` |
 | Observability | Structured JSON logs, OpenTelemetry (Micrometer) traces and metrics to Grafana LGTM, and the `Coffee Delivery API` dashboard as code in `infra/grafana` (spec 008). Logs stay on stdout: nothing ships them to Loki | `[implemented]` |
@@ -58,9 +58,11 @@ apps/
 .specs/           [implemented] specs to implement
 plans/            [implemented] one plan per spec execution
 adrs/             [implemented] one ADR per decision
-docs/             [implemented] PLAN.md and design/ (the Figma analysis, the asset mapping, the contact sheet of the coffee photos)
+docs/             [implemented] PLAN.md (the roadmap and its results), CAPSTONE.md (the capstone report), and design/ (the Figma analysis, the asset mapping, the contact sheet of the coffee photos)
 infra/            [implemented] Grafana provisioning and dashboards
-scripts/          [implemented] task runner, skill linker, the Figma asset extractor (`extract-figma-assets.mjs`, `lib/`), and their tests
+scripts/          [implemented] the scripts behind the root commands and their tests: `run-task.mjs`, `ci.mjs`, `api-dev.mjs`, `load.mjs`, `env-setup.mjs`, `env-file.mjs` (reads `.env.local` for the others), `link-skills.mjs`, `check-postgres.mjs`, `lighthouse-home.mjs`, and the Figma tools (`extract-figma-assets.mjs`, `cut-figma-references.mjs`, `lib/`)
+screenshots/      [implemented] the screenshots taken for each UI spec (`<page>_<viewport>_after.png`)
+.github/          [implemented] the workflows `ci.yml` and `commitlint.yml`
 compose.yaml      [implemented] PostgreSQL and Grafana LGTM
 .env.example      [implemented] development values; `yarn env:setup` copies it to .env.local (ignored by Git)
 ```
@@ -79,7 +81,7 @@ apps/api/src/main/java/com/coffeedelivery/
   shared/        error handling and common configuration
 ```
 
-Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, `infrastructure`, and `interfaces`. The fourth layer is `interfaces`, not `interface`, because `interface` is a reserved word in Java and cannot be a package name. `system`, `catalog`, and `orders` exist; `shared` holds the error handling (`shared.error`) and request logging (`shared.logging`).
+Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `application`, and `interfaces`, and `infrastructure` when it talks to the database (`system` does not). The fourth layer is `interfaces`, not `interface`, because `interface` is a reserved word in Java and cannot be a package name. `shared` holds the error handling (`shared.error`), the request logging (`shared.logging`), and the clock (`shared.config`).
 
 - `domain` has entities and rules and depends on nothing but the language. `application` has the use cases (`<Action>UseCase.execute`) and the ports they need. `infrastructure` implements the ports (database access). `interfaces` has the request handlers (`<Action>RequestHandler.handle`, one per endpoint) and the HTTP mapping.
 - Slices do not use each other's `infrastructure` or `interfaces`. `orders` reads coffee prices through its own `CoffeePriceLookup` port, not through `catalog` classes.
@@ -227,10 +229,10 @@ The seed has 5 tags and 14 coffees at 990 cents (the copy is in [BUSINESS.md](BU
 
 The identity `id` of `order_items` keeps the lines of an order in the order they were created. The sum of the lines equal to `subtotal_in_cents` is guaranteed by the use case (spec 010), not by a column check.
 
-## App architecture `[implemented]` (foundation; features arrive with specs 016 onward)
+## App architecture `[implemented]`
 
 - Layout of `apps/app`: `index.html`, `vite.config.ts`, `e2e/figma-reference` (the four frames of the design, cut by `scripts/cut-figma-references.mjs`), `e2e/visual-parity.spec.ts` and `e2e/visual-masks.ts` (the pixel and layout checks against them), `playwright.config.ts` (it checks Postgres, starts the API and the app when they are not running, and reuses them when they are; `e2e/global-setup.ts` checks they are the right ones), `src/main.tsx` (entry), `src/app` (`App`, `providers`, `routes`, `app-layout`: the skip link, navbar, and `main` shared by every route; spec 016), `src/pages` (`HomePage`, `CheckoutPage`, `OrderPage`, `NotFoundPage`), `src/api` (`client`, `info`), `src/styles` (`index.css`, `theme.css`, `fonts.css`, `base.css`), `src/lib` (`format-money`), `src/assets` (the logo, icons, coffee photos, hero image, and illustration with a typed manifest, `index.ts`; spec 014), `src/components` (the base components `badge`, `button`, `counter`, `input`, `select-option`, `tag`, the `navbar`, and the internal `icon`, one folder each with its test; specs 015 and 016), `src/features` (`home/hero`, the hero of the home page, spec 017; `catalog` with `api.ts` (`useCoffees(tags)`), `coffee-tags.ts` (the five tags), `coffee-card` and `coffee-list`, spec 018, `coffee-filters`, spec 019, and `coffee-photo`, shared with the checkout; `checkout` with `api.ts` (`useCheckoutConfig()`, and `useCreateOrder()` with the `Order` and `OrderRequest` types, spec 025) `order-summary` (`OrderSummary` and the pure `pricing.ts`), spec 022, and the address form, spec 023: `address-schema.ts` (the Zod schema and the shared limits), `address-masks.ts` (the ZIP code and state masks), `checkout-form` (`CheckoutForm`, `FormCard`, `FormInput`, `order-request.ts`, `submit-errors.ts`, `submit-state.tsx`), and `address-card`; and the payment card, spec 024: `payment-methods.ts` (the label and icon of each API code) and `payment-card`; and `orders` with `api.ts` (`useOrder(id)`, key `["orders", id]`) and `order-confirmation`, spec 026), `src/test` (`orders.tsx`: a fake `GET /api/v1/orders/{id}` and a render of the order page, `setup.ts`, `axe.ts`, `coffees.tsx`: the sample coffees, a fake API, and a render with a query client that the catalog tests share, and `checkout.tsx`: a fake API that answers the catalog, the checkout config, and `POST /api/v1/orders` with the outcome a test picks, and a render with the router), `e2e/`. The e2e tests of the coffee list, the filters, the cart, the checkout, and the order confirmation need the API (`yarn infra:up`, `yarn api:dev`).
-- Routes (data mode, one table in `src/app/routes.tsx`): `/`, `/checkout`, `/orders/:id`, and `*` for the not-found page.
+- Routes (data mode, one table in `src/app/routes.tsx`): `/`, `/checkout`, `/orders/:orderId`, and `*` for the not-found page.
 - The API client (`src/api/client.ts`) offers `apiGet` and `apiPost` on the base path `/api/v1` and throws `ApiError` (`status`, `code`, `message`, `fields`). A network failure is `ApiError` with status `0` and code `network_error`; a response outside the project's error shape is `unexpected_error`.
 - `AppProviders` creates the TanStack Query client (it does not retry 4xx errors and retries other failures at most twice) and wraps the app with the `CartProvider`.
 - **Cart** `[implemented]` (`src/features/cart`, spec 020). The `CoffeeCard` adds to it (spec 021) and `AppLayout` reads `totalQuantity` for the navbar badge; the checkout summary reads it (spec 022), which also removes the lines whose coffee the catalog no longer has. A cart is a list of lines `{ coffeeId, quantity }`, in the order the coffees were first added; nothing else is stored, so a saved cart never shows a stale name or price (they come from the catalog query). `cart-reducer.ts` is pure (no browser API, no React) and exports `cartReducer`, `totalQuantity`, `MIN_QUANTITY` (1), and `MAX_QUANTITY` (99). `cart-storage.ts` is the only code that touches `localStorage`, under the key `coffee-delivery:cart:v1`. `cart-context.tsx` exports `CartProvider` and `useCart()`, which returns `{ lines, totalQuantity, add, setQuantity, remove, clear }` and throws outside the provider. The rules:

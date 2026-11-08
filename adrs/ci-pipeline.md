@@ -1,6 +1,6 @@
 # ADR: The CI pipeline and `yarn ci`
 
-- Status: Accepted; see the verification for the first GitHub runs
+- Status: Accepted and verified on GitHub (the second run passed)
 - Date: 2026-11-08
 - Spec: [.specs/030-ci-pipeline.md](../.specs/030-ci-pipeline.md)
 - Plan: [plans/030-ci-pipeline-plan.md](../plans/030-ci-pipeline-plan.md)
@@ -26,7 +26,7 @@ The project works on `main` and pushes after each spec. The pipeline is the safe
 - `yarn ci` passes on this machine: 11 commands in the three jobs, in about two minutes with Gradle up to date (129 script tests, 638 Vitest tests, 185 Playwright tests). It found one formatting problem in my new script on its first run, which shows it is as strict as the pipeline.
 - `scripts/ci.test.mjs` (18 tests) passes: the script, the order, the commands of each job against the workflow, the triggers, `needs`, the working directory of `api`, the pins and version comments, the explicit versions, the Postgres service and the failure upload, no secrets or deployment or matrix, the timeouts and permissions, and the commitlint workflow.
 - Both workflow files parse as YAML with the expected structure (`api`, `app`, and `e2e` with `needs: [api, app]`; `commitlint`).
-- **Not done:** `actionlint` was not run. I downloaded the release asset (its SHA-256 matched the published checksum) and the permission system refused to let me run the downloaded binary, so I did not run it or work around it. **The first run of the workflow on GitHub has not been seen** (the spec leaves that to the owner).
+- **Not done:** `actionlint` was not run. I downloaded the release asset (its SHA-256 matched the published checksum) and the permission system refused to let me run the downloaded binary, so I did not run it or work around it. **The runs on GitHub:** The first run on GitHub (commit `e2a77e0`) failed: the `App` job stopped at `yarn install` on Node 22.22.1, and `e2e` was skipped. After the fix to Node 22.22.2 the run of commit `95fc996` passed, with `API`, `App`, and `End to end` all green (read from the public Actions page on 2026-11-08). The commit message workflow runs on pull requests only and has not run.
 
 ## Consequences
 

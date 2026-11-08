@@ -71,4 +71,5 @@ Mandatory rules for any code agent working in this repository. Read this file fi
 | [QA.md](QA.md) | Finishing any change | Commands that must pass |
 | [`.specs/`](../.specs) | Starting work from a spec | Specs to implement, named `<NNN>-<name>.md` with a global sequence number (`001-foundation.md`); `_template.md` defines their format |
 | [`docs/PLAN.md`](../docs/PLAN.md) | Needing the roadmap | The 31 specs in seven milestones and the exit criteria |
+| [`docs/CAPSTONE.md`](../docs/CAPSTONE.md) | Needing the story of the project | The process, the 31 specs with their plans and decisions, the final numbers, who decided what, the deviations, the limits, and the lessons |
 | [`docs/design/figma-analysis.md`](../docs/design/figma-analysis.md) | Needing a design fact | Tokens, components, screens, and copy validated against the Figma render |
