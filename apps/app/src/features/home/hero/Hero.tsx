@@ -32,9 +32,9 @@ export function Hero() {
         <div className="absolute top-24 right-24 size-96 rounded-round bg-purple-light blur-[100px]" />
         <div className="absolute right-0 bottom-8 size-64 rounded-round bg-hero-blob/25 blur-[100px]" />
       </div>
-      <div className="mx-auto flex max-w-content flex-col items-center gap-10 py-10 sm:py-16 lg:flex-row lg:justify-between lg:gap-0 lg:py-23.5">
+      <div className="mx-auto flex max-w-content flex-col items-center gap-10 py-10 sm:py-16 lg:flex-row lg:justify-between lg:gap-0 lg:py-23">
         {/* Below 1024 px the intro is above the image, both centered; the title is 40 px, 32 px below 640. */}
-        <div className="flex flex-col items-center text-center lg:w-136 lg:shrink-0 lg:items-stretch lg:text-left">
+        <div className="flex flex-col items-center text-center lg:-mt-4 lg:w-136 lg:shrink-0 lg:items-stretch lg:text-left">
           <h1 className="type-title-xl text-title max-lg:text-[2.5rem] max-sm:text-[2rem]">
             Find the perfect coffee for any time of day
           </h1>

@@ -37,7 +37,7 @@ export function CoffeeCard({ coffee }: { coffee: Coffee }) {
   return (
     <article
       aria-labelledby={headingId}
-      className="flex h-77.5 w-64 flex-col items-center rounded-coffee-card bg-card px-5 pb-5"
+      className="flex h-77.5 w-64 flex-col items-center rounded-coffee-card bg-card px-6 pb-5"
     >
       <CoffeePhoto slug={coffee.slug} name={coffee.name} size={120} className={photo} />
       <div className="mt-3 flex min-h-5 flex-wrap justify-center gap-1">

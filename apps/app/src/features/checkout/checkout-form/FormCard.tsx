@@ -24,9 +24,10 @@ export function FormCard({ icon, tone, title, description, children }: FormCardP
   return (
     <fieldset aria-labelledby={titleId} className="min-w-0 rounded-button bg-card p-6 sm:p-10">
       <div className="flex items-start gap-2">
-        <Icon name={icon} className={`mt-0.5 size-5.5 ${tones[tone]}`} />
+        <Icon name={icon} className={`size-5.5 ${tones[tone]}`} />
         <div>
-          <h3 id={titleId} className="type-text-regular-m text-subtitle">
+          {/* In the design the line under the title is 4.8 px lower than the text style gives (its line height is 1.6). */}
+          <h3 id={titleId} className="mb-[4.8px] type-text-regular-m text-subtitle">
             {title}
           </h3>
           <p className="type-text-regular-s text-text">{description}</p>

@@ -52,12 +52,14 @@ export function OrderConfirmation({ order }: { order: Order }) {
   const { address, estimatedDeliveryMinutes, paymentMethod } = order;
   return (
     <>
-      <h1 className="type-title-l text-yellow-dark">Uhu! Order confirmed</h1>
-      <p className="type-text-regular-l text-subtitle">
+      <h1 className="mt-px type-title-l text-yellow-dark">Uhu! Order confirmed</h1>
+      <p className="mt-0.5 type-text-regular-l text-subtitle">
         Now just wait and your coffee will soon be with you
       </p>
-      {/* Below 1024 px the card is above the illustration; from there they share the row. */}
-      <div className="mt-10 grid grid-cols-1 items-end gap-10 lg:grid-cols-[526px_minmax(0,492px)] lg:justify-between lg:gap-0">
+      {/* Below 1024 px the card is above the illustration; from there they share the row, and the
+          illustration starts at the top edge of the card (as in the design; the drawing has 12 px of
+          empty space above it, so the picture is raised by 12 px). */}
+      <div className="mt-10 grid grid-cols-1 items-start gap-10 lg:grid-cols-[526px_minmax(0,492px)] lg:justify-between lg:gap-0">
         <div className="w-full max-w-131.5 rounded-order-card bg-linear-to-br from-yellow to-purple p-px">
           <ul
             aria-label="Order details"
@@ -90,7 +92,7 @@ export function OrderConfirmation({ order }: { order: Order }) {
           alt=""
           width={492}
           height={293}
-          className="mx-auto h-auto w-full max-w-123 lg:mx-0"
+          className="mx-auto h-auto w-full max-w-123 lg:mx-0 lg:-mt-3"
         />
       </div>
     </>

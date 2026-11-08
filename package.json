@@ -23,13 +23,16 @@
     "load:spike": "node scripts/load.mjs spike",
     "load:soak": "node scripts/load.mjs soak",
     "app:dev": "yarn --cwd apps/app dev",
-    "prepare": "lefthook install && node scripts/link-skills.mjs"
+    "prepare": "lefthook install && node scripts/link-skills.mjs",
+    "lighthouse": "node scripts/lighthouse-home.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
     "@napi-rs/canvas": "1.1.0",
+    "chrome-launcher": "1.2.3",
     "lefthook": "2.2.2",
+    "lighthouse": "13.6.0",
     "lint-staged": "17.6.0",
     "oxfmt": "0.74.0",
     "oxlint": "1.91.0"

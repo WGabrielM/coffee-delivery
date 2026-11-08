@@ -16,19 +16,27 @@ type RowProps = {
   onRemove: () => void;
 };
 
-/** One coffee of the cart: photo, name, counter, Remove, and the line price at the right. */
+/**
+ * One coffee of the cart: photo, name, counter, Remove, and the line price at the right. The row is
+ * 80 px high (a 64 px photo with 8 px above and below), then 24 px, the 1 px divider, and 23 px
+ * before the next row: the rows of the design are 128 px apart. The text and the controls sit 2 px
+ * lower than the photo's top, as in the design.
+ */
 function SummaryRow({ row, onQuantityChange, onRemove }: RowProps) {
   const { coffee, quantity, lineTotalInCents } = row;
   const nameId = `summary-${coffee.slug}`;
   return (
-    <li aria-labelledby={nameId} className="flex gap-3 border-b border-button px-1 py-2 sm:gap-5">
+    <li
+      aria-labelledby={nameId}
+      className="flex gap-3 border-b border-button px-1 pt-2 pb-8 not-first:mt-5.75 sm:gap-5"
+    >
       <CoffeePhoto
         slug={coffee.slug}
         name={coffee.name}
         size={64}
         className="size-16 shrink-0 rounded-round"
       />
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
         <h3 id={nameId} className="type-text-regular-m text-subtitle">
           {coffee.name}
         </h3>
@@ -49,7 +57,7 @@ function SummaryRow({ row, onQuantityChange, onRemove }: RowProps) {
           </Button>
         </div>
       </div>
-      <p className="shrink-0 type-text-bold-m text-text">{formatMoney(lineTotalInCents)}</p>
+      <p className="shrink-0 pt-0.5 type-text-bold-m text-text">{formatMoney(lineTotalInCents)}</p>
     </li>
   );
 }
@@ -91,7 +99,7 @@ function Totals({
         <dt className="type-text-regular-s text-text">Delivery</dt>
         <dd className="type-text-regular-m text-text">{formatMoney(deliveryFeeInCents)}</dd>
       </div>
-      <div className="flex items-baseline justify-between">
+      <div className="-mt-px flex items-baseline justify-between">
         <dt className="type-text-bold-l text-subtitle">Total</dt>
         {/* An output is a polite live region: a screen reader hears the new total. */}
         <dd>

@@ -51,7 +51,7 @@ export function CheckoutPage() {
   if (hasLines && !hadLines) setHadLines(true);
 
   return (
-    <div className="px-page pt-6 pb-16 sm:pt-10 lg:pb-20">
+    <div className="px-page pt-6 pb-16 sm:pt-10 lg:pt-9.75 lg:pb-20">
       <div className="mx-auto max-w-content">
         <h1 className="sr-only">Checkout</h1>
         {hasLines ? (

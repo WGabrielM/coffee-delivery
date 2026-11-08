@@ -150,7 +150,10 @@ test("each row has a 64 px photo, a 72 by 32 counter, a 32 px high Remove button
   const price = await boxOf(latte.getByText("$19.80"));
 
   expect(Math.abs(rowBox.width - 368)).toBeLessThanOrEqual(TOLERANCE);
-  expect(Math.abs(rowBox.height - 80)).toBeLessThanOrEqual(TOLERANCE);
+  // The row is 80 px high, then 24 px, the divider, and 24 px: the rows are 128 px apart (design).
+  const next = await boxOf(row(page, "Traditional Espresso"));
+  expect(Math.abs(next.y - rowBox.y - 129)).toBeLessThanOrEqual(TOLERANCE);
+  expect(Math.abs(rowBox.height - 105)).toBeLessThanOrEqual(TOLERANCE);
   expect(Math.abs(photo.width - 64)).toBeLessThanOrEqual(TOLERANCE);
   expect(Math.abs(photo.height - 64)).toBeLessThanOrEqual(TOLERANCE);
   expect(Math.abs(counter.width - 72)).toBeLessThanOrEqual(TOLERANCE);

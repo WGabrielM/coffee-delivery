@@ -131,11 +131,11 @@ test("the buy row has the price at the left, a 72 by 38 counter and a 38 by 38 b
   expect(Math.abs(counterBox.height - 38)).toBeLessThanOrEqual(TOLERANCE);
   expect(Math.abs(buttonBox.width - 38)).toBeLessThanOrEqual(TOLERANCE);
   expect(Math.abs(buttonBox.height - 38)).toBeLessThanOrEqual(TOLERANCE);
-  // Price, then counter, then button, on one line, with the button on the right padding (20 px).
+  // Price, then counter, then button, on one line, with the button on the right padding (24 px).
   expect(price.x + price.width).toBeLessThan(counterBox.x);
   expect(counterBox.x + counterBox.width).toBeLessThan(buttonBox.x);
   expect(
-    Math.abs(buttonBox.x + buttonBox.width - (cardBox.x + cardBox.width - 20)),
+    Math.abs(buttonBox.x + buttonBox.width - (cardBox.x + cardBox.width - 24)),
   ).toBeLessThanOrEqual(TOLERANCE);
   expect(Math.abs(buttonBox.x - (counterBox.x + counterBox.width) - 8)).toBeLessThanOrEqual(
     TOLERANCE,

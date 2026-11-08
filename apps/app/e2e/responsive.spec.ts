@@ -312,6 +312,8 @@ test.describe("coffee list", () => {
     for (const viewport of [TABLET, MOBILE]) {
       await page.setViewportSize(viewport);
       await page.goto("/");
+      await expect(page.getByRole("article")).toHaveCount(14);
+      await page.evaluate(() => document.fonts.ready);
       const heading = await boxOf(page.getByRole("heading", { level: 2, name: "Our coffees" }));
       const chips = await page
         .getByRole("group", { name: "Filter by tag" })

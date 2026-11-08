@@ -105,9 +105,10 @@ test("the content starts at the 160 px margin, the card is 526 by 270, and the i
   close(illustration.height, 293);
   close(illustration.x + illustration.width, 1280);
   expect(card.x + card.width).toBeLessThan(illustration.x);
-  // The card sits under the title and the illustration shares its bottom edge.
+  // The card sits under the title. The drawing starts at the top edge of the card, and the picture
+  // has 12 px of empty space above the drawing, so the picture starts 12 px above the card.
   expect(card.y).toBeGreaterThan(title.y + title.height);
-  close(illustration.y + illustration.height, card.y + card.height);
+  close(illustration.y, card.y - 12);
 });
 
 test("the card has a 1 px gradient border from yellow to purple with the corners 6/36/6/36", async ({
