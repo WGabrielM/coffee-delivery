@@ -52,7 +52,7 @@ describe("PaymentCard with the config", () => {
     expect(
       within(card).getByText("Payment is made on delivery. Choose the way you want to pay"),
     ).toBeInTheDocument();
-    expect(card).toHaveClass("bg-card", "rounded-button", "p-10");
+    expect(card).toHaveClass("bg-card", "rounded-button", "p-6", "sm:p-10");
     expect(card.querySelector("svg")?.parentElement).toHaveClass("text-purple");
   });
 

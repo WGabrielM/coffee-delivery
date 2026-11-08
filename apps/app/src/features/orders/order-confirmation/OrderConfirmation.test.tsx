@@ -102,7 +102,7 @@ describe("OrderConfirmation", () => {
       "from-yellow",
       "to-purple",
     );
-    expect(details()).toHaveClass("bg-background", "p-10");
+    expect(details()).toHaveClass("bg-background", "p-6", "sm:p-10");
   });
 
   it("shows no price, item, or total", () => {

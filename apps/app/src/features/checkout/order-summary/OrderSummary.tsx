@@ -21,18 +21,18 @@ function SummaryRow({ row, onQuantityChange, onRemove }: RowProps) {
   const { coffee, quantity, lineTotalInCents } = row;
   const nameId = `summary-${coffee.slug}`;
   return (
-    <li aria-labelledby={nameId} className="flex gap-5 border-b border-button px-1 py-2">
+    <li aria-labelledby={nameId} className="flex gap-3 border-b border-button px-1 py-2 sm:gap-5">
       <CoffeePhoto
         slug={coffee.slug}
         name={coffee.name}
         size={64}
         className="size-16 shrink-0 rounded-round"
       />
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <h3 id={nameId} className="type-text-regular-m text-subtitle">
           {coffee.name}
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Counter
             size="compact"
             label={`Quantity of ${coffee.name}`}
@@ -49,7 +49,7 @@ function SummaryRow({ row, onQuantityChange, onRemove }: RowProps) {
           </Button>
         </div>
       </div>
-      <p className="type-text-bold-m text-text">{formatMoney(lineTotalInCents)}</p>
+      <p className="shrink-0 type-text-bold-m text-text">{formatMoney(lineTotalInCents)}</p>
     </li>
   );
 }
@@ -154,7 +154,7 @@ export function OrderSummary() {
       >
         Selected coffees
       </h2>
-      <div className="mt-4 rounded-summary-card bg-card p-10">
+      <div className="mt-4 rounded-summary-card bg-card p-6 sm:p-10">
         {order ? (
           <>
             <ul>

@@ -27,6 +27,7 @@ type SelectOptionGroupProps<T extends string> = {
  * options are native radio buttons with one name, so the browser does the keyboard work: Tab enters
  * the group once (on the selected option, or the first when none is selected), and the arrow keys
  * move the selection and the focus, wrapping at the ends. Home and End jump to the first and last.
+ * The options share one row from 640 px and stack below it.
  */
 export function SelectOptionGroup<T extends string>({
   label,
@@ -60,7 +61,7 @@ export function SelectOptionGroup<T extends string>({
         aria-invalid={error === undefined ? undefined : true}
         aria-describedby={error === undefined ? undefined : errorId}
         onKeyDown={jumpToEnd}
-        className="grid min-w-0 auto-cols-fr grid-flow-col gap-3"
+        className="grid min-w-0 grid-cols-1 gap-3 sm:auto-cols-fr sm:grid-flow-col sm:grid-cols-none"
       >
         {options.map((option) => (
           <SelectOption

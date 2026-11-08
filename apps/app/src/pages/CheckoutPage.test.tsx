@@ -55,7 +55,13 @@ describe("CheckoutPage with coffees in the cart", () => {
     const left = screen.getByRole("region", { name: "Complete your order" });
     const right = screen.getByRole("region", { name: "Selected coffees" });
 
-    expect(left.parentElement).toHaveClass("grid", "grid-cols-[640px_448px]", "gap-x-8");
+    // One column below 1024 px; from there 640 to 448 (the design), 32 px apart.
+    expect(left.parentElement).toHaveClass(
+      "grid",
+      "grid-cols-1",
+      "lg:grid-cols-[minmax(0,640fr)_minmax(0,448fr)]",
+      "gap-8",
+    );
     expect(left.parentElement).toBe(right.parentElement);
     expect(left.nextElementSibling).toBe(right);
     await screen.findByRole("list");

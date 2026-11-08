@@ -28,6 +28,10 @@ const FIELDS = [
   "State",
 ] as const;
 
+/** The class of the grid that holds a field, which says how its row is divided. */
+const columns = (name: (typeof FIELDS)[number]) =>
+  field(name).closest("[data-field]")?.parentElement?.className;
+
 describe("AddressCard", () => {
   it("is a group named Delivery address, with a level 3 heading in Roboto 16", () => {
     renderCard();
@@ -46,7 +50,7 @@ describe("AddressCard", () => {
 
     const group = screen.getByRole("group", { name: "Delivery address" });
 
-    expect(group).toHaveClass("bg-card", "rounded-button", "p-10");
+    expect(group).toHaveClass("bg-card", "rounded-button", "p-6", "sm:p-10");
     expect(group.querySelector("svg")?.parentElement).toHaveClass("text-yellow-dark");
   });
 
@@ -82,17 +86,22 @@ describe("AddressCard", () => {
   it("gives each field the width of the design", () => {
     renderCard();
 
-    const widths = Object.fromEntries(
-      FIELDS.map((name) => [name, field(name).closest("[data-field]")?.className]),
-    );
+    // The columns are fractions that equal the design's pixels at 560 px: 200, 348, 276, and 60.
 
-    expect(widths["ZIP code"]).toContain("w-50");
-    expect(widths["Street"]).toContain("w-full");
-    expect(widths["Number"]).toContain("w-50");
-    expect(widths["Complement"]).toContain("w-87");
-    expect(widths["Neighborhood"]).toContain("w-50");
-    expect(widths["City"]).toContain("w-69");
-    expect(widths["State"]).toContain("w-15");
+    expect(columns("ZIP code")).toContain("sm:grid-cols-[minmax(0,200fr)_minmax(0,348fr)]");
+    expect(columns("Number")).toContain("sm:grid-cols-[minmax(0,200fr)_minmax(0,348fr)]");
+    expect(columns("Complement")).toBe(columns("Number"));
+    expect(columns("Neighborhood")).toContain(
+      "sm:grid-cols-[minmax(0,200fr)_minmax(0,276fr)_minmax(3.75rem,60fr)]",
+    );
+    expect(columns("City")).toBe(columns("Neighborhood"));
+    expect(columns("State")).toBe(columns("Neighborhood"));
+    // Every field fills its column, and below 640 px each is on its own row (one grid column).
+    expect(columns("Street")).toContain("flex-col");
+    for (const name of FIELDS) {
+      expect(field(name).closest("[data-field]")).toHaveClass("w-full");
+    }
+    expect(columns("Number")).toContain("grid-cols-1");
   });
 
   describe("the ZIP code mask", () => {

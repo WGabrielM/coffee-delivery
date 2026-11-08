@@ -11,8 +11,9 @@ function countText(count: number): string {
 
 /**
  * The "Our coffees" section of the home page: the title with the tag chips at its right and, under
- * them, the loading, error, empty, or data state of the catalog. Four 256 px columns, 32 px apart,
- * with 40 px between rows, fill the 1120 px of the content; the last row keeps its cards on the left.
+ * them, the loading, error, empty, or data state of the catalog. 256 px columns, 32 px apart, with
+ * 40 px between rows: four fill the 1120 px of the content (the last row keeps its cards on the
+ * left), and fewer fit on a smaller screen, centered.
  * The selection of chips lives here, in state; the server filters.
  */
 export function CoffeeList() {
@@ -24,16 +25,17 @@ export function CoffeeList() {
     <section
       aria-labelledby="coffees-heading"
       aria-busy={isPending || isPlaceholderData}
-      className="px-page pt-8 pb-38.5"
+      className="px-page pt-8 pb-16 lg:pb-38.5"
     >
       <div className="mx-auto max-w-content">
-        <div className="flex items-center justify-between gap-4">
+        {/* Below 1024 px the chips go under the title and wrap onto more rows when they need to. */}
+        <div className="flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 id="coffees-heading" className="type-title-l text-subtitle">
             Our coffees
           </h2>
           <CoffeeFilters selected={selected} onChange={setSelected} />
         </div>
-        <div className="mt-13.5">
+        <div className="mt-8 lg:mt-13.5">
           <p aria-live="polite" className="sr-only">
             {data && !isPlaceholderData ? countText(data.length) : ""}
           </p>
@@ -67,7 +69,8 @@ export function CoffeeList() {
               <p className="type-text-regular-m text-text">No coffees found.</p>
             )
           ) : (
-            <ul className="grid grid-cols-[repeat(4,16rem)] gap-x-8 gap-y-10">
+            // As many 256 px columns as fit: four in the 1120 px of the design, two on a tablet, one on a phone.
+            <ul className="grid grid-cols-[repeat(auto-fill,16rem)] justify-center gap-x-8 gap-y-10">
               {data.map((coffee) => (
                 <li key={coffee.id}>
                   <CoffeeCard coffee={coffee} />

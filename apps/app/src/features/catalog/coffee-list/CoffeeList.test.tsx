@@ -51,7 +51,14 @@ describe("CoffeeList with data", () => {
 
     const list = await screen.findByRole("list");
 
-    expect(list).toHaveClass("grid", "grid-cols-[repeat(4,16rem)]", "gap-x-8", "gap-y-10");
+    // As many 256 px columns as fit: four in the 1120 px of the design, two on a tablet, one on a phone.
+    expect(list).toHaveClass(
+      "grid",
+      "grid-cols-[repeat(auto-fill,16rem)]",
+      "justify-center",
+      "gap-x-8",
+      "gap-y-10",
+    );
   });
 
   it("is not busy once the coffees are shown", async () => {
@@ -207,7 +214,14 @@ describe("CoffeeList filters", () => {
 
     expect(title.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(title.parentElement).toContainElement(group);
-    expect(title.parentElement).toHaveClass("flex", "items-center", "justify-between");
+    // The chips are under the title below 1024 px, and in its row from there.
+    expect(title.parentElement).toHaveClass(
+      "flex",
+      "flex-col",
+      "lg:flex-row",
+      "lg:items-center",
+      "lg:justify-between",
+    );
     await screen.findByRole("list");
   });
 

@@ -18,13 +18,13 @@ export function CoffeeFilters({ selected, onChange }: CoffeeFiltersProps) {
     onChange(orderTags(pressed ? [...selected, slug] : selected.filter((item) => item !== slug)));
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {selected.length > 0 ? (
         <Button variant="secondary" onClick={() => onChange([])}>
           Clear filters
         </Button>
       ) : null}
-      <fieldset className="flex gap-2">
+      <fieldset className="flex flex-wrap gap-2">
         <legend className="sr-only">Filter by tag</legend>
         {COFFEE_TAGS.map((tag) => (
           <Tag

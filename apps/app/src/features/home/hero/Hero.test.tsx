@@ -81,7 +81,7 @@ describe("Hero", () => {
     const intro = screen.getByRole("heading", { level: 1 }).parentElement as HTMLElement;
     const image = container.querySelector("img") as HTMLElement;
 
-    expect(intro).toHaveClass("w-136");
+    expect(intro).toHaveClass("lg:w-136");
     expect(intro.compareDocumentPosition(image) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

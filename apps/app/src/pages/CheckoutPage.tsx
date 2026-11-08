@@ -29,7 +29,7 @@ function EmptyCart({ moveFocus }: { moveFocus: boolean }) {
       </h2>
       <Link
         to="/"
-        className="type-button-g text-purple-dark underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple"
+        className="inline-flex min-h-6 items-center type-button-g text-purple-dark underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple"
       >
         Browse coffees
       </Link>
@@ -51,12 +51,13 @@ export function CheckoutPage() {
   if (hasLines && !hadLines) setHadLines(true);
 
   return (
-    <div className="px-page pt-10 pb-20">
+    <div className="px-page pt-6 pb-16 sm:pt-10 lg:pb-20">
       <div className="mx-auto max-w-content">
         <h1 className="sr-only">Checkout</h1>
         {hasLines ? (
           <CheckoutForm>
-            <div className="grid grid-cols-[640px_448px] gap-x-8">
+            {/* One column below 1024 px; from there the columns share the width as 640 to 448 (the design). */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,640fr)_minmax(0,448fr)]">
               <section aria-labelledby="complete-order-heading" className="flex flex-col gap-4">
                 <h2 id="complete-order-heading" className="type-title-xs text-subtitle">
                   Complete your order

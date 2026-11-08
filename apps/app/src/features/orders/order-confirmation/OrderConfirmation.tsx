@@ -56,11 +56,12 @@ export function OrderConfirmation({ order }: { order: Order }) {
       <p className="type-text-regular-l text-subtitle">
         Now just wait and your coffee will soon be with you
       </p>
-      <div className="mt-10 grid grid-cols-[526px_492px] items-end justify-between">
-        <div className="rounded-order-card bg-linear-to-br from-yellow to-purple p-px">
+      {/* Below 1024 px the card is above the illustration; from there they share the row. */}
+      <div className="mt-10 grid grid-cols-1 items-end gap-10 lg:grid-cols-[526px_minmax(0,492px)] lg:justify-between lg:gap-0">
+        <div className="w-full max-w-131.5 rounded-order-card bg-linear-to-br from-yellow to-purple p-px">
           <ul
             aria-label="Order details"
-            className="flex flex-col gap-8 rounded-[5px_35px_5px_35px] bg-background p-10"
+            className="flex flex-col gap-8 rounded-[5px_35px_5px_35px] bg-background p-6 sm:p-10"
           >
             <Row icon="map-pin-fill" tone="purple">
               Delivery to{" "}
@@ -84,7 +85,13 @@ export function OrderConfirmation({ order }: { order: Order }) {
             </Row>
           </ul>
         </div>
-        <img src={deliveryIllustration} alt="" width={492} height={293} />
+        <img
+          src={deliveryIllustration}
+          alt=""
+          width={492}
+          height={293}
+          className="mx-auto h-auto w-full max-w-123 lg:mx-0"
+        />
       </div>
     </>
   );

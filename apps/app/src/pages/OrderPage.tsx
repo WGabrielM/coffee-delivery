@@ -17,7 +17,7 @@ export function OrderPage() {
   const notFound = order.error instanceof ApiError && order.error.status === 404;
 
   return (
-    <div aria-busy={order.isPending} className="px-page pt-20 pb-20">
+    <div aria-busy={order.isPending} className="px-page pt-10 pb-16 lg:pt-20 lg:pb-20">
       <div className="mx-auto max-w-content">
         {order.data ? (
           <OrderConfirmation order={order.data} />
@@ -28,7 +28,7 @@ export function OrderPage() {
             </h1>
             <Link
               to="/"
-              className="type-button-g text-purple-dark underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple"
+              className="inline-flex min-h-6 items-center type-button-g text-purple-dark underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple"
             >
               Back to coffees
             </Link>

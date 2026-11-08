@@ -32,13 +32,16 @@ export function Hero() {
         <div className="absolute top-24 right-24 size-96 rounded-round bg-purple-light blur-[100px]" />
         <div className="absolute right-0 bottom-8 size-64 rounded-round bg-hero-blob/25 blur-[100px]" />
       </div>
-      <div className="mx-auto flex max-w-content items-center justify-between py-23.5">
-        <div className="flex w-136 shrink-0 flex-col">
-          <h1 className="type-title-xl text-title">Find the perfect coffee for any time of day</h1>
+      <div className="mx-auto flex max-w-content flex-col items-center gap-10 py-10 sm:py-16 lg:flex-row lg:justify-between lg:gap-0 lg:py-23.5">
+        {/* Below 1024 px the intro is above the image, both centered; the title is 40 px, 32 px below 640. */}
+        <div className="flex flex-col items-center text-center lg:w-136 lg:shrink-0 lg:items-stretch lg:text-left">
+          <h1 className="type-title-xl text-title max-lg:text-[2.5rem] max-sm:text-[2rem]">
+            Find the perfect coffee for any time of day
+          </h1>
           <p className="mt-4 type-text-regular-l text-subtitle">
             With Coffee Delivery you get your coffee wherever you are, at any time
           </p>
-          <ul className="mt-16.5 grid w-max grid-cols-[auto_auto] gap-x-10 gap-y-5">
+          <ul className="mt-8 grid w-max grid-cols-1 gap-x-10 gap-y-5 text-left sm:grid-cols-[auto_auto] lg:mt-16.5">
             {benefits.map(({ text, icon, circle }) => (
               <li
                 key={text}
@@ -61,7 +64,7 @@ export function Hero() {
           width={476}
           height={360}
           fetchPriority="high"
-          className="shrink-0"
+          className="h-auto max-w-full lg:min-w-0 lg:shrink"
         />
       </div>
     </section>

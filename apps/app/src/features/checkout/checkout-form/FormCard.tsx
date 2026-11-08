@@ -22,7 +22,7 @@ const tones = { yellow: "text-yellow-dark", purple: "text-purple" } as const;
 export function FormCard({ icon, tone, title, description, children }: FormCardProps) {
   const titleId = useId();
   return (
-    <fieldset aria-labelledby={titleId} className="rounded-button bg-card p-10">
+    <fieldset aria-labelledby={titleId} className="min-w-0 rounded-button bg-card p-6 sm:p-10">
       <div className="flex items-start gap-2">
         <Icon name={icon} className={`mt-0.5 size-5.5 ${tones[tone]}`} />
         <div>

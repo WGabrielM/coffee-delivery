@@ -1,4 +1,26 @@
 @layer base {
+  /*
+   * The page margin (`px-page`) follows the breakpoints: 16 px below 640 px, 32 px from 640 px, and
+   * from 1024 px it grows with the window up to the 160 px of the design. The content is at most
+   * 1120 px wide and centered, so the margin only has to leave that much room: at 1440 px it is
+   * 150 px and the content still starts at x=160. The 160 px in theme.css is the desktop value.
+   */
+  :root {
+    --spacing-page: 1rem;
+  }
+
+  @media (min-width: 40rem) {
+    :root {
+      --spacing-page: 2rem;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    :root {
+      --spacing-page: clamp(2rem, (100vw - 1140px) / 2, 160px);
+    }
+  }
+
   html {
     font-family: var(--font-body);
   }

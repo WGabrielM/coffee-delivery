@@ -258,7 +258,8 @@ describe("OrderSummary with data", () => {
 
     const card = screen.getByRole("region", { name: "Selected coffees" }).lastElementChild;
 
-    expect(card).toHaveClass("rounded-summary-card", "bg-card", "p-10");
+    // 40 px of padding from 640 px; 24 px on a phone.
+    expect(card).toHaveClass("rounded-summary-card", "bg-card", "p-6", "sm:p-10");
   });
 
   it("has no accessibility violation", async () => {
