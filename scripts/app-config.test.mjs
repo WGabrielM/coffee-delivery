@@ -82,10 +82,19 @@ test("the app sources contain no hex color literal (colors come from tokens, spe
   }
 });
 
-test("Playwright never reuses a server it did not start (another project may hold port 5173)", () => {
+test("Playwright starts the API and the app, reuses them when they run, and checks them", () => {
   const config = read("apps/app/playwright.config.ts");
-  assert.match(config, /reuseExistingServer: false/);
-  assert.doesNotMatch(config, /reuseExistingServer: !/);
+  assert.match(config, /command: "yarn api:dev"/);
+  assert.match(config, /command: "yarn dev"/);
+  assert.equal(config.match(/reuseExistingServer: true/g)?.length, 2);
+  assert.doesNotMatch(config, /reuseExistingServer: false/);
+  // Postgres is checked before anything starts, with a clear message.
+  assert.ok(config.includes("check-postgres.mjs"));
+  // A reused server must be the right one: another project may hold port 5173 or 3000.
+  assert.ok(config.includes('globalSetup: "./e2e/global-setup.ts"'));
+  const setup = read("apps/app/e2e/global-setup.ts");
+  assert.ok(setup.includes("<title>Coffee Delivery</title>"));
+  assert.ok(setup.includes("actuator/health"));
 });
 
 test("Tailwind is wired into Vite and the styles are loaded by the entry point", () => {
