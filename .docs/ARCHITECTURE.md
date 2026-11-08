@@ -19,7 +19,7 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | App | React 19, TypeScript (strict), Vite, React Router (data mode), TanStack Query, React Hook Form with Zod (the checkout form, spec 023), in `apps/app` | `[implemented]` (foundation, spec 012) |
 | Styling | Tailwind CSS 4 with the Figma tokens as its only theme (`src/styles/theme.css`); fonts Roboto and Baloo 2 self-hosted with Fontsource | `[implemented]` (spec 013) |
 | App tests | Vitest with jsdom and Testing Library; `axe-core` through `src/test/axe.ts` for every component (color contrast is off in jsdom and checked by calculation); Playwright | `[implemented]` (spec 012; axe in spec 015) |
-| CI | GitHub Actions | `[planned]` (spec 030) |
+| CI | GitHub Actions (`.github/workflows/ci.yml` and `commitlint.yml`) and `yarn ci` | `[implemented]` (spec 030) |
 
 ## Ports
 

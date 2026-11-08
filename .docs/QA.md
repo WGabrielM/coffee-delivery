@@ -19,6 +19,15 @@ Both parts are `[implemented]`: `apps/api` (spec 003) and `apps/app` (spec 012).
 
 Gradle tasks behind the API commands: `spotlessApply` (`code:fix`), `spotlessCheck` (`lint`), `compileJava compileTestJava` (`types:check`), `test` (`test`), `e2eTest jacocoTestCoverageVerification` (`test:e2e`, with a minimum of 80% line coverage), and `build` without tests (`build`).
 
+## Continuous integration
+
+| Action | Command | Status |
+| --- | --- | --- |
+| Run on this machine the commands of the pipeline, in its order (`api`, `app`, `e2e`) | `yarn ci` | `[implemented]` |
+| Run one job | `node scripts/ci.mjs api`, `app`, or `e2e` | `[implemented]` |
+
+`yarn ci` is the six checks split as the workflow splits them (see [DEVELOPMENT.md](DEVELOPMENT.md#continuous-integration)); the six QA commands above remain the rule before a commit. After a push, look at the run of `CI` on GitHub: the workflow file must stay valid (`actionlint` checks it).
+
 ## Local setup and skills
 
 | Action | Command | Status |

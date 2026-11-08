@@ -1,0 +1,31 @@
+# Checks the commit messages of a pull request with the commitlint rules of the project
+# (commitlint.config.mjs). Pushes to main are checked on the machine by the commit-msg hook.
+name: Commit messages
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  commitlint:
+    name: Commitlint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out with the whole history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up Node with Yarn caching
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22.22.1"
+          cache: yarn
+      - name: Use the Yarn of the project
+        run: corepack enable
+      - name: Install
+        run: yarn install --frozen-lockfile
+      - name: Lint the commit messages
+        run: yarn commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose

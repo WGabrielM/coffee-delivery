@@ -1,0 +1,125 @@
+# The same commands as `yarn ci` (scripts/ci.mjs; a test keeps the two the same). The API and the app
+# are checked in parallel, and the end-to-end flow starts when both pass. Nothing here publishes
+# anything or uses a secret.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (Gradle)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Java
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Set up Gradle with caching
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - name: Lint
+        run: ./gradlew spotlessCheck
+      - name: Type check
+        run: ./gradlew compileJava compileTestJava
+      - name: Unit tests
+        run: ./gradlew test
+      - name: Build
+        run: ./gradlew build -x test -x e2eTest
+
+  app:
+    name: App (Yarn)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node with Yarn caching
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22.22.1"
+          cache: yarn
+      - name: Use the Yarn of the project
+        run: corepack enable
+      - name: Install
+        run: yarn install --frozen-lockfile
+      - name: Lint
+        run: yarn oxlint .
+      - name: Format check
+        run: yarn oxfmt --check .
+      - name: Script tests
+        run: node --test scripts/*.test.mjs
+      - name: Type check
+        run: yarn --cwd apps/app types:check
+      - name: Unit tests
+        run: yarn --cwd apps/app test
+      - name: Build
+        run: yarn --cwd apps/app build
+
+  e2e:
+    name: End to end (API and Playwright)
+    needs: [api, app]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_DB: coffee_delivery
+          POSTGRES_USER: coffee_delivery
+          POSTGRES_PASSWORD: coffee_delivery_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready --username=coffee_delivery --dbname=coffee_delivery"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Java
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Set up Gradle with caching
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - name: Set up Node with Yarn caching
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22.22.1"
+          cache: yarn
+      - name: Use the Yarn of the project
+        run: corepack enable
+      - name: Install
+        run: yarn install --frozen-lockfile
+      - name: Install the browser
+        run: yarn --cwd apps/app playwright install --with-deps chromium
+      - name: End-to-end tests
+        run: yarn test:e2e
+      - name: Upload the Playwright report and traces
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: |
+            apps/app/playwright-report
+            apps/app/test-results
+          if-no-files-found: ignore
+          retention-days: 7

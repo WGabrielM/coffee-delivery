@@ -88,6 +88,18 @@ PostgreSQL and Grafana LGTM run in Docker Compose (`compose.yaml`). Install Dock
 - Test tooling is listed in [ARCHITECTURE.md](ARCHITECTURE.md). The API runs a minimum of 80% line coverage in `yarn test:e2e`.
 - Tests that need PostgreSQL use Testcontainers, so they do not depend on the local database or on its data.
 
+## Continuous integration
+
+GitHub Actions runs the quality gates on a clean machine on every push to `main` and every pull request (`.github/workflows/ci.yml`):
+
+| Job | Runs | After |
+| --- | --- | --- |
+| `api` | Gradle in `apps/api`: `spotlessCheck`, `compileJava compileTestJava`, `test`, and `build -x test -x e2eTest` (Java 21, Temurin, Gradle cached) | none (parallel with `app`) |
+| `app` | `yarn oxlint .`, `yarn oxfmt --check .`, the script tests (`node --test scripts/*.test.mjs`), and `types:check`, `test`, and `build` of `apps/app` (Node 22.22.1, Yarn cached, `yarn install --frozen-lockfile`) | none (parallel with `api`) |
+| `e2e` | `yarn test:e2e`: the API e2e tests (Testcontainers) and the Playwright tests against the API and the app, with a Postgres 18.6 service container; the Playwright report and traces are uploaded when it fails | `api` and `app` |
+
+`commitlint.yml` runs commitlint over the commits of a pull request. `yarn ci` runs the same commands in the same order on your machine (`node scripts/ci.mjs`; `node scripts/ci.mjs app` runs one job). It needs `yarn local:setup` first (the dependencies, `.env.local`, and Postgres) and the browser (`yarn --cwd apps/app playwright install chromium`). A test (`scripts/ci.test.mjs`) keeps the workflow and `yarn ci` the same, and checks that the versions are explicit (Java 21, Node 22.22.1, Yarn from `packageManager`) and that every action is pinned to a commit SHA with its version in a comment. Change a command in both places together. The pipeline does not deploy, release, build images, use secrets, or run Lighthouse, load tests, or the observability stack.
+
 ## Commits
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org), checked on every commit by commitlint through Lefthook (`commit-msg` hook). The `pre-commit` hook formats staged JavaScript, TypeScript, JSON, CSS, and HTML files.
