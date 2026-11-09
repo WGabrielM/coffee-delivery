@@ -99,6 +99,21 @@ Each spec follows the mold's cycle: `feature-concept` (no open questions) → pl
 
 The numbers and the process are told in [CAPSTONE.md](CAPSTONE.md).
 
+### Follow-up specs (proposed, not started)
+
+The health check of 2026-11-08 (structure, performance, evolution, and documentation) found no critical problem and proposed eight more specs. They are written in `.specs/` and are not part of the 31 that the capstone delivered. Run them with `implement-me` in this order; 037 comes before 038, and 035 before 036.
+
+| # | Spec | Outcome | Depends on |
+| --- | --- | --- | --- |
+| 032 | orders-idempotent-create | An `Idempotency-Key` header and a unique column: a repeated order returns the first one (`200`), also in parallel | 025, 010 |
+| 033 | app-lighter-first-load | Lazy checkout and order routes, WebP photos and hero, lazy photos; Lighthouse performance 95 or more | 029, 014 |
+| 034 | api-batch-and-read-transactions | The lines of an order in one batch and the catalog read on one connection, with a k6 comparison | 010, 005, 008 |
+| 035 | app-shared-ui-blocks | One loading state, one error state, one text link, one quantity limit, and shared e2e helpers | 029 |
+| 036 | architecture-rules-and-page-composition | The stated structure rules guarded by tests; the pages only compose features | 035, 003 |
+| 037 | packaging-and-backup | Dockerfiles for the API and the app, a tested `pg_dump` backup and restore, and a runbook | 030, 002 |
+| 038 | orders-address-retention-and-rate-limit | Addresses cleared after 90 days and a limit of 10 orders a minute at the proxy | 037, 026 |
+| 039 | orders-quote-endpoint | `POST /api/v1/orders/quote`: one rule for the fee and the total, read by the summary | 022, 010, 007 |
+
 ## 4. How we work
 
 1. The specs are written first (`breakdown-specs` plus `create-specification`) and reviewed by you before any code.

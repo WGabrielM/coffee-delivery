@@ -62,7 +62,7 @@ The six commands from `code:fix` to `build` must pass before every commit; [`.do
 | Path | What |
 | --- | --- |
 | [`.docs/`](.docs/AGENTS.md) | The rules: process, product, architecture, conventions, development, design, design system, and QA |
-| [`.specs/`](.specs) | The 31 specs, one action each, in the order they were built |
+| [`.specs/`](.specs) | The 31 specs of the capstone, one action each, in the order they were built, and the 8 follow-up specs (032 to 039) that the health check proposed and nobody has built |
 | [`plans/`](plans), [`adrs/`](adrs) | One plan before each spec and one decision record after it |
 | [`docs/`](docs) | The roadmap ([`PLAN.md`](docs/PLAN.md)), the capstone report ([`CAPSTONE.md`](docs/CAPSTONE.md)), and the Figma analysis |
 | [`apps/api`](apps/api) | The Spring Boot API, organized by domain and layers (`catalog`, `orders`, `system`, `shared`), with its load tests |
