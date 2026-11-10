@@ -82,11 +82,13 @@ test("the app sources contain no hex color literal (colors come from tokens, spe
   }
 });
 
-test("Playwright starts the API and the app, reuses them when they run, and checks them", () => {
+test("Playwright starts the API, the app, and the build, reuses them when they run, and checks them", () => {
   const config = read("apps/app/playwright.config.ts");
   assert.match(config, /command: "yarn api:dev"/);
   assert.match(config, /command: "yarn dev"/);
-  assert.equal(config.match(/reuseExistingServer: true/g)?.length, 2);
+  // The production build, for the chunk and transfer tests of spec 033.
+  assert.match(config, /command: "yarn build && yarn preview --port 4173 --strictPort"/);
+  assert.equal(config.match(/reuseExistingServer: true/g)?.length, 3);
   assert.doesNotMatch(config, /reuseExistingServer: false/);
   // Postgres is checked before anything starts, with a clear message.
   assert.ok(config.includes("check-postgres.mjs"));
@@ -95,6 +97,7 @@ test("Playwright starts the API and the app, reuses them when they run, and chec
   const setup = read("apps/app/e2e/global-setup.ts");
   assert.ok(setup.includes("<title>Coffee Delivery</title>"));
   assert.ok(setup.includes("actuator/health"));
+  assert.ok(setup.includes("http://localhost:4173/"));
 });
 
 test("Tailwind is wired into Vite and the styles are loaded by the entry point", () => {

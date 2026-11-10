@@ -1,7 +1,8 @@
 // Runs once after the servers are up. The config reuses a server that is already running, so this
-// checks that the servers are the right ones: another project on port 5173 or 3000 must make the run
+// checks that the servers are the right ones: another project on port 5173, 4173, or 3000 must make the run
 // fail with a clear message instead of testing the wrong app.
 const APP_URL = "http://localhost:5173/";
+const BUILD_URL = "http://localhost:4173/";
 const API_HEALTH_URL = "http://localhost:3000/actuator/health";
 
 async function read(url: string): Promise<{ status: number; body: string }> {
@@ -18,6 +19,13 @@ export default async function globalSetup(): Promise<void> {
   if (app.status !== 200 || !app.body.includes("<title>Coffee Delivery</title>")) {
     throw new Error(
       "Port 5173 is serving something other than the Coffee Delivery app. Stop that server and run the tests again.",
+    );
+  }
+
+  const build = await read(BUILD_URL);
+  if (build.status !== 200 || !build.body.includes("<title>Coffee Delivery</title>")) {
+    throw new Error(
+      "Port 4173 is serving something other than the Coffee Delivery build. Stop that server and run the tests again.",
     );
   }
 

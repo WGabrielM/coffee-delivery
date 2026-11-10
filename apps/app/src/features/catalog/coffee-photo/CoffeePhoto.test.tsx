@@ -17,6 +17,16 @@ describe("CoffeePhoto", () => {
     expect(photo).toHaveClass("size-16");
   });
 
+  it("is lazy and decoded asynchronously, and is a WebP", () => {
+    render(<CoffeePhoto slug="latte" name="Latte" size={120} className="size-30" />);
+
+    const photo = screen.getByRole("img", { name: "Latte" });
+
+    expect(photo).toHaveAttribute("loading", "lazy");
+    expect(photo).toHaveAttribute("decoding", "async");
+    expect(photo.getAttribute("src")).toMatch(/[.]webp/);
+  });
+
   it("draws an empty, hidden, round placeholder for a slug with no photo", () => {
     const { container } = render(
       <CoffeePhoto slug="unknown-brew" name="Unknown Brew" size={64} className="size-16" />,

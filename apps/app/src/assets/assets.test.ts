@@ -17,10 +17,16 @@ const assets = import.meta.dirname;
 const read = (path: string) => readFileSync(join(assets, path));
 const names = (directory: string) => readdirSync(join(assets, directory)).toSorted();
 
-/** Width and height from the IHDR chunk of a PNG. */
-function pngSize(file: Buffer): { width: number; height: number } {
-  expect(file.subarray(1, 4).toString("latin1"), "PNG signature").toBe("PNG");
-  return { width: file.readUInt32BE(16), height: file.readUInt32BE(20) };
+/** Width, height, and the alpha flag from the VP8X chunk of a WebP (the optimizer writes this form). */
+function webpInfo(file: Buffer): { width: number; height: number; hasAlpha: boolean } {
+  expect(file.toString("latin1", 0, 4), "RIFF signature").toBe("RIFF");
+  expect(file.toString("latin1", 8, 12), "WEBP signature").toBe("WEBP");
+  expect(file.toString("latin1", 12, 16), "extended format").toBe("VP8X");
+  return {
+    width: file.readUIntLE(24, 3) + 1,
+    height: file.readUIntLE(27, 3) + 1,
+    hasAlpha: (file[20]! & 0x10) !== 0,
+  };
 }
 
 describe("coffee photos", () => {
@@ -52,15 +58,21 @@ describe("coffee photos", () => {
     expect(Object.keys(coffeeImages).toSorted()).toEqual(COFFEE_SLUGS.toSorted());
   });
 
-  it.each(COFFEE_SLUGS)("%s.png is a square raster of at least 240 px", (slug) => {
-    const { width, height } = pngSize(read(`coffees/${slug}.png`));
+  it.each(COFFEE_SLUGS)(
+    "%s.webp is a square of 240 px with a transparent background, at most 25 kB",
+    (slug) => {
+      const file = read(`coffees/${slug}.webp`);
+      const { width, height, hasAlpha } = webpInfo(file);
 
-    expect(width).toBe(height);
-    expect(width).toBeGreaterThanOrEqual(240);
-  });
+      expect(width).toBe(240);
+      expect(height).toBe(240);
+      expect(hasAlpha).toBe(true);
+      expect(file.length).toBeLessThanOrEqual(25 * 1024);
+    },
+  );
 
   it("has a file for each slug and nothing else", () => {
-    expect(names("coffees")).toEqual(COFFEE_SLUGS.map((slug) => `${slug}.png`).toSorted());
+    expect(names("coffees")).toEqual(COFFEE_SLUGS.map((slug) => `${slug}.webp`).toSorted());
   });
 });
 
@@ -108,10 +120,13 @@ describe("logo, hero image, and delivery illustration", () => {
     // The logo frame is 84.95 by 40 in Figma.
     expect(read("logo/logo.svg").toString()).toMatch(/viewBox="0 0 84\.95\d* 40"/);
     expect(read("success/delivery-illustration.svg").toString()).toMatch(/viewBox="0 0 492 293"/);
-    // The raster is larger than the 476 by 360 of the frame, so a 2x screen stays sharp.
-    const { width, height } = pngSize(read("hero/hero.png"));
-    expect(width).toBeGreaterThanOrEqual(476 * 2);
-    expect(width / height).toBeCloseTo(476 / 360, 1);
+    // The raster is twice the 476 by 360 of the frame, so a 2x screen stays sharp, and at most 120 kB.
+    const file = read("hero/hero.webp");
+    const { width, height, hasAlpha } = webpInfo(file);
+    expect(width).toBe(476 * 2);
+    expect(width / height).toBeCloseTo(1070 / 810, 2);
+    expect(hasAlpha).toBe(true);
+    expect(file.length).toBeLessThanOrEqual(120 * 1024);
   });
 
   it("keep their own colors, because only the icons follow the text color", () => {

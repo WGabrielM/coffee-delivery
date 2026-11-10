@@ -1,11 +1,11 @@
 // `yarn lighthouse`: builds the app, serves the build on port 5173 (the API must be running on port
 // 3000), audits the Home page with the desktop preset, prints the scores, and exits 1 unless the
-// performance score is at least 90 and the accessibility score at least 95. It is not run in CI.
+// performance score is at least 95 and the accessibility score at least 95. It is not run in CI.
 import { spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const MIN_PERFORMANCE = 90;
+export const MIN_PERFORMANCE = 95;
 export const MIN_ACCESSIBILITY = 95;
 
 const toPoints = (score) => (typeof score === "number" ? Math.round(score * 100) : null);

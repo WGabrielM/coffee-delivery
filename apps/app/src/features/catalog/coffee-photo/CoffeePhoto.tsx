@@ -16,13 +16,23 @@ type CoffeePhotoProps = {
 
 /**
  * The round photo of a coffee. A coffee the app has no photo for (a new one in the catalog) keeps
- * its place with an empty round placeholder, so the layout does not break.
+ * its place with an empty round placeholder, so the layout does not break. The photo is lazy and
+ * decoded off the main thread: the first screen never waits for the cards below it, and the size
+ * attributes keep the place, so nothing jumps when it loads.
  */
 export function CoffeePhoto({ slug, name, size, className }: CoffeePhotoProps) {
   if (!hasPhoto(slug)) {
     return <div data-photo-placeholder aria-hidden="true" className={`${className} bg-hover`} />;
   }
   return (
-    <img src={coffeeImages[slug]} alt={name} width={size} height={size} className={className} />
+    <img
+      src={coffeeImages[slug]}
+      alt={name}
+      width={size}
+      height={size}
+      loading="lazy"
+      decoding="async"
+      className={className}
+    />
   );
 }

@@ -162,13 +162,13 @@ All brand and product images live in `apps/app/src/assets` and are committed, so
 
 | Folder | Content | Manifest |
 | --- | --- | --- |
-| `coffees/` | 14 coffee photos, square PNGs with a transparent background (320 to 1332 px), named by catalog slug | `COFFEE_SLUGS`, `CoffeeSlug`, `coffeeImages[slug]` (URL) |
+| `coffees/` | 14 coffee photos, square WebP files of 240 px (twice the 120 px of the card) with a transparent background, at most 25 kB each, named by catalog slug | `COFFEE_SLUGS`, `CoffeeSlug`, `coffeeImages[slug]` (URL) |
 | `icons/` | the 13 icons above | `ICON_NAMES`, `IconName`, `iconSvgs[name]` (SVG markup) |
 | `logo/` | `logo.svg`, 85 by 40, its own two colors (cup `#8047F8`, text `#403937`) | `logo` (URL) |
-| `hero/` | `hero.png`, 1070 by 810 (2.25 times the 476 by 360 of the frame), with the yellow shape and the purple arc already in it | `heroImage` (URL) |
+| `hero/` | `hero.webp`, 952 by 721 (twice the 476 by 360 of the frame), at most 120 kB, with the yellow shape and the purple arc already in it | `heroImage` (URL) |
 | `success/` | `delivery-illustration.svg`, 492 by 293, its own colors | `deliveryIllustration` (URL) |
 
-The photos are shown at 120 by 120 in the catalog and 64 by 64 in the cart. The files are the originals of the design, not resized: about 1.8 MB for the 14 photos and 0.5 MB for the hero image (spec 014 records the weight; resizing is a later decision).
+The photos are shown at 120 by 120 in the catalog and 64 by 64 in the cart. The files the app imports are WebP, made by `node scripts/optimize-images.mjs` from the PNG originals of the design, which are kept in `apps/app/assets-source` (not part of the build): the 14 photos weigh about 0.13 MB together and the hero 88 kB, against 1.8 MB and 0.5 MB as PNG (spec 033). The script leaves a file alone that is already under its limit (`--force` makes every file again), keeps the transparent background and the proportion, and adds no dependency (`@napi-rs/canvas`). Rule for new images: a raster is a WebP at twice its displayed size, with its limit in `optimize-images.mjs`; an image below the first screen is `loading="lazy"` and `decoding="async"` (`CoffeePhoto` does this), and the hero image keeps `fetchPriority="high"` and is never lazy.
 
 ### Regenerating the assets
 
@@ -179,6 +179,6 @@ node scripts/extract-figma-assets.mjs            # the default path
 node scripts/extract-figma-assets.mjs <file.fig> # another path
 ```
 
-The script reads the file offline (no Figma account, no library), rewrites `apps/app/src/assets` and `docs/design/assets-mapping.md`, and draws `docs/design/coffee-images-contact-sheet.png`. It is deterministic: running it again on the same file changes nothing. It stops with an error when a card has no known slug, when two cards share a photo, when a photo is not square or is under 240 px, or when the photos of the cards and of the Style Guide disagree. Without the file it exits with a message that names the expected path. It needs Node 22.15 or newer (the canvas of the file is zstd-compressed).
+The script reads the file offline (no Figma account, no library), rewrites `apps/app/src/assets` (the icons, the logo, the illustration, and, through `optimize-images.mjs`, the WebP photos and hero), the PNG originals in `apps/app/assets-source`, and `docs/design/assets-mapping.md`, and draws `docs/design/coffee-images-contact-sheet.png`. It is deterministic: running it again on the same file changes nothing. It stops with an error when a card has no known slug, when two cards share a photo, when a photo is not square or is under 240 px, or when the photos of the cards and of the Style Guide disagree. Without the file it exits with a message that names the expected path. It needs Node 22.15 or newer (the canvas of the file is zstd-compressed).
 
 How a photo is matched to a coffee: by the image hash of its card on the Home screen, never by position. `docs/design/assets-mapping.md` lists, for each slug, the Figma card, the photo symbol, and the hash; the contact sheet lets you check the result by eye.

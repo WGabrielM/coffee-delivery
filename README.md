@@ -52,7 +52,7 @@ Open <http://localhost:5173>: the 14 coffees show up. Add some, open the cart (t
 | `yarn test:e2e` | The API end-to-end tests and the Playwright tests. It needs PostgreSQL (`yarn infra:up`), starts the API and the app when they are not running, and reuses them when they are |
 | `yarn build` | Builds the API and the app |
 | `yarn ci` | Runs on your machine the same commands, in the same order, as the GitHub Actions pipeline |
-| `yarn lighthouse` | Audits the Home page with Lighthouse (desktop); needs the API running; fails under 90 (performance) or 95 (accessibility) |
+| `yarn lighthouse` | Audits the Home page with Lighthouse (desktop); needs the API running; fails under 95 (performance) or 95 (accessibility) |
 | `yarn load:smoke`, `yarn load`, `yarn load:stress`, `yarn load:spike`, `yarn load:soak` | The k6 load tests against the API (see [`apps/api/load/README.md`](apps/api/load/README.md)) |
 
 The six commands from `code:fix` to `build` must pass before every commit; [`.docs/QA.md`](.docs/QA.md) has the details and the prerequisites of each.

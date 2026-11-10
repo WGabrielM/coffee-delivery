@@ -64,7 +64,7 @@ export function Hero() {
           width={476}
           height={360}
           fetchPriority="high"
-          className="h-auto max-w-full lg:min-w-0 lg:shrink"
+          className="aspect-476/360 h-auto max-w-full lg:min-w-0 lg:shrink"
         />
       </div>
     </section>

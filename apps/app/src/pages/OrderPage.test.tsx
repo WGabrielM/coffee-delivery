@@ -12,7 +12,7 @@ afterEach(() => {
 describe("OrderPage with an order", () => {
   it("asks the API for the order of the URL and shows the confirmation", async () => {
     const fetchMock = fakeOrderApi();
-    renderOrderPage();
+    await renderOrderPage();
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Uhu! Order confirmed" }),
@@ -23,7 +23,7 @@ describe("OrderPage with an order", () => {
 
   it("starts the content on the 160 px page margin, inside the layout", async () => {
     fakeOrderApi();
-    const { container } = renderOrderPage();
+    const { container } = await renderOrderPage();
     await screen.findByRole("heading", { level: 1, name: "Uhu! Order confirmed" });
 
     expect(screen.getByRole("main")).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe("OrderPage with an order", () => {
 
   it("shows the empty cart badge when the cart is empty", async () => {
     fakeOrderApi();
-    renderOrderPage();
+    await renderOrderPage();
     await screen.findByRole("heading", { level: 1, name: "Uhu! Order confirmed" });
 
     expect(screen.getByRole("link", { name: "Cart, empty" })).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe("OrderPage with an order", () => {
 
   it("has no accessibility violation", async () => {
     fakeOrderApi();
-    const { container } = renderOrderPage();
+    const { container } = await renderOrderPage();
     await screen.findByRole("heading", { level: 1, name: "Uhu! Order confirmed" });
 
     expect(await accessibilityViolations(container)).toEqual([]);
@@ -48,9 +48,9 @@ describe("OrderPage with an order", () => {
 });
 
 describe("OrderPage while it loads", () => {
-  it("shows Loading your order… and keeps one level 1 for screen readers", () => {
+  it("shows Loading your order… and keeps one level 1 for screen readers", async () => {
     fakeOrderApi("pending");
-    renderOrderPage();
+    await renderOrderPage();
 
     expect(screen.getByText("Loading your order…")).toBeInTheDocument();
     const title = screen.getByRole("heading", { level: 1, name: "Order confirmation" });
@@ -58,9 +58,9 @@ describe("OrderPage while it loads", () => {
     expect(screen.queryByText("Uhu! Order confirmed")).not.toBeInTheDocument();
   });
 
-  it("marks the main area busy", () => {
+  it("marks the main area busy", async () => {
     fakeOrderApi("pending");
-    const { container } = renderOrderPage();
+    const { container } = await renderOrderPage();
 
     expect(container.querySelector("[aria-busy=true]")).toBeInTheDocument();
   });
@@ -69,7 +69,7 @@ describe("OrderPage while it loads", () => {
 describe("OrderPage with an order that is not found", () => {
   it("shows Order not found and a link Back to coffees to the home page", async () => {
     fakeOrderApi("not-found");
-    renderOrderPage("00000000-0000-4000-8000-000000000000");
+    await renderOrderPage("00000000-0000-4000-8000-000000000000");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Order not found" }),
@@ -80,7 +80,7 @@ describe("OrderPage with an order that is not found", () => {
 
   it("treats a malformed id the same way (the API answers 404)", async () => {
     const fetchMock = fakeOrderApi("not-found");
-    renderOrderPage("not-a-uuid");
+    await renderOrderPage("not-a-uuid");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Order not found" }),
@@ -90,7 +90,7 @@ describe("OrderPage with an order that is not found", () => {
 
   it("has no accessibility violation", async () => {
     fakeOrderApi("not-found");
-    const { container } = renderOrderPage("nope");
+    const { container } = await renderOrderPage("nope");
     await screen.findByRole("heading", { level: 1, name: "Order not found" });
 
     expect(await accessibilityViolations(container)).toEqual([]);
@@ -100,7 +100,7 @@ describe("OrderPage with an order that is not found", () => {
 describe("OrderPage when the request fails", () => {
   it("shows We couldn't load your order with a Try again button", async () => {
     fakeOrderApi("fail");
-    renderOrderPage();
+    await renderOrderPage();
 
     const alert = await screen.findByRole("alert");
 
@@ -114,7 +114,7 @@ describe("OrderPage when the request fails", () => {
   it("asks again on Try again and shows the order when it answers", async () => {
     const fetchMock = fakeOrderApi(["fail", "ok"]);
     const user = userEvent.setup({ delay: null });
-    renderOrderPage();
+    await renderOrderPage();
     await screen.findByRole("alert");
 
     await user.click(screen.getByRole("button", { name: "Try again" }));
@@ -128,7 +128,7 @@ describe("OrderPage when the request fails", () => {
 
   it("has no accessibility violation", async () => {
     fakeOrderApi("fail");
-    const { container } = renderOrderPage();
+    const { container } = await renderOrderPage();
     await screen.findByRole("alert");
 
     expect(await accessibilityViolations(container)).toEqual([]);

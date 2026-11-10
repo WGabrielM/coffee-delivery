@@ -2,6 +2,9 @@
 //   node scripts/extract-figma-assets.mjs [path-to-file.fig]
 // The `.fig` stays on the developer's machine (docs/design, ignored by Git); the outputs are committed,
 // so the app builds without it. Running the script again on the same file gives the same files.
+// The photos and the hero come out of the file as PNG: they are written to apps/app/assets-source
+// (not part of the build) and made into the WebP files the app imports by `optimize-images.mjs`
+// (spec 033), which this script runs at the end.
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -21,6 +24,7 @@ import {
   normalizeIconName,
 } from "./lib/fig-assets.mjs";
 import { openFig } from "./lib/fig-file.mjs";
+import { optimizeImages } from "./optimize-images.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const FIG_FILE = "docs/design/Coffee Delivery • Desafio React (Copy).fig";
@@ -208,7 +212,7 @@ function mappingDocument(assets, figPath) {
     "",
     "## Coffee photos",
     "",
-    "Each photo is matched by the image hash of the card on the Home screen: the card is an instance of `Type=Catalog`; its title is its text override, and its photo is the symbol chosen for its `Coffee` instance. The grid order of the cards and the photo symbols of the Style Guide are cross-checks. Look at `coffee-images-contact-sheet.png` to check the result by eye.",
+    "Each photo is matched by the image hash of the card on the Home screen: the card is an instance of `Type=Catalog`; its title is its text override, and its photo is the symbol chosen for its `Coffee` instance. The grid order of the cards and the photo symbols of the Style Guide are cross-checks. Look at `coffee-images-contact-sheet.png` to check the result by eye. Size and weight are those of the PNG in `apps/app/assets-source/coffees`; the app imports the 240 px WebP that `scripts/optimize-images.mjs` makes from it.",
     "",
     "| # | Slug | Figma card | Figma photo symbol | Image hash | Size | Weight |",
     "| --- | --- | --- | --- | --- | --- | --- |",
@@ -227,26 +231,31 @@ function mappingDocument(assets, figPath) {
     "| File | Figma source |",
     "| --- | --- |",
     `| \`logo/logo.svg\` | ${assets.logo.source} |`,
-    `| \`hero/hero.png\` | ${assets.hero.source}, image \`${assets.hero.hash}\`, ${assets.hero.width}×${assets.hero.height} |`,
+    `| \`hero/hero.png\` (in \`apps/app/assets-source\`; the app imports \`hero/hero.webp\`) | ${assets.hero.source}, image \`${assets.hero.hash}\`, ${assets.hero.width}×${assets.hero.height} |`,
     `| \`success/delivery-illustration.svg\` | ${assets.illustration.source} |`,
     "",
   ].join("\n");
 }
 
 /** Extracts the assets of `figPath` into the app and the design docs. */
-export async function extract(figPath, { assetsDir, designDir }) {
+export async function extract(figPath, { assetsDir, designDir, sourceDir }) {
   const assets = collectAssets(readFileSync(figPath));
 
-  for (const directory of ["logo", "icons", "coffees", "hero", "success"]) {
+  for (const directory of ["logo", "icons", "success"]) {
     rmSync(join(assetsDir, directory), { recursive: true, force: true });
+  }
+  for (const directory of ["coffees", "hero"]) {
+    rmSync(join(sourceDir, directory), { recursive: true, force: true });
   }
   write(join(assetsDir, "logo", "logo.svg"), assets.logo.svg);
   write(join(assetsDir, "success", "delivery-illustration.svg"), assets.illustration.svg);
-  write(join(assetsDir, "hero", "hero.png"), assets.hero.bytes);
+  write(join(sourceDir, "hero", "hero.png"), assets.hero.bytes);
   for (const name of ICON_NAMES)
     write(join(assetsDir, "icons", `${name}.svg`), assets.icons.get(name).svg);
   for (const slug of COFFEE_SLUGS)
-    write(join(assetsDir, "coffees", `${slug}.png`), assets.photos.get(slug).bytes);
+    write(join(sourceDir, "coffees", `${slug}.png`), assets.photos.get(slug).bytes);
+
+  await optimizeImages({ sourceDir, assetsDir, force: true });
 
   write(join(designDir, "assets-mapping.md"), mappingDocument(assets, figPath));
   write(join(designDir, "coffee-images-contact-sheet.png"), await contactSheet(assets.photos));
@@ -272,6 +281,7 @@ async function main() {
   }
   const result = await extract(figPath, {
     assetsDir: join(root, "apps/app/src/assets"),
+    sourceDir: join(root, "apps/app/assets-source"),
     designDir: join(root, "docs/design"),
   });
   console.log(

@@ -8,6 +8,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: { port: 5173, strictPort: true, proxy: api },
   preview: { port: 5173, strictPort: true, proxy: api },
+  // The checkout is a lazy route, so the dev server would find its libraries only when a first visit
+  // opens it, then bundle them and reload the page. Listing them here bundles them at start.
+  optimizeDeps: { include: ["react-hook-form", "@hookform/resolvers/zod", "zod"] },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],

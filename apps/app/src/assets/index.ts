@@ -1,21 +1,21 @@
 // Every brand and product asset of the app, extracted from the Figma file by
 // `node scripts/extract-figma-assets.mjs` (see docs/design/assets-mapping.md). Each file is imported
 // by name, so a missing file fails the type check and the build, never the browser.
-import americanEspresso from "./coffees/american-espresso.png";
-import arabic from "./coffees/arabic.png";
-import cappuccino from "./coffees/cappuccino.png";
-import coffeeWithMilk from "./coffees/coffee-with-milk.png";
-import creamyEspresso from "./coffees/creamy-espresso.png";
-import cuban from "./coffees/cuban.png";
-import hawaiian from "./coffees/hawaiian.png";
-import hotChocolate from "./coffees/hot-chocolate.png";
-import icedEspresso from "./coffees/iced-espresso.png";
-import irish from "./coffees/irish.png";
-import latte from "./coffees/latte.png";
-import macchiato from "./coffees/macchiato.png";
-import mochaccino from "./coffees/mochaccino.png";
-import traditionalEspresso from "./coffees/traditional-espresso.png";
-import heroImage from "./hero/hero.png";
+import americanEspresso from "./coffees/american-espresso.webp";
+import arabic from "./coffees/arabic.webp";
+import cappuccino from "./coffees/cappuccino.webp";
+import coffeeWithMilk from "./coffees/coffee-with-milk.webp";
+import creamyEspresso from "./coffees/creamy-espresso.webp";
+import cuban from "./coffees/cuban.webp";
+import hawaiian from "./coffees/hawaiian.webp";
+import hotChocolate from "./coffees/hot-chocolate.webp";
+import icedEspresso from "./coffees/iced-espresso.webp";
+import irish from "./coffees/irish.webp";
+import latte from "./coffees/latte.webp";
+import macchiato from "./coffees/macchiato.webp";
+import mochaccino from "./coffees/mochaccino.webp";
+import traditionalEspresso from "./coffees/traditional-espresso.webp";
+import heroImage from "./hero/hero.webp";
 import bank from "./icons/bank.svg?raw";
 import coffeeFill from "./icons/coffee-fill.svg?raw";
 import creditCard from "./icons/credit-card.svg?raw";
@@ -52,7 +52,7 @@ export const COFFEE_SLUGS = [
 
 export type CoffeeSlug = (typeof COFFEE_SLUGS)[number];
 
-/** The photo of each coffee: the URL of a square PNG with a transparent background. */
+/** The photo of each coffee: the URL of a square WebP of 240 px (twice the 120 px of the card) with a transparent background. */
 export const coffeeImages: Readonly<Record<CoffeeSlug, string>> = {
   "traditional-espresso": traditionalEspresso,
   "american-espresso": americanEspresso,
@@ -112,7 +112,7 @@ export const iconSvgs: Readonly<Record<IconName, string>> = {
 /** The URL of the logo (85 by 40, in its own colors). */
 export { logo };
 
-/** The URL of the hero image of the Home screen (a PNG at 2.25 times the 476 by 360 of the design). */
+/** The URL of the hero image of the Home screen (a WebP of 952 by 721, twice the 476 by 360 of the design). */
 export { heroImage };
 
 /** The URL of the delivery illustration of the Success screen (492 by 293, in its own colors). */

@@ -14,13 +14,13 @@ import {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-test("the limits are the exit criteria of the plan: 90 for performance, 95 for accessibility", () => {
-  assert.equal(MIN_PERFORMANCE, 90);
+test("the limits are the exit criteria of the plan: 95 for performance, 95 for accessibility", () => {
+  assert.equal(MIN_PERFORMANCE, 95);
   assert.equal(MIN_ACCESSIBILITY, 95);
 });
 
 test("the scores pass at the limits and above", () => {
-  assert.deepEqual(evaluateScores({ performance: 0.9, accessibility: 0.95 }), {
+  assert.deepEqual(evaluateScores({ performance: 0.95, accessibility: 0.95 }), {
     ok: true,
     failures: [],
   });
@@ -28,16 +28,16 @@ test("the scores pass at the limits and above", () => {
 });
 
 test("a score under its limit fails and the failure names it", () => {
-  const result = evaluateScores({ performance: 0.89, accessibility: 0.95 });
+  const result = evaluateScores({ performance: 0.94, accessibility: 0.95 });
 
   assert.equal(result.ok, false);
-  assert.deepEqual(result.failures, ["performance 89 is under 90"]);
+  assert.deepEqual(result.failures, ["performance 94 is under 95"]);
 });
 
 test("both scores can fail at once", () => {
   const result = evaluateScores({ performance: 0.5, accessibility: 0.94 });
 
-  assert.deepEqual(result.failures, ["performance 50 is under 90", "accessibility 94 is under 95"]);
+  assert.deepEqual(result.failures, ["performance 50 is under 95", "accessibility 94 is under 95"]);
 });
 
 test("the scores are printed as whole numbers out of 100", () => {

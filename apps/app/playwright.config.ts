@@ -11,6 +11,8 @@ import { defineConfig, devices } from "@playwright/test";
 // - The API (`yarn api:dev`, port 3000) and the app (`yarn dev`, port 5173) start by themselves when
 //   nothing answers on their address, and stop when the run ends. A server that is already running
 //   is reused; `e2e/global-setup.ts` checks that it is the right one.
+// - The production build is built and served on port 4173 for `e2e/first-load.spec.ts` (chunks and
+//   transferred size); it stops when the run ends.
 // Install the browser once with `yarn --cwd apps/app playwright install chromium`.
 // PLAYWRIGHT_CHROMIUM_PATH points at an existing Chromium instead (for example in a container).
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -58,6 +60,14 @@ export default defineConfig({
       url: "http://localhost:5173",
       reuseExistingServer: true,
       timeout: 60_000,
+    },
+    {
+      // The production build, for the tests that need the chunks and the transferred size
+      // (e2e/first-load.spec.ts). `vite preview` proxies /api to the API like the dev server.
+      command: "yarn build && yarn preview --port 4173 --strictPort",
+      url: "http://localhost:4173",
+      reuseExistingServer: true,
+      timeout: 120_000,
     },
   ],
 });

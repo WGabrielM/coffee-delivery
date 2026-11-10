@@ -75,6 +75,16 @@ describe("Hero", () => {
     expect(screen.queryByRole("img")).toBeNull();
   });
 
+  it("loads the cup image first: high priority, and never lazy, because it is the largest paint", () => {
+    const { container } = render(<Hero />);
+
+    const image = container.querySelector("img");
+
+    expect(image).toHaveAttribute("fetchpriority", "high");
+    expect(image).not.toHaveAttribute("loading");
+    expect(image?.getAttribute("src")).toMatch(/[.]webp/);
+  });
+
   it("puts a 544 px intro column before the image", () => {
     const { container } = render(<Hero />);
 

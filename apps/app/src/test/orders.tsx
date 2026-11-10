@@ -1,7 +1,7 @@
 // Test helpers for the order page: a fake `GET /api/v1/orders/{id}` and a render with the router, so
 // the hook, the typed client, and the page are tested together.
 import { QueryClientProvider } from "@tanstack/react-query";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { vi } from "vitest";
 
@@ -50,13 +50,16 @@ export function fakeOrderApi(
 }
 
 /** The app at `/orders/<id>`, inside the real layout and routes. */
-export function renderOrderPage(orderId: string = sampleOrder.id) {
+export async function renderOrderPage(orderId: string = sampleOrder.id) {
   const router = createMemoryRouter(routes, { initialEntries: [`/orders/${orderId}`] });
-  return render(
+  const view = render(
     <QueryClientProvider client={createTestQueryClient()}>
       <CartProvider>
         <RouterProvider router={router} />
       </CartProvider>
     </QueryClientProvider>,
   );
+  // The page is its own chunk, loaded when the route is visited: wait for it.
+  await screen.findByRole("heading", { level: 1, name: "Order confirmation" });
+  return view;
 }

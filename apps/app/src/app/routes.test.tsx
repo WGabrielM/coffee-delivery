@@ -37,19 +37,27 @@ describe("routes", () => {
     expect(await screen.findAllByRole("article")).toHaveLength(3);
   });
 
-  it("renders the checkout page at /checkout", () => {
+  it("renders the checkout page at /checkout, loaded when it is needed", async () => {
     renderAt("/checkout");
 
-    expect(screen.getByRole("heading", { level: 1, name: "Checkout" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Checkout" })).toBeInTheDocument();
   });
 
-  it("renders the order page at /orders/:orderId, which asks the API for that order", () => {
+  it("renders the order page at /orders/:orderId, which asks the API for that order", async () => {
     renderAt("/orders/abc");
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Order confirmation" }),
+      await screen.findByRole("heading", { level: 1, name: "Order confirmation" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Loading your order…")).toBeInTheDocument();
+  });
+
+  it("shows the skip link and the navbar while the page of a first visit is loading", () => {
+    renderAt("/checkout");
+
+    expect(screen.getByRole("link", { name: "Skip to content" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 1, name: "Checkout" })).not.toBeInTheDocument();
   });
 
   it("renders the not-found page with a link to / for an unknown path", () => {
@@ -68,9 +76,10 @@ describe("routes", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Page not found" })).toBeInTheDocument();
   });
 
-  it("renders every route inside the layout: skip link, navbar, and main#main-content", () => {
+  it("renders every route inside the layout: skip link, navbar, and main#main-content", async () => {
     for (const path of ["/", "/checkout", "/orders/abc", "/nope"]) {
       const { unmount } = renderPath(path);
+      await screen.findByRole("heading", { level: 1 });
       expect(screen.getByRole("link", { name: "Skip to content" })).toBeInTheDocument();
       expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
       expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
@@ -78,9 +87,10 @@ describe("routes", () => {
     }
   });
 
-  it("gives every page one main landmark", () => {
+  it("gives every page one main landmark", async () => {
     for (const path of ["/", "/checkout", "/orders/abc", "/nope"]) {
       const { unmount } = renderPath(path);
+      await screen.findByRole("heading", { level: 1 });
       expect(screen.getAllByRole("main")).toHaveLength(1);
       unmount();
     }

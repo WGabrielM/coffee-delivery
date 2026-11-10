@@ -6,7 +6,7 @@ Source: `docs/design/Coffee Delivery • Desafio React (Copy).fig` (not tracked 
 
 ## Coffee photos
 
-Each photo is matched by the image hash of the card on the Home screen: the card is an instance of `Type=Catalog`; its title is its text override, and its photo is the symbol chosen for its `Coffee` instance. The grid order of the cards and the photo symbols of the Style Guide are cross-checks. Look at `coffee-images-contact-sheet.png` to check the result by eye.
+Each photo is matched by the image hash of the card on the Home screen: the card is an instance of `Type=Catalog`; its title is its text override, and its photo is the symbol chosen for its `Coffee` instance. The grid order of the cards and the photo symbols of the Style Guide are cross-checks. Look at `coffee-images-contact-sheet.png` to check the result by eye. Size and weight are those of the PNG in `apps/app/assets-source/coffees`; the app imports the 240 px WebP that `scripts/optimize-images.mjs` makes from it.
 
 | # | Slug | Figma card | Figma photo symbol | Image hash | Size | Weight |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -50,5 +50,5 @@ Outlines of the symbols of the Style Guide, drawn in `currentColor`. The Figma n
 | File | Figma source |
 | --- | --- |
 | `logo/logo.svg` | Logo (215:431) |
-| `hero/hero.png` | Imagem (212:16588), image `731ef48dacb13d1b7c718c6f523d5dc02407a226`, 1070×810 |
+| `hero/hero.png` (in `apps/app/assets-source`; the app imports `hero/hero.webp`) | Imagem (212:16588), image `731ef48dacb13d1b7c718c6f523d5dc02407a226`, 1070×810 |
 | `success/delivery-illustration.svg` | Illustration (222:995) |
