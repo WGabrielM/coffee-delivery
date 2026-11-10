@@ -1,54 +1,22 @@
-import { useEffect, useRef, useState } from "react";
-import { TextLink } from "../components/text-link/TextLink";
-import { useCart } from "../features/cart/cart-context";
+import { CartGate } from "../features/checkout/cart-gate/CartGate";
 import { AddressCard } from "../features/checkout/address-card/AddressCard";
 import { CheckoutForm } from "../features/checkout/checkout-form/CheckoutForm";
-import { PaymentCard } from "../features/checkout/payment-card/PaymentCard";
 import { OrderSummary } from "../features/checkout/order-summary/OrderSummary";
+import { PaymentCard } from "../features/checkout/payment-card/PaymentCard";
 
 /**
- * What the page shows when there is nothing to buy. `moveFocus` is true when the cart has just been
- * emptied on this page (the focused Remove button is gone), so the focus goes to the message.
- */
-function EmptyCart({ moveFocus }: { moveFocus: boolean }) {
-  const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
-    if (moveFocus) heading.current?.focus();
-  }, [moveFocus]);
-
-  return (
-    <section aria-labelledby="empty-cart-heading" className="flex flex-col items-start gap-4 py-10">
-      <h2
-        id="empty-cart-heading"
-        ref={heading}
-        tabIndex={-1}
-        className="type-title-m text-subtitle focus:outline-none"
-      >
-        Your cart is empty
-      </h2>
-      <TextLink to="/">Browse coffees</TextLink>
-    </section>
-  );
-}
-
-/**
- * The checkout: the form on the left (the address card, spec 023, and the payment card, spec 024), 640 px wide at x=160, and the summary of the cart on the right, 448 px wide at x=832, at
- * 1440 px. Both columns are inside one form, so the summary's Confirm order button can submit it
- * (spec 025). An empty cart shows only a message and a link to the coffees, and no form. Tablet and
- * mobile layouts are spec 027.
+ * The checkout: the form on the left (the address card, spec 023, and the payment card, spec 024),
+ * 640 px wide at x=160, and the summary of the cart on the right, 448 px wide at x=832, at 1440 px.
+ * Both columns are inside one form, so the summary's Confirm order button can submit it (spec 025).
+ * An empty cart shows only a message and a link to the coffees (`CartGate`), and no form. The page
+ * reads no data and no cart: it composes features.
  */
 export function CheckoutPage() {
-  const { lines } = useCart();
-  const hasLines = lines.length > 0;
-  // True once the page has shown a cart with coffees: an empty cart after that was emptied here.
-  const [hadLines, setHadLines] = useState(hasLines);
-  if (hasLines && !hadLines) setHadLines(true);
-
   return (
     <div className="px-page pt-6 pb-16 sm:pt-10 lg:pt-9.75 lg:pb-20">
       <div className="mx-auto max-w-content">
         <h1 className="sr-only">Checkout</h1>
-        {hasLines ? (
+        <CartGate>
           <CheckoutForm>
             {/* One column below 1024 px; from there the columns share the width as 640 to 448 (the design). */}
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,640fr)_minmax(0,448fr)]">
@@ -64,9 +32,7 @@ export function CheckoutPage() {
               <OrderSummary />
             </div>
           </CheckoutForm>
-        ) : (
-          <EmptyCart moveFocus={hadLines} />
-        )}
+        </CartGate>
       </div>
     </div>
   );

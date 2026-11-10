@@ -37,6 +37,16 @@ class ArchitectureRulesTest {
               cleanRules.slicesAreFreeOfCycles().check(CLEAN_CLASSES);
               cleanRules.useCasesHaveOnePublicMethodNamedExecute().check(CLEAN_CLASSES);
               cleanRules.requestHandlersHaveOnePublicMethodNamedHandle().check(CLEAN_CLASSES);
+              cleanRules
+                  .applicationUsesOnlyItsOwnLayersAndTheAllowedLibraries()
+                  .check(CLEAN_CLASSES);
+              cleanRules.infrastructureDoesNotUseInterfaces().check(CLEAN_CLASSES);
+              cleanRules.sharedDoesNotUseASlice().check(CLEAN_CLASSES);
+              cleanRules.restControllersAreRequestHandlersInInterfaces().check(CLEAN_CLASSES);
+              cleanRules.servicesAreUseCasesInApplication().check(CLEAN_CLASSES);
+              cleanRules.requestHandlersDependOnExactlyOneUseCase().check(CLEAN_CLASSES);
+              cleanRules.useCasesAreUsedByExactlyOneRequestHandler().check(CLEAN_CLASSES);
+              cleanRules.domainHasNoFloatingPointOrBigDecimal().check(CLEAN_CLASSES);
             })
         .doesNotThrowAnyException();
   }
@@ -87,6 +97,101 @@ class ArchitectureRulesTest {
     assertViolation(
         ArchitectureRules::requestHandlersHaveOnePublicMethodNamedHandle,
         "TwoMethodsRequestHandler");
+  }
+
+  @Test
+  void applicationMayNotUseTheWeb() {
+    assertViolation(
+        ArchitectureRules::applicationUsesOnlyItsOwnLayersAndTheAllowedLibraries, "AppWeb");
+  }
+
+  @Test
+  void applicationMayUseItsDomainAndTheStereotype() {
+    assertNoViolation(
+        ArchitectureRules::applicationUsesOnlyItsOwnLayersAndTheAllowedLibraries,
+        "MakeThingUseCase");
+  }
+
+  @Test
+  void infrastructureMayNotUseInterfaces() {
+    assertViolation(ArchitectureRules::infrastructureDoesNotUseInterfaces, "InfraLeak");
+  }
+
+  @Test
+  void sharedMayNotUseASlice() {
+    assertViolation(ArchitectureRules::sharedDoesNotUseASlice, "SharedLeak");
+  }
+
+  @Test
+  void aRestControllerThatIsNotNamedARequestHandlerFails() {
+    assertViolation(
+        ArchitectureRules::restControllersAreRequestHandlersInInterfaces, "ThingController");
+  }
+
+  @Test
+  void aRestControllerOutsideInterfacesFails() {
+    assertViolation(
+        ArchitectureRules::restControllersAreRequestHandlersInInterfaces,
+        "MisplacedRequestHandler");
+  }
+
+  @Test
+  void aServiceThatIsNotNamedAUseCaseFails() {
+    assertViolation(ArchitectureRules::servicesAreUseCasesInApplication, "ThingService");
+  }
+
+  @Test
+  void aServiceOutsideApplicationFails() {
+    assertViolation(ArchitectureRules::servicesAreUseCasesInApplication, "MisplacedUseCase");
+  }
+
+  @Test
+  void aRequestHandlerWithTwoUseCasesFails() {
+    assertViolation(
+        ArchitectureRules::requestHandlersDependOnExactlyOneUseCase, "BothUseCasesRequestHandler");
+  }
+
+  @Test
+  void aRequestHandlerWithNoUseCaseFails() {
+    assertViolation(
+        ArchitectureRules::requestHandlersDependOnExactlyOneUseCase, "TwoMethodsRequestHandler");
+  }
+
+  @Test
+  void aUseCaseUsedByNoHandlerFails() {
+    assertViolation(ArchitectureRules::useCasesAreUsedByExactlyOneRequestHandler, "UnusedUseCase");
+  }
+
+  @Test
+  void aUseCaseUsedByTwoHandlersFails() {
+    assertViolation(ArchitectureRules::useCasesAreUsedByExactlyOneRequestHandler, "SharedUseCase");
+  }
+
+  @Test
+  void aDoubleFieldInTheDomainFails() {
+    assertViolation(ArchitectureRules::domainHasNoFloatingPointOrBigDecimal, "UsesDouble");
+  }
+
+  @Test
+  void aFloatParameterInTheDomainFails() {
+    assertViolation(ArchitectureRules::domainHasNoFloatingPointOrBigDecimal, "UsesFloatParameter");
+  }
+
+  @Test
+  void aBigDecimalInTheDomainFails() {
+    assertViolation(ArchitectureRules::domainHasNoFloatingPointOrBigDecimal, "UsesBigDecimal");
+  }
+
+  @Test
+  void aBoxedDoubleReturnInTheDomainFails() {
+    assertViolation(ArchitectureRules::domainHasNoFloatingPointOrBigDecimal, "UsesBoxedDouble");
+  }
+
+  private void assertNoViolation(Function<ArchitectureRules, ArchRule> rule, String innocent) {
+    ArchRule archRule = rule.apply(violationRules);
+    assertThatThrownBy(() -> archRule.check(VIOLATING_CLASSES))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageNotContaining(innocent);
   }
 
   private void assertViolation(Function<ArchitectureRules, ArchRule> rule, String culprit) {

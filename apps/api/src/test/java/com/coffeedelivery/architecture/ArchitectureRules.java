@@ -5,6 +5,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaCodeUnit;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.lang.ArchCondition;
@@ -12,7 +13,9 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The slice architecture as rules. The package layout is {@code <base>.<slice>.<layer>}, with the
@@ -52,6 +55,91 @@ final class ArchitectureRules {
         .dependOnClassesThat()
         .resideInAnyPackage(base + ".*.infrastructure..", base + ".*.interfaces..")
         .as("application does not depend on infrastructure or interfaces");
+  }
+
+  /**
+   * The decision of spec 036: {@code application} may use {@code @Service} and the exceptions of
+   * {@code shared.error}, and nothing else of Spring or of the web.
+   */
+  ArchRule applicationUsesOnlyItsOwnLayersAndTheAllowedLibraries() {
+    return classes()
+        .that()
+        .resideInAPackage(base + ".*.application..")
+        .should()
+        .onlyDependOnClassesThat()
+        .resideInAnyPackage(
+            base + ".*.domain..",
+            base + ".*.application..",
+            base + ".shared.error..",
+            "java..",
+            "org.springframework.stereotype..")
+        .as(
+            "application depends on domain, application, shared.error, java, and Spring"
+                + " stereotypes only");
+  }
+
+  ArchRule infrastructureDoesNotUseInterfaces() {
+    return noClasses()
+        .that()
+        .resideInAPackage(base + ".*.infrastructure..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAPackage(base + ".*.interfaces..")
+        .as("infrastructure does not depend on interfaces");
+  }
+
+  ArchRule sharedDoesNotUseASlice() {
+    return classes()
+        .that()
+        .resideInAPackage(base + ".shared..")
+        .should(notDependOnAnySlice())
+        .as("shared does not depend on any slice");
+  }
+
+  ArchRule restControllersAreRequestHandlersInInterfaces() {
+    return classes()
+        .that()
+        .areAnnotatedWith("org.springframework.web.bind.annotation.RestController")
+        .should()
+        .resideInAPackage(base + ".*.interfaces..")
+        .andShould()
+        .haveSimpleNameEndingWith("RequestHandler")
+        .as("every @RestController is in interfaces and named *RequestHandler");
+  }
+
+  ArchRule servicesAreUseCasesInApplication() {
+    return classes()
+        .that()
+        .areAnnotatedWith("org.springframework.stereotype.Service")
+        .should()
+        .resideInAPackage(base + ".*.application..")
+        .andShould()
+        .haveSimpleNameEndingWith("UseCase")
+        .as("every @Service is in application and named *UseCase");
+  }
+
+  ArchRule requestHandlersDependOnExactlyOneUseCase() {
+    return classes()
+        .that()
+        .haveSimpleNameEndingWith("RequestHandler")
+        .should(dependOnExactlyOneUseCase())
+        .as("every request handler depends on exactly one use case");
+  }
+
+  ArchRule useCasesAreUsedByExactlyOneRequestHandler() {
+    return classes()
+        .that()
+        .haveSimpleNameEndingWith("UseCase")
+        .should(beUsedByExactlyOneRequestHandler())
+        .as("every use case is used by exactly one request handler");
+  }
+
+  ArchRule domainHasNoFloatingPointOrBigDecimal() {
+    return classes()
+        .that()
+        .resideInAPackage(base + ".*.domain..")
+        .should(haveNoFloatingPointOrBigDecimalTypes())
+        .as("domain has no double, float, Double, Float, or BigDecimal (money is whole cents)");
   }
 
   ArchRule interfacesDoNotUseInfrastructure() {
@@ -110,6 +198,108 @@ final class ArchitectureRules {
         }
       }
     };
+  }
+
+  private ArchCondition<JavaClass> notDependOnAnySlice() {
+    return new ArchCondition<>("not depend on any slice") {
+      @Override
+      public void check(JavaClass origin, ConditionEvents events) {
+        for (Dependency dependency : origin.getDirectDependenciesFromSelf()) {
+          if (sliceOf(dependency.getTargetClass().getPackageName()) != null) {
+            events.add(SimpleConditionEvent.violated(dependency, dependency.getDescription()));
+          }
+        }
+      }
+    };
+  }
+
+  private static ArchCondition<JavaClass> dependOnExactlyOneUseCase() {
+    return new ArchCondition<>("depend on exactly one use case") {
+      @Override
+      public void check(JavaClass handler, ConditionEvents events) {
+        List<String> useCases =
+            handler.getDirectDependenciesFromSelf().stream()
+                .map(Dependency::getTargetClass)
+                .filter(target -> target.getSimpleName().endsWith("UseCase"))
+                .map(JavaClass::getName)
+                .distinct()
+                .toList();
+        String message = handler.getName() + " depends on the use cases " + useCases;
+        events.add(
+            useCases.size() == 1
+                ? SimpleConditionEvent.satisfied(handler, message)
+                : SimpleConditionEvent.violated(handler, message + " (expected exactly one)"));
+      }
+    };
+  }
+
+  private static ArchCondition<JavaClass> beUsedByExactlyOneRequestHandler() {
+    return new ArchCondition<>("be used by exactly one request handler") {
+      @Override
+      public void check(JavaClass useCase, ConditionEvents events) {
+        List<String> handlers =
+            useCase.getDirectDependenciesToSelf().stream()
+                .map(Dependency::getOriginClass)
+                .filter(origin -> origin.getSimpleName().endsWith("RequestHandler"))
+                .map(JavaClass::getName)
+                .distinct()
+                .toList();
+        String message = useCase.getName() + " is used by the request handlers " + handlers;
+        events.add(
+            handlers.size() == 1
+                ? SimpleConditionEvent.satisfied(useCase, message)
+                : SimpleConditionEvent.violated(useCase, message + " (expected exactly one)"));
+      }
+    };
+  }
+
+  private static final Set<String> FORBIDDEN_NUMBER_TYPES =
+      Set.of("double", "float", "java.lang.Double", "java.lang.Float", "java.math.BigDecimal");
+
+  private static ArchCondition<JavaClass> haveNoFloatingPointOrBigDecimalTypes() {
+    return new ArchCondition<>(
+        "have no double, float, or BigDecimal in a field, parameter, or return") {
+      @Override
+      public void check(JavaClass domainClass, ConditionEvents events) {
+        domainClass
+            .getFields()
+            .forEach(
+                field -> {
+                  if (FORBIDDEN_NUMBER_TYPES.contains(field.getRawType().getName())) {
+                    events.add(
+                        SimpleConditionEvent.violated(
+                            field,
+                            field.getDescription()
+                                + " has the type "
+                                + field.getRawType().getName()));
+                  }
+                });
+        for (JavaCodeUnit unit : codeUnits(domainClass)) {
+          unit.getRawParameterTypes()
+              .forEach(
+                  type -> {
+                    if (FORBIDDEN_NUMBER_TYPES.contains(type.getName())) {
+                      events.add(
+                          SimpleConditionEvent.violated(
+                              unit, unit.getDescription() + " takes a " + type.getName()));
+                    }
+                  });
+          if (FORBIDDEN_NUMBER_TYPES.contains(unit.getRawReturnType().getName())) {
+            events.add(
+                SimpleConditionEvent.violated(
+                    unit,
+                    unit.getDescription() + " returns a " + unit.getRawReturnType().getName()));
+          }
+        }
+      }
+    };
+  }
+
+  private static List<JavaCodeUnit> codeUnits(JavaClass javaClass) {
+    List<JavaCodeUnit> units = new ArrayList<>();
+    units.addAll(javaClass.getMethods());
+    units.addAll(javaClass.getConstructors());
+    return units;
   }
 
   private static ArchCondition<JavaClass> haveOnePublicMethodNamed(String name) {

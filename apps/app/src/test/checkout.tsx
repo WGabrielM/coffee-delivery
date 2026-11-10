@@ -1,13 +1,16 @@
 // Test helpers for the checkout: the config of the server and a fake API that answers both
 // `GET /api/v1/coffees` and `GET /api/v1/checkout-config`, so the hooks, the typed client, and the
 // components are tested together.
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { vi } from "vitest";
 
+import { routes } from "../app/routes";
 import { CartProvider } from "../features/cart/cart-context";
+import type { CartLine } from "../features/cart/cart-reducer";
+import { saveCart } from "../features/cart/cart-storage";
 import type { Coffee } from "../features/catalog/api";
 import type { CheckoutConfig, Order, OrderRequest } from "../features/checkout/api";
 import { createTestQueryClient, latte, sampleCoffees } from "./coffees";
@@ -191,4 +194,23 @@ export function renderCheckoutPage(ui: ReactElement) {
       </QueryClientProvider>,
     ),
   };
+}
+
+/**
+ * The real checkout route (`/checkout`) inside the real layout, with a saved cart, so a test can read
+ * the navbar badge too. The page is its own chunk, loaded when the route is visited: this waits for
+ * its level 1.
+ */
+export async function renderCheckoutRoute(lines: CartLine[]) {
+  saveCart(lines);
+  const router = createMemoryRouter(routes, { initialEntries: ["/checkout"] });
+  const view = render(
+    <QueryClientProvider client={createTestQueryClient()}>
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
+    </QueryClientProvider>,
+  );
+  await screen.findByRole("heading", { level: 1, name: "Checkout" });
+  return view;
 }

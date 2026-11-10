@@ -49,4 +49,44 @@ class ArchitectureTest {
   void requestHandlersHaveOnePublicMethodNamedHandle() {
     rules.requestHandlersHaveOnePublicMethodNamedHandle().check(CLASSES);
   }
+
+  @Test
+  void applicationUsesOnlyItsOwnLayersAndTheAllowedLibraries() {
+    rules.applicationUsesOnlyItsOwnLayersAndTheAllowedLibraries().check(CLASSES);
+  }
+
+  @Test
+  void infrastructureDoesNotUseInterfaces() {
+    rules.infrastructureDoesNotUseInterfaces().check(CLASSES);
+  }
+
+  @Test
+  void sharedDoesNotUseASlice() {
+    rules.sharedDoesNotUseASlice().check(CLASSES);
+  }
+
+  @Test
+  void restControllersAreRequestHandlersInInterfaces() {
+    rules.restControllersAreRequestHandlersInInterfaces().check(CLASSES);
+  }
+
+  @Test
+  void servicesAreUseCasesInApplication() {
+    rules.servicesAreUseCasesInApplication().check(CLASSES);
+  }
+
+  @Test
+  void requestHandlersDependOnExactlyOneUseCase() {
+    rules.requestHandlersDependOnExactlyOneUseCase().check(CLASSES);
+  }
+
+  @Test
+  void useCasesAreUsedByExactlyOneRequestHandler() {
+    rules.useCasesAreUsedByExactlyOneRequestHandler().check(CLASSES);
+  }
+
+  @Test
+  void domainHasNoFloatingPointOrBigDecimal() {
+    rules.domainHasNoFloatingPointOrBigDecimal().check(CLASSES);
+  }
 }
