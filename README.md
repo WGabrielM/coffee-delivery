@@ -10,6 +10,7 @@ A small coffee store: a visitor browses 14 coffees, filters them by tag, builds 
 | API (`apps/api`) | Java 21, Spring Boot 4, Flyway, PostgreSQL 18, JUnit and Testcontainers, JaCoCo |
 | Observability | OpenTelemetry traces and metrics to a local Grafana LGTM (logs stay on stdout) and k6 load tests |
 | Quality | oxlint and oxfmt, Spotless, commitlint and lint-staged (Lefthook), GitHub Actions |
+| Packaging | A Dockerfile for the API and one for the app (nginx, with a limit of 10 orders a minute), a Compose file to run both locally, and a tested `pg_dump` backup and restore ([`docs/RUNBOOK.md`](docs/RUNBOOK.md)); nothing is deployed |
 
 ## Prerequisites
 
@@ -18,7 +19,7 @@ A small coffee store: a visitor browses 14 coffees, filters them by tag, builds 
 | Node.js | 22.22.2 or newer (22.12 is the declared minimum, but some development dependencies ask for 22.22.2; on an older 22.x run `yarn install --ignore-engines`) |
 | Yarn | 1.22.22 (`corepack enable` uses it) |
 | JDK | 21 or newer |
-| Docker | with Compose v2 (PostgreSQL and Grafana run in containers; the API tests use Testcontainers) |
+| Docker | with Compose v2 (PostgreSQL and Grafana run in containers; the API tests use Testcontainers; the images and the backup need it too) |
 | k6 | only for the load tests (`yarn load:smoke` and the others) |
 
 ## Run it
@@ -64,19 +65,19 @@ The six commands from `code:fix` to `build` must pass before every commit; [`.do
 | Path | What |
 | --- | --- |
 | [`.docs/`](.docs/AGENTS.md) | The rules: process, product, architecture, conventions, development, design, design system, and QA |
-| [`.specs/`](.specs) | The 31 specs of the capstone, one action each, in the order they were built, and the 8 follow-up specs (032 to 039) that the health check proposed and nobody has built |
+| [`.specs/`](.specs) | The 31 specs of the capstone, one action each, in the order they were built, and the 8 follow-up specs (032 to 039) that the health check proposed and that were built on 2026-11-10 |
 | [`plans/`](plans), [`adrs/`](adrs) | One plan before each spec and one decision record after it |
-| [`docs/`](docs) | The roadmap ([`PLAN.md`](docs/PLAN.md)), the capstone report ([`CAPSTONE.md`](docs/CAPSTONE.md)), and the Figma analysis |
+| [`docs/`](docs) | The roadmap ([`PLAN.md`](docs/PLAN.md)), the capstone report ([`CAPSTONE.md`](docs/CAPSTONE.md)), the runbook for the images and the backup ([`RUNBOOK.md`](docs/RUNBOOK.md)), and the Figma analysis |
 | [`apps/api`](apps/api) | The Spring Boot API, organized by domain and layers (`catalog`, `orders`, `system`, `shared`), with its load tests |
 | [`apps/app`](apps/app) | The React app: `src/pages`, `src/features`, `src/components`, `src/api`, and the Playwright tests in `e2e/` |
 | [`scripts/`](scripts) | The scripts behind the commands (`yarn api:dev`, `yarn ci`, `yarn lighthouse`, the env and load helpers) and their tests |
-| [`infra/`](infra), [`compose.yaml`](compose.yaml) | Local PostgreSQL and the Grafana dashboard |
+| [`infra/`](infra), [`compose.yaml`](compose.yaml), [`compose.packaged.yaml`](compose.packaged.yaml) | Local PostgreSQL, the Grafana dashboard, and the API and app images for a local check (`backups/`, ignored by Git, holds the database backups) |
 | [`.github/workflows/`](.github/workflows) | The pipeline |
 | [`screenshots/`](screenshots) | The screenshots taken for each spec, including the tablet and mobile layouts |
 
 ## More
 
-- [`docs/CAPSTONE.md`](docs/CAPSTONE.md): the process, the 31 specs with their plans and decision records, the final numbers, what a person decided and what AI decided, the deviations, the limits, and the lessons.
+- [`docs/CAPSTONE.md`](docs/CAPSTONE.md): the process, the 31 specs and the 8 follow-up specs with their plans and decision records, the numbers (each with its date), what a person decided and what AI decided, the deviations, the limits, and the lessons.
 - [`docs/PLAN.md`](docs/PLAN.md): the roadmap with the result of each spec.
 - [`.docs/BUSINESS.md`](.docs/BUSINESS.md): what the product does and its rules. [`.docs/ARCHITECTURE.md`](.docs/ARCHITECTURE.md): the endpoints, the data model, and the structure.
 - [`.docs/DESIGN.md`](.docs/DESIGN.md): the screens, with the tablet and mobile rules.

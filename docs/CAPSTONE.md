@@ -1,6 +1,6 @@
 # Coffee Delivery: capstone report
 
-The capstone of the Applied AI postgraduate module (Coders University). Every number below comes from a command run on 2026-11-08 on the final code, except the dates and where a source is named.
+The capstone of the Applied AI postgraduate module (Coders University). The numbers in section 4 come from commands run on the code of the day named next to each: 2026-11-08 for the 31 specs of the capstone and 2026-11-10 after the eight follow-up specs (032 to 039). A number with no date was not measured again.
 
 ## 1. Goal
 
@@ -60,25 +60,41 @@ The process is the one of the "mold", the Module 4 repository, adapted to Java a
 | 030 | [CI: GitHub Actions pipeline](../.specs/030-ci-pipeline.md) | [plan](../plans/030-ci-pipeline-plan.md) | [ADR](../adrs/ci-pipeline.md) |
 | 031 | [Project: documentation and capstone handoff](../.specs/031-project-docs-and-handoff.md) | [plan](../plans/031-project-docs-and-handoff-plan.md) | [ADR](../adrs/project-docs-and-handoff.md) |
 
+### The 8 follow-up specs
+
+The health check of 2026-11-08 (structure, performance, evolution, and documentation) found no critical problem and proposed eight more specs ([`docs/PLAN.md`](PLAN.md), "Follow-up specs"). They are not part of the 31 that the capstone delivered. All eight were built on 2026-11-10, each with its plan and its decision record.
+
+| Spec | Title | Plan | Decision record |
+| --- | --- | --- | --- |
+| 032 | [Orders: idempotent order creation](../.specs/032-orders-idempotent-create.md) | [plan](../plans/032-orders-idempotent-create-plan.md) | [ADR](../adrs/orders-idempotent-create.md) |
+| 033 | [App: lighter first load](../.specs/033-app-lighter-first-load.md) | [plan](../plans/033-app-lighter-first-load-plan.md) | [ADR](../adrs/app-lighter-first-load.md) |
+| 034 | [API: batch the order lines and read the catalog in one transaction](../.specs/034-api-batch-and-read-transactions.md) | [plan](../plans/034-api-batch-and-read-transactions-plan.md) | [ADR](../adrs/api-batch-and-read-transactions.md) |
+| 035 | [App: shared UI blocks, one quantity limit, and shared e2e helpers](../.specs/035-app-shared-ui-blocks.md) | [plan](../plans/035-app-shared-ui-blocks-plan.md) | [ADR](../adrs/app-shared-ui-blocks.md) |
+| 036 | [Architecture: guard the stated rules and make the pages compose](../.specs/036-architecture-rules-and-page-composition.md) | [plan](../plans/036-architecture-rules-and-page-composition-plan.md) | [ADR](../adrs/architecture-rules-and-page-composition.md) |
+| 037 | [Packaging: container images and a tested database backup](../.specs/037-packaging-and-backup.md) | [plan](../plans/037-packaging-and-backup-plan.md) | [ADR](../adrs/packaging-and-backup.md) |
+| 038 | [Orders: address retention and a rate limit](../.specs/038-orders-address-retention-and-rate-limit.md) | [plan](../plans/038-orders-address-retention-and-rate-limit-plan.md) | [ADR](../adrs/orders-address-retention-and-rate-limit.md) |
+| 039 | [Orders: quote the fee and the total from the server](../.specs/039-orders-quote-endpoint.md) | [plan](../plans/039-orders-quote-endpoint-plan.md) | [ADR](../adrs/orders-quote-endpoint.md) |
+
 The roadmap, its milestones, and the result of each spec are in [`docs/PLAN.md`](PLAN.md).
 
 ## 4. Final numbers
 
 | Measure | Result | Command |
 | --- | --- | --- |
-| API unit tests | 108 passed, 0 failed | `./gradlew test` |
-| API end-to-end tests (Testcontainers) | 82 passed, 0 failed | `./gradlew e2eTest` |
-| API coverage (JaCoCo) | 460 of 463 lines (99%), 2,166 of 2,179 instructions (99%), branches 92%; the gate is 80% of lines | `./gradlew jacocoTestReport` |
-| App unit and component tests | 638 passed (47 files) | `yarn --cwd apps/app test` |
-| Root script tests | 129 passed | `node --test scripts/*.test.mjs` |
-| App end-to-end tests (real API and database, no mock of the stack) | 185 passed | `yarn test:e2e` |
-| Lighthouse, Home, desktop | performance 91, accessibility 96 (limits 90 and 95) | `yarn lighthouse` |
-| Visual difference against the Figma frames at 1440 px (unmasked pixels, limit 2%) | Home 0.42%, Checkout 0.07%, Checkout Filled 0.41%, Success 0.27% | `visual-parity.spec.ts` |
-| Bundle | JS 522.68 kB (161.26 kB gzip), CSS 29.34 kB (6.40 kB gzip) | `yarn build` |
-| Pipeline | `yarn ci` passes: 11 commands in the three jobs | `yarn ci` |
-| Size | 103 Java files, 102 TypeScript files in the app, 17 browser test files, 34 commits since the rebuild began on 2026-11-04 | `git ls-files`, `git log` |
+| API unit tests | 170 passed, 0 failed (2026-11-10; 108 on 2026-11-08) | `./gradlew test` |
+| API end-to-end tests (Testcontainers) | 113 passed, 0 failed (2026-11-10; 82 on 2026-11-08) | `./gradlew e2eTest` |
+| API coverage (JaCoCo) | 611 of 617 lines (99%), 2,808 of 2,833 instructions (99%), branches 129 of 137 (94%); the gate is 80% of lines (2026-11-10, from the execution data of that day's test runs; 2026-11-08: 460 of 463 lines, branches 92%) | `./gradlew jacocoTestReport` |
+| App unit and component tests | 688 passed in 54 files (2026-11-10; 638 in 47 files on 2026-11-08) | `yarn --cwd apps/app test` |
+| Root script tests | 160 passed (2026-11-10; 129 on 2026-11-08) | `node --test scripts/*.test.mjs` |
+| App end-to-end tests (real API and database, no mock of the stack) | 198 passed (2026-11-10; 185 on 2026-11-08) | `yarn test:e2e` |
+| Lighthouse, Home, desktop | 2026-11-10, after spec 033, three runs: performance 100, accessibility 96 (the limits are 95 and 95 now); 2026-11-08: 91 and 96 (limits 90 and 95). Not run again after spec 039 | `yarn lighthouse` |
+| Visual difference against the Figma frames at 1440 px (unmasked pixels, limit 2%) | 2026-11-08: Home 0.42%, Checkout 0.07%, Checkout Filled 0.41%, Success 0.27%. 2026-11-10, after spec 033: Home 0.60%; the test still passes (limit 2%, same masks) | `visual-parity.spec.ts` |
+| Bundle (2026-11-10) | Entry chunk 237.62 kB (74.33 kB gzip); the React chunk that Home also loads 145.41 kB (47.83 kB gzip), so about 383 kB of JavaScript on Home; checkout chunk 137.70 kB (42.71 kB gzip) and order chunk 3.31 kB, both lazy; CSS 29.38 kB (6.42 kB gzip). On 2026-11-08 it was one JS chunk of 522.68 kB (161.26 kB gzip) and CSS 29.34 kB (6.40 kB gzip) | `yarn build` |
+| Images (2026-11-10, spec 033) | The 14 photos 136.8 kB in all (WebP, was 1.82 MB), the hero 87.7 kB (was 516 kB); Home transferred until the 14 cards show: 512 kB (limit 600 kB) | `yarn test:e2e` (`first-load.spec.ts`) |
+| Pipeline | `yarn ci` passes: 11 commands in the three jobs (2026-11-08; the commands have not changed) | `yarn ci` |
+| Size (2026-11-10) | 155 Java files, 115 TypeScript files in `apps/app/src`, 18 browser test files, 44 commits since the rebuild began on 2026-11-04 (2026-11-08: 103, 102, 17, and 34) | `git ls-files`, `git log` |
 
-The exit criteria of the milestones, with their measured results, are in [`docs/PLAN.md`](PLAN.md), section 3.
+The exit criteria of the milestones, with their measured results of 2026-11-08, are in [`docs/PLAN.md`](PLAN.md), section 3; the results of the follow-up specs are in its section 6.
 
 ## 5. Who decided what
 
@@ -86,7 +102,7 @@ The exit criteria of the milestones, with their measured results, are in [`docs/
 
 - The goal, the Figma design, the stack (React and Spring Boot), and the process (the mold).
 - Everything in English and in US dollars; the delivery fee fixed at `$3.50`; the ZIP code format of the design (`00000-000`); the five tag filters even though the Figma hides them; a cart kept in `localStorage`.
-- The palette stays as designed although seven pairs are below WCAG AA (spec 015); the filled input border, the 91 px "Remove" button, and the unoptimized images were left as the design and the first specs had them.
+- The palette stays as designed although seven pairs are below WCAG AA (spec 015); the filled input border, the 91 px "Remove" button, and the unoptimized images were left as the design and the first specs had them (spec 033 optimized the images later).
 - The tablet and mobile rules (spec 027 proposed them, the owner approved them and let the AI choose the pixel sizes).
 - To commit and push without asking at the end of each spec, to work only on `main`, and to let the AI run several specs in a row until one needed approval.
 - What to do when the AI was blocked by the machine: stop a dev server, free a port, and not let a process the AI could not stop run.
@@ -107,14 +123,18 @@ The exit criteria of the milestones, with their measured results, are in [`docs/
 
 ## 7. Known limits
 
+As of 2026-11-10, after the follow-up specs.
+
 - **Contrast.** Eight pairs of the palette (six of text and two of borders) are below WCAG AA (documented in [`DESIGN_SYSTEM.md`](../.docs/DESIGN_SYSTEM.md)); Lighthouse accessibility is 96 because of that audit.
-- **Images.** The coffee photos (1.8 MB in all) and the hero image (0.5 MB) are as exported; Lighthouse performance is 91, close to its limit of 90.
-- **Bundle.** One JavaScript chunk of 522 kB; the form libraries load on the home page.
+- **Images and bundle.** Fixed by spec 033: the photos and the hero are WebP (224.5 kB together, was 2.3 MB) and the checkout and order pages are lazy routes. Home still loads about 383 kB of JavaScript (the entry chunk and the React chunk), and the first visit to `/checkout` waits for a 138 kB chunk.
 - **Cart.** Kept in `localStorage`: not shared between tabs or devices, and a coffee that leaves the catalog is dropped when the checkout loads.
-- **Orders.** There are no order tracking, no editing, no cancellation, no accounts, and no payment processing. The end-to-end tests create real orders in the local database and do not delete them.
-- **Single API instance.** The delivery fee and the estimate are fixed rules; orders had no idempotency key, so a request repeated by a client created a second order (fixed after the capstone by spec 032).
+- **Orders.** There are no order tracking, no editing, no cancellation, no accounts, and no payment processing. The end-to-end tests create real orders in the local database and do not delete them. An order keeps its items and totals for good, but its address is cleared after 90 days (spec 038): an old order shows "The address was removed after 90 days." and the address cannot be recovered from the order.
+- **Idempotency.** Fixed by spec 032: an order sent with the same `Idempotency-Key` and the same content is created once, also for requests in parallel and for more than one API instance. The key is optional (an order sent without one is always created), keys are kept with the order with no expiry, and only `POST /api/v1/orders` uses it.
+- **Fee and estimate.** Fixed rules (350 cents, 20 to 30 minutes). The quote endpoint (spec 039) takes a ZIP code so a fee by zone needs no change in the app, but today the fee is the same for every ZIP code.
+- **Rate limit.** Only the proxy of the app image limits orders (10 a minute for each client address, with a burst of 5, spec 038). The API has no limit of its own, and neither has the Vite dev server, so a client that calls the API directly is not limited. The limit is by client address, so people behind one address share it.
+- **Packaging and backup.** The two images and `compose.packaged.yaml` are for a local check only: no host, no registry, no deployment, and the images are not built by the QA commands or the pipeline. `yarn db:restore` restores into `restore_check` and never into the live database; recovering the live database is a manual step ([`RUNBOOK.md`](RUNBOOK.md)). The scheduled job that clears addresses has a metric (`orders.addresses.cleared`) but no Grafana panel.
 - **Visual parity** depends on the font rendering of Chromium on the machine; the filled input border and the filter chips differ from the frames by decision.
-- **The pipeline.** The first run of the workflow failed (Node 22.22.1 was not enough for `jsdom`) and the run after the fix passed in all three jobs; the commit message workflow has not run yet, because it runs on pull requests only. `actionlint` was not run: the permission to run the downloaded binary was refused.
+- **The pipeline.** The first run of the workflow failed (Node 22.22.1 was not enough for `jsdom`) and the run after the fix passed in all three jobs; the commit message workflow has not run yet, because it runs on pull requests only. `actionlint` was not run: the permission to run the downloaded binary was refused. The runs on GitHub after the commits of 2026-11-10 were not looked at for this report.
 
 ## 8. Lessons learned
 
