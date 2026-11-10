@@ -11,7 +11,7 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Git hooks | Lefthook: `pre-commit` runs lint-staged, `commit-msg` runs commitlint (Conventional Commits) | `[implemented]` |
 | Local infrastructure | Docker Compose: PostgreSQL 18 and Grafana LGTM, versions pinned in `compose.yaml` | `[implemented]` |
 | API | Java 21 or newer and Spring Boot 4.1, built with Gradle 9 (wrapper), in `apps/api` | `[implemented]` |
-| Database | PostgreSQL; schema and seed by Flyway migrations `V1` to `V3` (Flyway runs at startup) | `[implemented]` (specs 003 to 009) |
+| Database | PostgreSQL; schema and seed by Flyway migrations `V1` to `V4` (Flyway runs at startup) | `[implemented]` (specs 003 to 009) |
 | API formatting | Spotless with google-java-format | `[implemented]` |
 | API tests | JUnit 5 and AssertJ; `test` is unit tests without Docker, `e2eTest` is Spring Boot with Testcontainers; ArchUnit; JaCoCo (minimum 80% line coverage over both) | `[implemented]` |
 | Observability | Structured JSON logs, OpenTelemetry (Micrometer) traces and metrics to Grafana LGTM, and the `Coffee Delivery API` dashboard as code in `infra/grafana` (spec 008). Logs stay on stdout: nothing ships them to Loki | `[implemented]` |
@@ -85,6 +85,7 @@ Each slice (`catalog`, `orders`, `system`) has the packages `domain`, `applicati
 
 - `domain` has entities and rules and depends on nothing but the language. `application` has the use cases (`<Action>UseCase.execute`) and the ports they need. `infrastructure` implements the ports (database access). `interfaces` has the request handlers (`<Action>RequestHandler.handle`, one per endpoint) and the HTTP mapping.
 - Slices do not use each other's `infrastructure` or `interfaces`. `orders` reads coffee prices through its own `CoffeePriceLookup` port, not through `catalog` classes.
+- Data access (spec 034): a repository runs the statements of one use-case step in one transaction. `JdbcOrderRepository.save` is one `INSERT` for the order and one JDBC batch (`JdbcTemplate.batchUpdate`) for all its lines, however many there are, inside its own transaction; `JdbcCoffeeRepository` is `@Transactional(readOnly = true)`, so the coffees and their tags are read on one connection. The price lookup of `CreateOrderUseCase` is not part of the transaction of `save`. A test counts statements and connections on the data source with a JDK proxy (`StatementCounter`, `CountingDataSourceConfiguration`). Do not declare a default method on a repository interface that touches the database: Spring does not read the class-level `@Transactional` of the implementation for a method declared by the interface.
 - `ArchitectureTest` (ArchUnit) enforces these rules and fails the build when one is broken.
 
 ## Endpoints

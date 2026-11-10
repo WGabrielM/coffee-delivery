@@ -11,12 +11,15 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Reads the catalog tables with two queries: the coffees (all of them, or those that have every
- * required tag), then the tags of those coffees.
+ * required tag), then the tags of those coffees. The read is one read-only transaction, so the two
+ * queries share one connection (and one snapshot of the data).
  */
 @Repository
+@Transactional(readOnly = true)
 class JdbcCoffeeRepository implements CoffeeRepository {
 
   private record CoffeeRow(

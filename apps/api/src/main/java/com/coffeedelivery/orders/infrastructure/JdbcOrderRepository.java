@@ -7,17 +7,24 @@ import com.coffeedelivery.orders.domain.Order;
 import com.coffeedelivery.orders.domain.OrderItem;
 import com.coffeedelivery.orders.domain.OrderStatus;
 import com.coffeedelivery.orders.domain.PaymentMethod;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Stores and reads orders in the orders and order_items tables. */
+/**
+ * Stores and reads orders in the orders and order_items tables. Saving an order is two statements
+ * however many lines it has: one insert for the order and one batch for all its lines, inside the
+ * one transaction of {@link #save}.
+ */
 @Repository
 @Transactional
 class JdbcOrderRepository implements OrderRepository {
@@ -31,10 +38,19 @@ class JdbcOrderRepository implements OrderRepository {
       int totalInCents,
       OffsetDateTime createdAt) {}
 
-  private final JdbcClient jdbc;
+  private static final String INSERT_ITEM =
+      """
+      INSERT INTO order_items (order_id, coffee_id, coffee_name, unit_price_in_cents,
+                               quantity, line_total_in_cents)
+      VALUES (?, ?, ?, ?, ?, ?)
+      """;
 
-  JdbcOrderRepository(JdbcClient jdbc) {
+  private final JdbcClient jdbc;
+  private final JdbcTemplate template;
+
+  JdbcOrderRepository(JdbcClient jdbc, JdbcTemplate template) {
     this.jdbc = jdbc;
+    this.template = template;
   }
 
   @Override
@@ -74,22 +90,25 @@ class JdbcOrderRepository implements OrderRepository {
     if (inserted == 0) {
       return false;
     }
-    for (OrderItem item : order.items()) {
-      jdbc.sql(
-              """
-              INSERT INTO order_items (order_id, coffee_id, coffee_name, unit_price_in_cents,
-                                       quantity, line_total_in_cents)
-              VALUES (:orderId, :coffeeId, :name, :unitPrice, :quantity, :lineTotal)
-              """)
-          .param("orderId", order.id())
-          .param("coffeeId", item.coffeeId())
-          .param("name", item.name())
-          .param("unitPrice", item.unitPriceInCents())
-          .param("quantity", item.quantity())
-          .param("lineTotal", item.lineTotalInCents())
-          .update();
-    }
+    // One batch for all the lines, in the order they were sent: the identity id of order_items
+    // grows with each row of the batch, and reading the order back sorts by it.
+    List<OrderItem> items = order.items();
+    template.batchUpdate(
+        INSERT_ITEM,
+        items,
+        items.size(),
+        (PreparedStatement statement, OrderItem item) -> setItem(statement, order.id(), item));
     return true;
+  }
+
+  private static void setItem(PreparedStatement statement, UUID orderId, OrderItem item)
+      throws SQLException {
+    statement.setObject(1, orderId);
+    statement.setObject(2, item.coffeeId());
+    statement.setString(3, item.name());
+    statement.setInt(4, item.unitPriceInCents());
+    statement.setInt(5, item.quantity());
+    statement.setInt(6, item.lineTotalInCents());
   }
 
   @Override
