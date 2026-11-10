@@ -1,6 +1,12 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-import { axeViolations, field, fillTheSample, openCheckoutWithTheCart } from "./checkout-helpers";
+import {
+  axeViolations,
+  field,
+  fillTheSample,
+  openCheckoutWithTheCart,
+  summary,
+} from "./checkout-helpers";
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -70,6 +76,30 @@ test("the design sample with credit card creates the order and opens /orders/<uu
   for (const item of body.items) {
     expect(Object.keys(item).toSorted()).toEqual(["coffeeId", "quantity"]);
   }
+});
+
+test("the total of the summary is the total of the order that is created", async ({ page }) => {
+  const total = summary(page)
+    .getByText("Total", { exact: true })
+    .locator("xpath=following-sibling::dd");
+  await expect(total).toHaveText("$33.20");
+  await fillTheSample(page);
+  await expect(confirm(page)).toBeEnabled();
+  const shown = Number((await total.innerText()).replace(/[^0-9]/g, ""));
+
+  await confirm(page).click();
+
+  await expect(page).toHaveURL(new RegExp(`/orders/${UUID}$`));
+  const id = new URL(page.url()).pathname.split("/").pop();
+  const order = (await (await page.request.get(`/api/v1/orders/${id}`)).json()) as {
+    totalInCents: number;
+    subtotalInCents: number;
+    deliveryFeeInCents: number;
+  };
+  expect(shown).toBe(3320);
+  expect(order.totalInCents).toBe(shown);
+  expect(order.subtotalInCents).toBe(2970);
+  expect(order.deliveryFeeInCents).toBe(350);
 });
 
 test("after the order the cart is empty, and Back does not return to the form", async ({

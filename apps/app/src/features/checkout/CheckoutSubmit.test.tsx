@@ -6,6 +6,7 @@ import { accessibilityViolations } from "../../test/axe";
 import {
   fakeCheckoutApi,
   postedOrders,
+  postedQuotes,
   renderCheckoutPage,
   sampleOrder,
   type OrderOutcome,
@@ -77,9 +78,7 @@ const confirm = () => screen.getByRole("button", { name: "Confirm order" });
 /** The `Idempotency-Key` header of each `POST /api/v1/orders`, in order. */
 function sentKeys(fetchMock: Awaited<ReturnType<typeof openCheckout>>["fetchMock"]) {
   return fetchMock.mock.calls
-    .filter(
-      ([input, init]) => String(input).startsWith("/api/v1/orders") && init?.method === "POST",
-    )
+    .filter(([input, init]) => String(input) === "/api/v1/orders" && init?.method === "POST")
     .map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
 }
 
@@ -114,6 +113,30 @@ describe("Confirm order with an invalid form", () => {
   });
 });
 
+describe("the quote of the summary and the ZIP code", () => {
+  it("is asked again with the ZIP code once it is complete, and not before", async () => {
+    const { fetchMock, user } = await openCheckout();
+    await waitFor(() => expect(postedQuotes(fetchMock)).toHaveLength(1));
+
+    await user.type(screen.getByRole("textbox", { name: "ZIP code" }), "90250");
+    expect(postedQuotes(fetchMock).every((quote) => quote.zipCode === undefined)).toBe(true);
+    expect(postedQuotes(fetchMock)).toHaveLength(1);
+
+    await user.type(screen.getByRole("textbox", { name: "ZIP code" }), "440");
+
+    await waitFor(() => expect(postedQuotes(fetchMock).at(-1)?.zipCode).toBe("90250-440"));
+  });
+
+  it("is never asked on every keystroke of the other address fields", async () => {
+    const { fetchMock, user } = await openCheckout();
+    await waitFor(() => expect(postedQuotes(fetchMock)).toHaveLength(1));
+
+    await user.type(screen.getByRole("textbox", { name: "Street" }), "Rua João Daniel");
+
+    expect(postedQuotes(fetchMock)).toHaveLength(1);
+  });
+});
+
 describe("Confirm order with a valid form", () => {
   it("sends one POST with the cart lines as items, the address, and the payment, with no price", async () => {
     const { fetchMock, user } = await openCheckout();
@@ -145,6 +168,8 @@ describe("Confirm order with a valid form", () => {
     const { fetchMock, user } = await openCheckout();
     await fillTheSample(user);
     await user.click(screen.getByRole("button", { name: "Increase quantity" }));
+    // Confirm order waits for the quote of the new quantity.
+    await waitFor(() => expect(confirm()).toBeEnabled());
 
     await user.click(confirm());
 

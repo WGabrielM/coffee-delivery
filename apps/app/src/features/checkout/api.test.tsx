@@ -5,13 +5,21 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api";
 import { createTestQueryClient } from "../../test/coffees";
-import { checkoutConfig, fakeCheckoutApi, postedOrders, sampleOrder } from "../../test/checkout";
-import { latte } from "../../test/coffees";
+import {
+  checkoutConfig,
+  fakeCheckoutApi,
+  postedOrders,
+  postedQuotes,
+  sampleOrder,
+} from "../../test/checkout";
+import { cuban, latte } from "../../test/coffees";
 import {
   createOrder,
   getCheckoutConfig,
+  getQuote,
   useCheckoutConfig,
   useCreateOrder,
+  useQuote,
   type OrderRequest,
 } from "./api";
 
@@ -151,5 +159,105 @@ describe("useCreateOrder", () => {
     await expect(result.current.mutateAsync({ request })).rejects.toBeInstanceOf(ApiError);
 
     expect(postedOrders(fetchMock)).toHaveLength(1);
+  });
+});
+
+describe("getQuote", () => {
+  it("posts the items to /api/v1/orders/quote and returns the quote as it is", async () => {
+    const fetchMock = fakeCheckoutApi();
+
+    const quote = await getQuote({ items: [{ coffeeId: latte.id, quantity: 2 }] });
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/v1/orders/quote");
+    expect(fetchMock.mock.calls[0]?.[1]?.method).toBe("POST");
+    expect(postedQuotes(fetchMock)).toEqual([{ items: [{ coffeeId: latte.id, quantity: 2 }] }]);
+    expect(quote.subtotalInCents).toBe(latte.priceInCents * 2);
+    expect(quote.deliveryFeeInCents).toBe(checkoutConfig.deliveryFeeInCents);
+    expect(quote.totalInCents).toBe(latte.priceInCents * 2 + checkoutConfig.deliveryFeeInCents);
+    expect(quote.items[0]).toMatchObject({ coffeeId: latte.id, name: "Latte", quantity: 2 });
+  });
+
+  it("throws the ApiError of a 422", async () => {
+    fakeCheckoutApi({ quote: "unprocessable" });
+
+    await expect(getQuote({ items: [{ coffeeId: latte.id, quantity: 1 }] })).rejects.toMatchObject({
+      status: 422,
+    });
+  });
+});
+
+describe("useQuote", () => {
+  const lines = [
+    { coffeeId: latte.id, quantity: 2 },
+    { coffeeId: cuban.id, quantity: 1 },
+  ];
+  const renderQuote = (fetchLines = lines, zipCode?: string, options?: { enabled?: boolean }) =>
+    renderHook(({ zip }) => useQuote(fetchLines, zip, options), {
+      initialProps: { zip: zipCode },
+      wrapper: wrapperFor(createTestQueryClient()),
+    });
+
+  it("asks for the quote of the lines, with no ZIP code when none is given", async () => {
+    const fetchMock = fakeCheckoutApi();
+    const { result } = renderQuote();
+
+    await waitFor(() => expect(result.current.data).toBeDefined());
+
+    expect(postedQuotes(fetchMock)).toEqual([
+      {
+        items: [
+          { coffeeId: latte.id, quantity: 2 },
+          { coffeeId: cuban.id, quantity: 1 },
+        ],
+      },
+    ]);
+  });
+
+  it("sends the ZIP code only when it is complete", async () => {
+    const fetchMock = fakeCheckoutApi();
+    const { result, rerender } = renderQuote(lines, "90250-4");
+    await waitFor(() => expect(result.current.data).toBeDefined());
+
+    rerender({ zip: "90250-440" });
+    await waitFor(() => expect(postedQuotes(fetchMock)).toHaveLength(2));
+
+    expect(postedQuotes(fetchMock)[0]).not.toHaveProperty("zipCode");
+    expect(postedQuotes(fetchMock)[1]).toHaveProperty("zipCode", "90250-440");
+  });
+
+  it("does not ask again for a ZIP code that is still incomplete", async () => {
+    const fetchMock = fakeCheckoutApi();
+    const { result, rerender } = renderQuote(lines, "");
+    await waitFor(() => expect(result.current.data).toBeDefined());
+
+    rerender({ zip: "9025" });
+    rerender({ zip: "90250-44" });
+
+    expect(postedQuotes(fetchMock)).toHaveLength(1);
+  });
+
+  it("asks nothing for an empty cart, or while it is not enabled", () => {
+    const fetchMock = fakeCheckoutApi();
+
+    renderQuote([]);
+    renderQuote(lines, undefined, { enabled: false });
+
+    expect(postedQuotes(fetchMock)).toEqual([]);
+  });
+
+  it("keeps the previous quote while the quote of the new lines loads", async () => {
+    fakeCheckoutApi({ quote: ["ok", "pending"] });
+    const client = createTestQueryClient();
+    const { result, rerender } = renderHook(({ current }) => useQuote(current, undefined), {
+      initialProps: { current: lines },
+      wrapper: wrapperFor(client),
+    });
+    await waitFor(() => expect(result.current.data).toBeDefined());
+    const first = result.current.data;
+
+    rerender({ current: [{ coffeeId: latte.id, quantity: 3 }] });
+
+    expect(result.current.data).toBe(first);
+    expect(result.current.isPlaceholderData).toBe(true);
   });
 });

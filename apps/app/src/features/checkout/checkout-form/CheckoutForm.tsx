@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useState, type ReactNode } from "react";
-import { FormProvider, useForm, type Path } from "react-hook-form";
+import { FormProvider, useForm, useWatch, type Path } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { useCart } from "../../cart/cart-context";
@@ -44,6 +44,8 @@ export function CheckoutForm({ children }: { children: ReactNode }) {
     defaultValues: emptyCheckoutForm,
   });
   const { isSubmitting } = methods.formState;
+  // The summary asks the server for the quote again when a complete ZIP code is typed.
+  const zipCode = useWatch({ control: methods.control, name: "address.zipCode" });
 
   const submit = methods.handleSubmit(async (values) => {
     setAlertMessage(undefined);
@@ -73,7 +75,10 @@ export function CheckoutForm({ children }: { children: ReactNode }) {
     clear();
   });
 
-  const submitState = useMemo(() => ({ isSubmitting, alertMessage }), [isSubmitting, alertMessage]);
+  const submitState = useMemo(
+    () => ({ isSubmitting, alertMessage, zipCode }),
+    [isSubmitting, alertMessage, zipCode],
+  );
 
   return (
     <FormProvider {...methods}>

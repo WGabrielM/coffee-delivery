@@ -59,8 +59,12 @@ final class CreateOrderRequestValidator {
             });
   }
 
-  private static List<Line> items(
-      List<CreateOrderRequest.ItemRequest> items, Map<String, String> errors) {
+  /** Whether the text looks like a ZIP code, {@code 12345-678}. */
+  static boolean isZipCode(String value) {
+    return ZIP_CODE.matcher(value).matches();
+  }
+
+  static List<Line> items(List<CreateOrderRequest.ItemRequest> items, Map<String, String> errors) {
     if (items == null || items.isEmpty()) {
       errors.put("items", "Add at least one coffee.");
       return List.of();
@@ -121,7 +125,7 @@ final class CreateOrderRequestValidator {
     String city = trimmed(request.city());
     String state = trimmed(request.state());
     String complement = trimmed(request.complement());
-    if (!ZIP_CODE.matcher(zipCode).matches()) {
+    if (!isZipCode(zipCode)) {
       errors.put("address.zipCode", "Enter a ZIP code like 12345-678.");
     }
     required(street, "address.street", "Enter the street.", errors);

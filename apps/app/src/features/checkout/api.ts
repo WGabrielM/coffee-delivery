@@ -1,6 +1,7 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 
 import { apiGet, apiPost, type RequestOptions } from "../../api";
+import type { CartLine } from "../cart/cart-reducer";
 
 /** The checkout rules of the server as `GET /api/v1/checkout-config` returns them. */
 export interface CheckoutConfig {
@@ -69,6 +70,62 @@ export interface Order {
   currency: string;
   estimatedDeliveryMinutes: { min: number; max: number };
   createdAt: string;
+}
+
+/** One priced line of a quote, as the server computes it. */
+export interface QuoteItem {
+  coffeeId: string;
+  name: string;
+  quantity: number;
+  unitPriceInCents: number;
+  lineTotalInCents: number;
+}
+
+/** What an order costs now, from `POST /api/v1/orders/quote`: the same numbers the order will have. */
+export interface Quote {
+  /** The lines in the order they were sent. */
+  items: QuoteItem[];
+  subtotalInCents: number;
+  deliveryFeeInCents: number;
+  totalInCents: number;
+  currency: string;
+}
+
+/** The body of `POST /api/v1/orders/quote`: the cart lines, and the ZIP code once it is complete. */
+export interface QuoteRequest {
+  items: { coffeeId: string; quantity: number }[];
+  zipCode?: string;
+}
+
+/** POST /api/v1/orders/quote: the server prices the cart and stores nothing. */
+export function getQuote(request: QuoteRequest, options?: RequestOptions): Promise<Quote> {
+  return apiPost<Quote>("/orders/quote", request, options);
+}
+
+const COMPLETE_ZIP_CODE = /^\d{5}-\d{3}$/;
+
+/**
+ * The quote of the cart lines. It is asked again when the lines or a complete ZIP code change (a
+ * ZIP code that is not complete is not sent), and while the new answer loads the previous numbers
+ * stay, so the summary does not flash. Nothing is asked for an empty cart or when `enabled` is false.
+ */
+export function useQuote(
+  lines: readonly CartLine[],
+  zipCode: string | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
+  const items = lines.map(({ coffeeId, quantity }) => ({ coffeeId, quantity }));
+  const completeZipCode =
+    zipCode !== undefined && COMPLETE_ZIP_CODE.test(zipCode) ? zipCode : undefined;
+  return useQuery({
+    queryKey: ["quote", items, completeZipCode],
+    queryFn: ({ signal }) =>
+      getQuote(completeZipCode === undefined ? { items } : { items, zipCode: completeZipCode }, {
+        signal,
+      }),
+    enabled: enabled && items.length > 0,
+    placeholderData: keepPreviousData,
+  });
 }
 
 /** An order to send, with the key that makes sending it again safe. */

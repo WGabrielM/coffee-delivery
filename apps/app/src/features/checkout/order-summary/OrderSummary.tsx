@@ -7,10 +7,18 @@ import { LoadingState } from "../../../components/loading-state/LoadingState";
 import { formatMoney } from "../../../lib/format-money";
 import { useCart } from "../../cart/cart-context";
 import { useCoffees } from "../../catalog/api";
+import type { Coffee } from "../../catalog/api";
 import { CoffeePhoto } from "../../catalog/coffee-photo/CoffeePhoto";
-import { useCheckoutConfig } from "../api";
+import { useQuote } from "../api";
 import { useSubmitState } from "../checkout-form/submit-state";
-import { priceOrder, type PricedRow } from "./pricing";
+
+/** One coffee of the cart with its quantity and its line price from the quote. */
+type PricedRow = {
+  coffee: Coffee;
+  quantity: number;
+  /** Unit price × quantity, whole cents, as the server computed it. */
+  lineTotalInCents: number;
+};
 
 type RowProps = {
   row: PricedRow;
@@ -113,20 +121,25 @@ function Totals({
 }
 
 /**
- * The right column of the checkout: the coffees of the cart with their quantities, the items total,
- * the delivery fee of the server, the total, and the Confirm order button, which submits the checkout
- * form around it (it does nothing outside a form). Names and prices come from the catalog, so a line whose coffee the catalog no longer
- * has is removed from the cart once the catalog has loaded.
+ * The right column of the checkout: the coffees of the cart with their quantities, and the line
+ * prices, the items total, the delivery fee, and the total from the quote of the server (spec 039:
+ * the same rule as the order, so the total shown is the total charged), and the Confirm order
+ * button, which submits the checkout form around it (it does nothing outside a form). The photos
+ * and the names come from the catalog, so a line whose coffee the catalog no longer has is removed
+ * from the cart once the catalog has loaded. The quote is asked again when the cart or a complete
+ * ZIP code changes; meanwhile the previous numbers stay and Confirm order waits for the new ones.
  */
 export function OrderSummary() {
   const { lines, setQuantity, remove } = useCart();
   const catalog = useCoffees();
-  const config = useCheckoutConfig();
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const { isSubmitting, alertMessage } = useSubmitState();
+  const { isSubmitting, alertMessage, zipCode } = useSubmitState();
 
   const coffees = catalog.data;
-  const deliveryFee = config.data?.deliveryFeeInCents;
+  const byId = new Map((coffees ?? []).map((coffee) => [coffee.id, coffee]));
+  // A line whose coffee the catalog does not have is not quoted (the server would refuse it).
+  const priceable = lines.filter((line) => byId.has(line.coffeeId));
+  const quote = useQuote(priceable, zipCode, { enabled: coffees !== undefined });
 
   // Only a finished request is trusted: a cached list that is being refreshed may be out of date.
   const catalogIsFresh = coffees !== undefined && !catalog.isFetching;
@@ -136,16 +149,28 @@ export function OrderSummary() {
     for (const line of lines) if (!known.has(line.coffeeId)) remove(line.coffeeId);
   }, [catalogIsFresh, coffees, lines, remove]);
 
+  const quoted = quote.data;
   const order =
-    coffees !== undefined && deliveryFee !== undefined
-      ? priceOrder(lines, coffees, deliveryFee)
+    coffees !== undefined && quoted !== undefined
+      ? {
+          rows: priceable.flatMap((line): PricedRow[] => {
+            const coffee = byId.get(line.coffeeId);
+            const item = quoted.items.find((candidate) => candidate.coffeeId === line.coffeeId);
+            return coffee && item
+              ? [{ coffee, quantity: line.quantity, lineTotalInCents: item.lineTotalInCents }]
+              : [];
+          }),
+          itemsTotalInCents: quoted.subtotalInCents,
+          deliveryFeeInCents: quoted.deliveryFeeInCents,
+          totalInCents: quoted.totalInCents,
+        }
       : undefined;
-  const failed = order === undefined && (catalog.isError || config.isError);
+  const failed = order === undefined && (catalog.isError || quote.isError);
   const loading = order === undefined && !failed;
 
   function retry() {
     if (catalog.isError) void catalog.refetch();
-    if (config.isError) void config.refetch();
+    if (quote.isError) void quote.refetch();
   }
 
   // The row that has the focus goes away with Remove, so the focus moves to the heading first.
@@ -193,7 +218,12 @@ export function OrderSummary() {
           <Button
             type="submit"
             fullWidth
-            disabled={order === undefined || order.rows.length === 0 || isSubmitting}
+            disabled={
+              order === undefined ||
+              order.rows.length === 0 ||
+              quote.isPlaceholderData ||
+              isSubmitting
+            }
             aria-busy={isSubmitting || undefined}
           >
             Confirm order

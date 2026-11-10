@@ -5,6 +5,8 @@ export type SubmitState = {
   isSubmitting: boolean;
   /** The message above the Confirm order button after a failure no field can show. */
   alertMessage: string | undefined;
+  /** What the person has typed in the ZIP code field (maybe incomplete), for the quote of the summary. */
+  zipCode?: string | undefined;
 };
 
 const NOT_SUBMITTING: SubmitState = { isSubmitting: false, alertMessage: undefined };

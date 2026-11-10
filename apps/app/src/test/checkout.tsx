@@ -12,7 +12,7 @@ import { CartProvider } from "../features/cart/cart-context";
 import type { CartLine } from "../features/cart/cart-reducer";
 import { saveCart } from "../features/cart/cart-storage";
 import type { Coffee } from "../features/catalog/api";
-import type { CheckoutConfig, Order, OrderRequest } from "../features/checkout/api";
+import type { CheckoutConfig, Order, OrderRequest, QuoteRequest } from "../features/checkout/api";
 import { createTestQueryClient, latte, sampleCoffees } from "./coffees";
 
 export const checkoutConfig: CheckoutConfig = {
@@ -67,12 +67,17 @@ export type OrderOutcome =
   | { kind: "network-error" }
   | { kind: "pending" };
 
+/** How the quote answers: like a catalog, or a 422 for a coffee the server does not know. */
+type QuoteMode = Mode | "unprocessable";
+
 type Options = {
   coffees?: Coffee[];
   config?: CheckoutConfig;
   /** One mode, or one per request in order; the last one stays for the next requests. */
   catalog?: Mode | Mode[];
   configMode?: Mode | Mode[];
+  /** The answer of `POST /api/v1/orders/quote`, computed from the coffees and the fee of the config. */
+  quote?: QuoteMode | QuoteMode[];
   /** The answer of `POST /api/v1/orders`; it creates the sample order when omitted. */
   orderOutcome?: OrderOutcome | OrderOutcome[];
 };
@@ -84,7 +89,7 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-function sequence(modes: Mode | Mode[] = "ok"): () => Mode {
+function sequence<T extends string = Mode>(modes: T | T[] = "ok" as T): () => T {
   const queue = Array.isArray(modes) ? [...modes] : [modes];
   return () => (queue.length > 1 ? queue.shift()! : queue[0]!);
 }
@@ -95,15 +100,71 @@ export function fakeCheckoutApi({
   config = checkoutConfig,
   catalog,
   configMode,
+  quote,
   orderOutcome = { kind: "created" },
 }: Options = {}) {
+  const quoteMode = sequence(quote);
   const catalogMode = sequence(catalog);
   const configNext = sequence(configMode);
   const outcomes = Array.isArray(orderOutcome) ? [...orderOutcome] : [orderOutcome];
   const nextOutcome = () => (outcomes.length > 1 ? outcomes.shift()! : outcomes[0]!);
   const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
     const path = String(input);
-    if (path.startsWith("/api/v1/orders") && init?.method === "POST") {
+    if (path === "/api/v1/orders/quote" && init?.method === "POST") {
+      const mode = quoteMode();
+      if (mode === "pending") return new Promise<Response>(() => {});
+      if (mode === "unprocessable") {
+        return json(
+          {
+            error: {
+              code: "unprocessable_content",
+              message: "The order cannot be processed.",
+              fields: { items: "Unknown coffee." },
+            },
+          },
+          422,
+        );
+      }
+      if (mode === "fail") {
+        return json({ error: { code: "unexpected_error", message: "Something went wrong." } }, 500);
+      }
+      const request = JSON.parse(String(init.body)) as QuoteRequest;
+      const known = new Map(coffees.map((coffee) => [coffee.id, coffee]));
+      const unknown = request.items.filter((item) => !known.has(item.coffeeId));
+      if (unknown.length > 0) {
+        return json(
+          {
+            error: {
+              code: "unprocessable_content",
+              message: "The order cannot be processed.",
+              fields: { items: "Unknown coffee." },
+            },
+          },
+          422,
+        );
+      }
+      // The fake server follows the rule of the real one: prices from the catalog, the fee of the
+      // config, and the total as their sum.
+      const items = request.items.map(({ coffeeId, quantity }) => {
+        const coffee = known.get(coffeeId)!;
+        return {
+          coffeeId,
+          name: coffee.name,
+          quantity,
+          unitPriceInCents: coffee.priceInCents,
+          lineTotalInCents: coffee.priceInCents * quantity,
+        };
+      });
+      const subtotalInCents = items.reduce((sum, item) => sum + item.lineTotalInCents, 0);
+      return json({
+        items,
+        subtotalInCents,
+        deliveryFeeInCents: config.deliveryFeeInCents,
+        totalInCents: subtotalInCents + config.deliveryFeeInCents,
+        currency: config.currency,
+      });
+    }
+    if (path === "/api/v1/orders" && init?.method === "POST") {
       const outcome = nextOutcome();
       switch (outcome.kind) {
         case "created":
@@ -177,10 +238,15 @@ export function catalogRequests(fetchMock: ReturnType<typeof fakeCheckoutApi>): 
 /** The bodies of the `POST /api/v1/orders` requests, parsed. */
 export function postedOrders(fetchMock: ReturnType<typeof fakeCheckoutApi>): OrderRequest[] {
   return fetchMock.mock.calls
-    .filter(
-      ([input, init]) => String(input).startsWith("/api/v1/orders") && init?.method === "POST",
-    )
+    .filter(([input, init]) => String(input) === "/api/v1/orders" && init?.method === "POST")
     .map(([, init]) => JSON.parse(String(init?.body)) as OrderRequest);
+}
+
+/** The bodies of the `POST /api/v1/orders/quote` requests, parsed. */
+export function postedQuotes(fetchMock: ReturnType<typeof fakeCheckoutApi>): QuoteRequest[] {
+  return fetchMock.mock.calls
+    .filter(([input, init]) => String(input) === "/api/v1/orders/quote" && init?.method === "POST")
+    .map(([, init]) => JSON.parse(String(init?.body)) as QuoteRequest);
 }
 
 /**

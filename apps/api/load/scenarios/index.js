@@ -5,3 +5,4 @@ export { listCoffees } from "./coffees-list.js";
 export { getCheckoutConfig } from "./checkout-config.js";
 export { createOrder } from "./orders-create.js";
 export { getOrder } from "./orders-get.js";
+export { quoteOrder } from "./orders-quote.js";

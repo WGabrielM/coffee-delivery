@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -6,8 +6,8 @@ import { accessibilityViolations } from "../../../test/axe";
 import {
   catalogRequests,
   checkoutConfig,
-  configRequests,
   fakeCheckoutApi,
+  postedQuotes,
 } from "../../../test/checkout";
 import { cuban, latte, renderWithQuery, traditionalEspresso } from "../../../test/coffees";
 import { useCart } from "../../cart/cart-context";
@@ -118,7 +118,7 @@ describe("OrderSummary with data", () => {
     expect(amount.tagName).toBe("OUTPUT");
   });
 
-  it("takes the delivery fee from the checkout config, not from the code", async () => {
+  it("takes the delivery fee and the total from the quote of the server, not from the code", async () => {
     fakeCheckoutApi({ config: { ...checkoutConfig, deliveryFeeInCents: 500 } });
     renderSummary();
 
@@ -126,6 +126,70 @@ describe("OrderSummary with data", () => {
 
     expect(valueOf("Delivery")).toBe("$5.00");
     expect(valueOf("Total")).toBe("$34.70");
+  });
+
+  it("asks the server for the quote of the cart lines, with no price and no ZIP code yet", async () => {
+    const fetchMock = fakeCheckoutApi();
+    renderSummary();
+
+    await screen.findByRole("list");
+
+    expect(postedQuotes(fetchMock)).toEqual([
+      {
+        items: [
+          { coffeeId: latte.id, quantity: 2 },
+          { coffeeId: traditionalEspresso.id, quantity: 1 },
+        ],
+      },
+    ]);
+  });
+
+  it("shows the numbers of the quote, so the summary and the quote agree", async () => {
+    fakeCheckoutApi();
+    renderSummary([{ coffeeId: cuban.id, quantity: 3 }]);
+
+    await screen.findByRole("list");
+
+    // 3 × 9.90 = 29.70 (the Cuban of the fake catalog is 12.50, the quote is the server's answer).
+    expect(within(rowOf("Cuban")).getByText("$37.50")).toBeInTheDocument();
+    expect(valueOf("Items total")).toBe("$37.50");
+    expect(valueOf("Total")).toBe("$41.00");
+  });
+
+  it("asks again for the quote when the quantity changes, and shows the new totals", async () => {
+    const fetchMock = fakeCheckoutApi();
+    const user = userEvent.setup({ delay: null });
+    renderSummary();
+    await screen.findByRole("list");
+
+    await user.click(within(rowOf("Latte")).getByRole("button", { name: "Increase quantity" }));
+
+    await waitFor(() => expect(valueOf("Total")).toBe("$43.10"));
+    expect(valueOf("Items total")).toBe("$39.60");
+    expect(postedQuotes(fetchMock)).toHaveLength(2);
+    expect(postedQuotes(fetchMock)[1]!.items[0]).toEqual({ coffeeId: latte.id, quantity: 3 });
+  });
+
+  it("keeps the previous numbers and disables Confirm order while the new quote loads", async () => {
+    fakeCheckoutApi({ quote: ["ok", "pending"] });
+    const user = userEvent.setup({ delay: null });
+    renderSummary();
+    await screen.findByRole("list");
+
+    await user.click(within(rowOf("Latte")).getByRole("button", { name: "Increase quantity" }));
+
+    expect(valueOf("Total")).toBe("$33.20");
+    expect(screen.getByRole("button", { name: "Confirm order" })).toBeDisabled();
+    expect(screen.queryByText("Loading your order…")).not.toBeInTheDocument();
+  });
+
+  it("does not ask for a quote of an empty cart", async () => {
+    const fetchMock = fakeCheckoutApi();
+    renderSummary([]);
+
+    await screen.findByText("In the cart: 0");
+
+    expect(postedQuotes(fetchMock)).toEqual([]);
   });
 
   it("shows the photo of each coffee at 64 px, round, with the name as alt text", async () => {
@@ -159,17 +223,18 @@ describe("OrderSummary with data", () => {
 
     await user.click(within(rowOf("Latte")).getByRole("button", { name: "Increase quantity" }));
 
+    // The counter and the cart change at once; the prices follow the quote of the server.
+    expect(screen.getByText("In the cart: 4")).toBeInTheDocument();
+    await waitFor(() => expect(valueOf("Total")).toBe("$43.10"));
     expect(within(rowOf("Latte")).getByText("$29.70")).toBeInTheDocument();
     expect(valueOf("Items total")).toBe("$39.60");
-    expect(valueOf("Total")).toBe("$43.10");
-    expect(screen.getByText("In the cart: 4")).toBeInTheDocument();
 
     await user.click(within(rowOf("Latte")).getByRole("button", { name: "Decrease quantity" }));
     await user.click(within(rowOf("Latte")).getByRole("button", { name: "Decrease quantity" }));
 
-    expect(within(rowOf("Latte")).getByText("$9.90", { selector: "p" })).toBeInTheDocument();
-    expect(valueOf("Total")).toBe("$23.30");
     expect(screen.getByText("In the cart: 2")).toBeInTheDocument();
+    await waitFor(() => expect(valueOf("Total")).toBe("$23.30"));
+    expect(within(rowOf("Latte")).getByText("$9.90", { selector: "p" })).toBeInTheDocument();
   });
 
   it("has a Remove button per row, named for its coffee, with the trash icon", async () => {
@@ -194,9 +259,9 @@ describe("OrderSummary with data", () => {
 
     expect(screen.queryByRole("listitem", { name: "Latte" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
-    expect(valueOf("Items total")).toBe("$9.90");
-    expect(valueOf("Total")).toBe("$13.40");
     expect(screen.getByText("In the cart: 1")).toBeInTheDocument();
+    await waitFor(() => expect(valueOf("Total")).toBe("$13.40"));
+    expect(valueOf("Items total")).toBe("$9.90");
     expect(screen.getByTestId("cart-lines")).toHaveTextContent(traditionalEspresso.id);
     expect(screen.getByTestId("cart-lines")).not.toHaveTextContent(latte.id);
   });
@@ -273,7 +338,7 @@ describe("OrderSummary with data", () => {
 
 describe("OrderSummary while it loads", () => {
   it("shows Loading your order… and a Confirm order button that is disabled", () => {
-    fakeCheckoutApi({ catalog: "pending", configMode: "pending" });
+    fakeCheckoutApi({ catalog: "pending", quote: "pending" });
     renderSummary();
 
     expect(screen.getByText("Loading your order…")).toBeInTheDocument();
@@ -285,8 +350,8 @@ describe("OrderSummary while it loads", () => {
     );
   });
 
-  it("keeps loading while only the config is missing", async () => {
-    fakeCheckoutApi({ configMode: "pending" });
+  it("keeps loading while only the quote is missing", async () => {
+    fakeCheckoutApi({ quote: "pending" });
     renderSummary();
 
     expect(await screen.findByText("Loading your order…")).toBeInTheDocument();
@@ -316,15 +381,26 @@ describe("OrderSummary when a request fails", () => {
     expect(screen.queryByText("Items total")).not.toBeInTheDocument();
   });
 
-  it("shows the same alert when the config fails", async () => {
-    fakeCheckoutApi({ configMode: "fail" });
+  it("shows the same alert when the quote fails", async () => {
+    fakeCheckoutApi({ quote: "fail" });
     renderSummary();
 
     expect(await screen.findByRole("alert")).toHaveTextContent("We couldn't load your order.");
   });
 
+  it("shows the error state with Try again when the server does not know a coffee of the quote", async () => {
+    // The catalog of the screen has the coffee, but the server refuses the quote (a 422).
+    fakeCheckoutApi({ quote: "unprocessable" });
+    renderSummary();
+
+    const alert = await screen.findByRole("alert");
+
+    expect(alert).toHaveTextContent("We couldn't load your order.");
+    expect(within(alert).getByRole("button", { name: "Try again" })).toBeInTheDocument();
+  });
+
   it("asks again only for what failed, and shows the summary when it answers", async () => {
-    const fetchMock = fakeCheckoutApi({ configMode: ["fail", "ok"] });
+    const fetchMock = fakeCheckoutApi({ quote: ["fail", "ok"] });
     const user = userEvent.setup({ delay: null });
     renderSummary();
     await screen.findByRole("alert");
@@ -334,7 +410,7 @@ describe("OrderSummary when a request fails", () => {
 
     expect(await screen.findByRole("list")).toBeInTheDocument();
     expect(valueOf("Total")).toBe("$33.20");
-    expect(configRequests(fetchMock)).toBe(2);
+    expect(postedQuotes(fetchMock)).toHaveLength(2);
     expect(catalogRequests(fetchMock)).toBe(catalogBefore);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
