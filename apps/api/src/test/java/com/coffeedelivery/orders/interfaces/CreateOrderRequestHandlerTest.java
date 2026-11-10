@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.coffeedelivery.orders.application.CreateOrderUseCase;
 import com.coffeedelivery.orders.application.FakeCoffeePriceLookup;
 import com.coffeedelivery.orders.application.InMemoryOrderRepository;
+import com.coffeedelivery.orders.application.RetentionPolicy;
 import com.coffeedelivery.shared.error.ApiExceptionHandler;
 import java.time.Clock;
 import java.time.Instant;
@@ -36,7 +37,8 @@ class CreateOrderRequestHandlerTest {
                           .with(LATTE, "Latte", 990)
                           .with(CUBAN, "Cuban", 990),
                       orders,
-                      Clock.fixed(Instant.parse("2026-11-04T12:00:00Z"), ZoneOffset.UTC))))
+                      Clock.fixed(Instant.parse("2026-11-04T12:00:00Z"), ZoneOffset.UTC)),
+                  new RetentionPolicy(90)))
           .setControllerAdvice(new ApiExceptionHandler())
           .build();
 
@@ -87,7 +89,8 @@ class CreateOrderRequestHandlerTest {
         .andExpect(jsonPath("$.currency").value("USD"))
         .andExpect(jsonPath("$.estimatedDeliveryMinutes.min").value(20))
         .andExpect(jsonPath("$.estimatedDeliveryMinutes.max").value(30))
-        .andExpect(jsonPath("$.createdAt").value("2026-11-04T12:00:00Z"));
+        .andExpect(jsonPath("$.createdAt").value("2026-11-04T12:00:00Z"))
+        .andExpect(jsonPath("$.addressRetentionDays").value(90));
   }
 
   @Test

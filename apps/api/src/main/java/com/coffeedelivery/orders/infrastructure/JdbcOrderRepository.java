@@ -8,6 +8,7 @@ import com.coffeedelivery.orders.domain.OrderItem;
 import com.coffeedelivery.orders.domain.OrderStatus;
 import com.coffeedelivery.orders.domain.PaymentMethod;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.OffsetDateTime;
@@ -158,19 +159,27 @@ class JdbcOrderRepository implements OrderRepository {
                 new OrderRow(
                     OrderStatus.fromValue(rs.getString("status")).orElseThrow(),
                     PaymentMethod.fromValue(rs.getString("payment_method")).orElseThrow(),
-                    new Address(
-                        rs.getString("zip_code"),
-                        rs.getString("street"),
-                        rs.getString("number"),
-                        rs.getString("complement"),
-                        rs.getString("neighborhood"),
-                        rs.getString("city"),
-                        rs.getString("state")),
+                    addressOf(rs),
                     rs.getInt("subtotal_in_cents"),
                     rs.getInt("delivery_fee_in_cents"),
                     rs.getInt("total_in_cents"),
                     rs.getObject("created_at", OffsetDateTime.class)))
         .optional();
+  }
+
+  /** The address, or null for an order whose address was cleared after the retention period. */
+  private static Address addressOf(ResultSet rs) throws SQLException {
+    if (rs.getString("zip_code") == null) {
+      return null;
+    }
+    return new Address(
+        rs.getString("zip_code"),
+        rs.getString("street"),
+        rs.getString("number"),
+        rs.getString("complement"),
+        rs.getString("neighborhood"),
+        rs.getString("city"),
+        rs.getString("state"));
   }
 
   /** The lines in creation order: the identity id grows with each insert. */

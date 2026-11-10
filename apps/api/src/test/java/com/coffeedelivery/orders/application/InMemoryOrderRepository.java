@@ -1,6 +1,7 @@
 package com.coffeedelivery.orders.application;
 
 import com.coffeedelivery.orders.domain.Order;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** A fake {@link OrderRepository} for unit tests. */
-public class InMemoryOrderRepository implements OrderRepository {
+public class InMemoryOrderRepository implements OrderRepository, OrderAddressRetention {
 
   private final List<Order> saved = new ArrayList<>();
   private final Map<UUID, StoredOrder> byKey = new HashMap<>();
@@ -25,6 +26,19 @@ public class InMemoryOrderRepository implements OrderRepository {
     }
     saved.add(order);
     return true;
+  }
+
+  @Override
+  public int clearAddressesCreatedBefore(Instant cutoff, Instant clearedAt) {
+    int cleared = 0;
+    for (int i = 0; i < saved.size(); i++) {
+      Order order = saved.get(i);
+      if (order.address() != null && order.createdAt().isBefore(cutoff)) {
+        saved.set(i, order.withoutAddress());
+        cleared++;
+      }
+    }
+    return cleared;
   }
 
   /** Stores an order that has no idempotency key. */

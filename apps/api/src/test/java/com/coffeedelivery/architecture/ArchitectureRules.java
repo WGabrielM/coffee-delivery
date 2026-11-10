@@ -126,12 +126,16 @@ final class ArchitectureRules {
         .as("every request handler depends on exactly one use case");
   }
 
-  ArchRule useCasesAreUsedByExactlyOneRequestHandler() {
+  /**
+   * An entry point is a request handler or a scheduled job ({@code *Job}): each use case has
+   * exactly one (spec 038 added the first job).
+   */
+  ArchRule useCasesHaveExactlyOneEntryPoint() {
     return classes()
         .that()
         .haveSimpleNameEndingWith("UseCase")
-        .should(beUsedByExactlyOneRequestHandler())
-        .as("every use case is used by exactly one request handler");
+        .should(haveExactlyOneEntryPoint())
+        .as("every use case is used by exactly one request handler or scheduled job");
   }
 
   ArchRule domainHasNoFloatingPointOrBigDecimal() {
@@ -233,18 +237,21 @@ final class ArchitectureRules {
     };
   }
 
-  private static ArchCondition<JavaClass> beUsedByExactlyOneRequestHandler() {
-    return new ArchCondition<>("be used by exactly one request handler") {
+  private static ArchCondition<JavaClass> haveExactlyOneEntryPoint() {
+    return new ArchCondition<>("be used by exactly one request handler or scheduled job") {
       @Override
       public void check(JavaClass useCase, ConditionEvents events) {
         List<String> handlers =
             useCase.getDirectDependenciesToSelf().stream()
                 .map(Dependency::getOriginClass)
-                .filter(origin -> origin.getSimpleName().endsWith("RequestHandler"))
+                .filter(
+                    origin ->
+                        origin.getSimpleName().endsWith("RequestHandler")
+                            || origin.getSimpleName().endsWith("Job"))
                 .map(JavaClass::getName)
                 .distinct()
                 .toList();
-        String message = useCase.getName() + " is used by the request handlers " + handlers;
+        String message = useCase.getName() + " is used by the entry points " + handlers;
         events.add(
             handlers.size() == 1
                 ? SimpleConditionEvent.satisfied(useCase, message)

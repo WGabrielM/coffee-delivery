@@ -5,6 +5,7 @@ import {
   CHECK_ORDER_MESSAGE,
   mapOrderError,
   NO_LONGER_AVAILABLE_MESSAGE,
+  TOO_MANY_ORDERS_MESSAGE,
   TRY_AGAIN_MESSAGE,
 } from "./submit-errors";
 
@@ -23,6 +24,21 @@ describe("mapOrderError", () => {
       "Some coffees are no longer available. Please review your cart.",
     );
     expect(TRY_AGAIN_MESSAGE).toBe("We couldn't place your order. Please try again.");
+  });
+
+  it("shows the too many orders alert for a 429, with no field error", () => {
+    const result = mapOrderError(
+      new ApiError({
+        status: 429,
+        code: "too_many_requests",
+        message: "Too many requests. Please wait a minute and try again.",
+      }),
+    );
+
+    expect(TOO_MANY_ORDERS_MESSAGE).toBe(
+      "Too many orders were sent. Please wait a minute and try again.",
+    );
+    expect(result).toEqual({ fieldErrors: {}, alert: TOO_MANY_ORDERS_MESSAGE });
   });
 
   describe("400 validation_failed", () => {

@@ -81,8 +81,8 @@ class ArchitectureTest {
   }
 
   @Test
-  void useCasesAreUsedByExactlyOneRequestHandler() {
-    rules.useCasesAreUsedByExactlyOneRequestHandler().check(CLASSES);
+  void useCasesHaveExactlyOneEntryPoint() {
+    rules.useCasesHaveExactlyOneEntryPoint().check(CLASSES);
   }
 
   @Test

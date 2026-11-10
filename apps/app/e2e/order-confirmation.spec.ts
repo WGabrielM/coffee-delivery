@@ -34,6 +34,32 @@ test("an existing order shows the title, the subtitle, and the three rows", asyn
   await expect(page.getByText("$")).toHaveCount(0);
 });
 
+test("an order whose address was removed says so in place of the address", async ({
+  page,
+  request,
+}) => {
+  const id = await createOrder(request);
+  // The API of this machine may not have cleared an old order, so the cleared answer is the one of
+  // the spec: the same order with `address: null`.
+  await page.route(`**/api/v1/orders/${id}`, async (route) => {
+    const response = await route.fetch();
+    const order = (await response.json()) as Record<string, unknown>;
+    await route.fulfill({
+      response,
+      json: { ...order, address: null, addressRetentionDays: 90 },
+    });
+  });
+
+  await page.goto(`/orders/${id}`);
+
+  await expect(page.getByRole("heading", { level: 1, name: "Uhu! Order confirmed" })).toBeVisible();
+  const rows = details(page).getByRole("listitem");
+  await expect(rows.nth(0)).toHaveText("The address was removed after 90 days.");
+  await expect(rows.nth(1)).toHaveText("Estimated delivery20 min - 30 min");
+  await expect(rows.nth(2)).toHaveText("Payment on deliveryCredit card");
+  await expect(page.getByText(/Delivery to/)).toHaveCount(0);
+});
+
 test("the title and the subtitle have the fonts, sizes, and colors of the design", async ({
   page,
   request,

@@ -1,5 +1,6 @@
 package com.coffeedelivery.orders.interfaces;
 
+import com.coffeedelivery.orders.domain.Address;
 import com.coffeedelivery.orders.domain.DeliveryPolicy;
 import com.coffeedelivery.orders.domain.Order;
 import com.coffeedelivery.orders.domain.OrderItem;
@@ -12,6 +13,7 @@ record OrderResponse(
     String status,
     List<ItemResponse> items,
     AddressResponse address,
+    int addressRetentionDays,
     String paymentMethod,
     int subtotalInCents,
     int deliveryFeeInCents,
@@ -44,19 +46,32 @@ record OrderResponse(
 
   record EstimatedDeliveryMinutes(int min, int max) {}
 
-  static OrderResponse from(Order order) {
+  private static AddressResponse addressOf(Order order) {
+    Address address = order.address();
+    if (address == null) {
+      return null;
+    }
+    return new AddressResponse(
+        address.zipCode(),
+        address.street(),
+        address.number(),
+        address.complement(),
+        address.neighborhood(),
+        address.city(),
+        address.state());
+  }
+
+  /**
+   * The order as the API shows it. The address is {@code null} for an order whose address was
+   * cleared after {@code addressRetentionDays} days (spec 038); every other field is as before.
+   */
+  static OrderResponse from(Order order, int addressRetentionDays) {
     return new OrderResponse(
         order.id().toString(),
         order.status().value(),
         order.items().stream().map(ItemResponse::from).toList(),
-        new AddressResponse(
-            order.address().zipCode(),
-            order.address().street(),
-            order.address().number(),
-            order.address().complement(),
-            order.address().neighborhood(),
-            order.address().city(),
-            order.address().state()),
+        addressOf(order),
+        addressRetentionDays,
         order.paymentMethod().value(),
         order.subtotalInCents(),
         order.deliveryFeeInCents(),

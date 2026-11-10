@@ -55,8 +55,13 @@ export interface Order {
   id: string;
   status: string;
   items: OrderItem[];
-  /** The stored address; `complement` is `null` when the order has none. */
-  address: Omit<OrderAddress, "complement"> & { complement: string | null };
+  /**
+   * The stored address; `complement` is `null` when the order has none. The whole address is `null`
+   * once it was cleared, `addressRetentionDays` days after the order (spec 038).
+   */
+  address: (Omit<OrderAddress, "complement"> & { complement: string | null }) | null;
+  /** After how many days the address of an order is removed. */
+  addressRetentionDays: number;
   paymentMethod: string;
   subtotalInCents: number;
   deliveryFeeInCents: number;

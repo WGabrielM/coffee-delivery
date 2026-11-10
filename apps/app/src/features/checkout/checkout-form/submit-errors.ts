@@ -6,6 +6,8 @@ import type { CheckoutFormValues } from "./checkout-form-schema";
 export const CHECK_ORDER_MESSAGE = "Please review your order and try again.";
 export const NO_LONGER_AVAILABLE_MESSAGE =
   "Some coffees are no longer available. Please review your cart.";
+export const TOO_MANY_ORDERS_MESSAGE =
+  "Too many orders were sent. Please wait a minute and try again.";
 export const TRY_AGAIN_MESSAGE = "We couldn't place your order. Please try again.";
 
 /** The fields of the form that the server can name in a `400`, by their JSON path. */
@@ -34,13 +36,16 @@ export type OrderFailure = {
 /**
  * What a failed `POST /api/v1/orders` means for the form. A `400` puts each message under its field
  * (`address.*` and `paymentMethod`); any other key, or no key, gets the alert to review the order. A
- * `422` means a coffee left the catalog. Anything else (a network error, a `5xx`) is a plain "try
+ * `422` means a coffee left the catalog, and a `429` that the client sent too many orders. Anything else (a network error, a `5xx`) is a plain "try
  * again". The server's own messages are fixed sentences, so the field ones are shown as they are.
  */
 export function mapOrderError(error: unknown): OrderFailure {
   if (!(error instanceof ApiError)) return { fieldErrors: {}, alert: TRY_AGAIN_MESSAGE };
 
   if (error.status === 422) return { fieldErrors: {}, alert: NO_LONGER_AVAILABLE_MESSAGE };
+
+  // The proxy limits the orders of one client (spec 038).
+  if (error.status === 429) return { fieldErrors: {}, alert: TOO_MANY_ORDERS_MESSAGE };
 
   if (error.status === 400) {
     const fieldErrors: OrderFailure["fieldErrors"] = {};

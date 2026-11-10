@@ -14,6 +14,45 @@ function renderOrder(order: Order = sampleOrder) {
 const details = () => screen.getByRole("list", { name: "Order details" });
 const row = (index: number) => within(details()).getAllByRole("listitem")[index]!;
 
+describe("OrderConfirmation of an order whose address was removed", () => {
+  const cleared: Order = { ...sampleOrder, address: null, addressRetentionDays: 90 };
+
+  it("says the address was removed after the configured days, in place of the address", () => {
+    renderOrder(cleared);
+
+    expect(row(0)).toHaveTextContent("The address was removed after 90 days.");
+    expect(screen.queryByText(/Delivery to/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Rua João Daniel Martinelli/)).not.toBeInTheDocument();
+  });
+
+  it("uses the number of days of the setting, and the singular for one day", () => {
+    renderOrder({ ...cleared, addressRetentionDays: 30 });
+    expect(row(0)).toHaveTextContent("The address was removed after 30 days.");
+  });
+
+  it("says one day for a retention of one day", () => {
+    renderOrder({ ...cleared, addressRetentionDays: 1 });
+    expect(row(0)).toHaveTextContent("The address was removed after 1 day.");
+  });
+
+  it("keeps the title, the estimate, and the payment as before", () => {
+    renderOrder(cleared);
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Uhu! Order confirmed" }),
+    ).toBeInTheDocument();
+    expect(row(1)).toHaveTextContent("20 min - 30 min");
+    expect(row(2)).toHaveTextContent("Credit card");
+    expect(details().querySelectorAll("li")).toHaveLength(3);
+  });
+
+  it("has no accessibility violation", async () => {
+    const { container } = renderOrder(cleared);
+
+    expect(await accessibilityViolations(container)).toEqual([]);
+  });
+});
+
 describe("OrderConfirmation", () => {
   it("has the h1 Uhu! Order confirmed in Baloo 2 ExtraBold 32 and the yellow-dark color", () => {
     renderOrder();
@@ -45,7 +84,8 @@ describe("OrderConfirmation", () => {
   });
 
   it("does not show the complement", () => {
-    renderOrder({ ...sampleOrder, address: { ...sampleOrder.address, complement: "Apt 12" } });
+    const address = sampleOrder.address as NonNullable<Order["address"]>;
+    renderOrder({ ...sampleOrder, address: { ...address, complement: "Apt 12" } });
 
     expect(screen.queryByText(/Apt 12/)).not.toBeInTheDocument();
   });

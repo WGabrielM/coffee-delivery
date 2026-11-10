@@ -47,6 +47,7 @@ export const sampleOrder: Order = {
     city: "Porto Alegre",
     state: "RS",
   },
+  addressRetentionDays: 90,
   paymentMethod: "credit_card",
   subtotalInCents: 1980,
   deliveryFeeInCents: 350,
@@ -61,6 +62,7 @@ export type OrderOutcome =
   | { kind: "created"; order?: Order }
   | { kind: "validation"; fields: Record<string, string> }
   | { kind: "unprocessable" }
+  | { kind: "too-many" }
   | { kind: "server-error" }
   | { kind: "network-error" }
   | { kind: "pending" };
@@ -127,6 +129,16 @@ export function fakeCheckoutApi({
               },
             },
             422,
+          );
+        case "too-many":
+          return json(
+            {
+              error: {
+                code: "too_many_requests",
+                message: "Too many requests. Please wait a minute and try again.",
+              },
+            },
+            429,
           );
         case "server-error":
           return json(

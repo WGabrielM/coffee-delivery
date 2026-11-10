@@ -17,6 +17,7 @@ import { CheckoutForm } from "./checkout-form/CheckoutForm";
 import {
   CHECK_ORDER_MESSAGE,
   NO_LONGER_AVAILABLE_MESSAGE,
+  TOO_MANY_ORDERS_MESSAGE,
   TRY_AGAIN_MESSAGE,
 } from "./checkout-form/submit-errors";
 import { OrderSummary } from "./order-summary/OrderSummary";
@@ -319,6 +320,34 @@ describe("when the server answers 400 with fields", () => {
 
     expect(await screen.findByText("The order page")).toBeInTheDocument();
     expect(postedOrders(fetchMock)).toHaveLength(2);
+  });
+});
+
+describe("when the proxy answers 429", () => {
+  it("shows the too many orders alert, keeps the cart and the values, and enables the button", async () => {
+    const { fetchMock, user } = await openCheckout({ kind: "too-many" });
+    await fillTheSample(user);
+
+    await user.click(confirm());
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(TOO_MANY_ORDERS_MESSAGE);
+    expect(loadCart()).toHaveLength(1);
+    expect(confirm()).toBeEnabled();
+    expect(screen.getByRole("textbox", { name: "Street" })).toHaveValue(
+      "Rua João Daniel Martinelli",
+    );
+    expect(postedOrders(fetchMock)).toHaveLength(1);
+  });
+
+  it("goes through when the person waits and confirms again", async () => {
+    const { user } = await openCheckout([{ kind: "too-many" }, { kind: "created" }]);
+    await fillTheSample(user);
+    await user.click(confirm());
+    await screen.findByRole("alert");
+
+    await user.click(confirm());
+
+    expect(await screen.findByText("The order page")).toBeInTheDocument();
   });
 });
 

@@ -45,7 +45,7 @@ class ArchitectureRulesTest {
               cleanRules.restControllersAreRequestHandlersInInterfaces().check(CLEAN_CLASSES);
               cleanRules.servicesAreUseCasesInApplication().check(CLEAN_CLASSES);
               cleanRules.requestHandlersDependOnExactlyOneUseCase().check(CLEAN_CLASSES);
-              cleanRules.useCasesAreUsedByExactlyOneRequestHandler().check(CLEAN_CLASSES);
+              cleanRules.useCasesHaveExactlyOneEntryPoint().check(CLEAN_CLASSES);
               cleanRules.domainHasNoFloatingPointOrBigDecimal().check(CLEAN_CLASSES);
             })
         .doesNotThrowAnyException();
@@ -159,12 +159,22 @@ class ArchitectureRulesTest {
 
   @Test
   void aUseCaseUsedByNoHandlerFails() {
-    assertViolation(ArchitectureRules::useCasesAreUsedByExactlyOneRequestHandler, "UnusedUseCase");
+    assertViolation(ArchitectureRules::useCasesHaveExactlyOneEntryPoint, "UnusedUseCase");
+  }
+
+  @Test
+  void aUseCaseUsedByAHandlerAndAJobFails() {
+    assertViolation(ArchitectureRules::useCasesHaveExactlyOneEntryPoint, "HandlerAndJobUseCase");
+  }
+
+  @Test
+  void aUseCaseUsedByOneJobPasses() {
+    assertNoViolation(ArchitectureRules::useCasesHaveExactlyOneEntryPoint, "RunThingUseCase");
   }
 
   @Test
   void aUseCaseUsedByTwoHandlersFails() {
-    assertViolation(ArchitectureRules::useCasesAreUsedByExactlyOneRequestHandler, "SharedUseCase");
+    assertViolation(ArchitectureRules::useCasesHaveExactlyOneEntryPoint, "SharedUseCase");
   }
 
   @Test

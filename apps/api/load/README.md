@@ -40,3 +40,7 @@ k6 prints a summary at the end: `http_req_duration` (look at `p(95)`), `http_req
 
 1. Create `scenarios/<endpoint>.js` that exports one function, calls `getAndCheck` or `postAndCheck` from `lib/http.js`, and ends with `think()`.
 2. Export it from `scenarios/index.js`. A test (`yarn test`) fails when a scenario file is not listed there.
+
+## Rate limit check (spec 038)
+
+`rate-limit.js` is not a profile of the others: it sends 20 orders a second for 30 s from one client to the app image (`yarn docker:up`, then `BASE_URL=http://localhost:8080 node scripts/load.mjs rate-limit`) and passes when some orders get `429` and the orders created are no more than the proxy allows (10 a minute, a burst of 5). Against the API directly there is no limit, on purpose.

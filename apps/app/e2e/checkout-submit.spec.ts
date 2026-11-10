@@ -195,6 +195,28 @@ test("a 400 about anything else shows the review alert and keeps the cart", asyn
   await expect(page.getByRole("link", { name: "Cart, 3 items" })).toBeVisible();
 });
 
+test("a 429 from the proxy shows the too many orders alert and keeps the cart and the values", async ({
+  page,
+}) => {
+  await answerOrders(page, 429, {
+    error: {
+      code: "too_many_requests",
+      message: "Too many requests. Please wait a minute and try again.",
+    },
+  });
+  await fillTheSample(page);
+
+  await confirm(page).click();
+
+  await expect(page.getByRole("alert")).toHaveText(
+    "Too many orders were sent. Please wait a minute and try again.",
+  );
+  await expect(page.getByRole("link", { name: "Cart, 3 items" })).toBeVisible();
+  await expect(field(page, "Street")).toHaveValue("Rua João Daniel Martinelli");
+  await expect(confirm(page)).toBeEnabled();
+  await expect(page).toHaveURL(/\/checkout$/);
+});
+
 test("a 422 shows the alert about coffees that are no longer available and keeps the cart", async ({
   page,
 }) => {

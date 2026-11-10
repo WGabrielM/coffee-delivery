@@ -7,7 +7,8 @@ import java.util.UUID;
 /**
  * A confirmed purchase. Amounts are integer cents (USD). {@link #place} is the totals rule: the
  * subtotal is the sum of the lines, the fee comes from {@link DeliveryPolicy}, and the total is the
- * subtotal plus the fee.
+ * subtotal plus the fee. The {@code address} is {@code null} once the retention period has passed
+ * and the address was cleared (spec 038); everything else stays.
  */
 public record Order(
     UUID id,
@@ -22,6 +23,20 @@ public record Order(
 
   public Order {
     items = List.copyOf(items);
+  }
+
+  /** The same order with its address cleared. */
+  public Order withoutAddress() {
+    return new Order(
+        id,
+        status,
+        items,
+        null,
+        paymentMethod,
+        subtotalInCents,
+        deliveryFeeInCents,
+        totalInCents,
+        createdAt);
   }
 
   public static Order place(

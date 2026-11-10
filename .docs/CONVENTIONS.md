@@ -56,6 +56,7 @@ Details:
 | 415 | `unsupported_media_type` | The request content type is not supported |
 | 4xx | `bad_request` | Any other client error the framework reports |
 | 422 | `unprocessable_content` | The request is valid but its content cannot be used, for example an order for a coffee that does not exist |
+| 429 | `too_many_requests` | Sent by the proxy of the app image, not by the API, when one client sends more than 10 orders a minute (`Retry-After: 60`) |
 | 500 | `unexpected_error` | Anything unhandled; the message never exposes internals |
 
 ## Orders and addresses

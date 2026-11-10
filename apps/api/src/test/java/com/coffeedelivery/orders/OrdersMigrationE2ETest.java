@@ -50,7 +50,8 @@ class OrdersMigrationE2ETest extends PostgresContainerSupport {
             "total_in_cents",
             "created_at",
             "idempotency_key",
-            "request_fingerprint");
+            "request_fingerprint",
+            "address_cleared_at");
   }
 
   @Test
@@ -67,7 +68,7 @@ class OrdersMigrationE2ETest extends PostgresContainerSupport {
   }
 
   @Test
-  void onlyTheComplementAndTheTwoIdempotencyColumnsAreNullable() {
+  void theAddressColumnsAndTheIdempotencyColumnsAreTheOnlyNullableOnes() {
     List<String> nullable =
         jdbc.queryForList(
             """
@@ -77,7 +78,17 @@ class OrdersMigrationE2ETest extends PostgresContainerSupport {
             String.class);
 
     assertThat(nullable)
-        .containsExactlyInAnyOrder("complement", "idempotency_key", "request_fingerprint");
+        .containsExactlyInAnyOrder(
+            "zip_code",
+            "street",
+            "number",
+            "complement",
+            "neighborhood",
+            "city",
+            "state",
+            "address_cleared_at",
+            "idempotency_key",
+            "request_fingerprint");
   }
 
   @Test
@@ -104,6 +115,49 @@ class OrdersMigrationE2ETest extends PostgresContainerSupport {
   void aKeyAndItsFingerprintAreBothSetOrBothNull() {
     assertRejected(() -> insertOrderWithKey(UUID.randomUUID(), null));
     assertRejected(() -> insertOrderWithKey(null, "fingerprint"));
+  }
+
+  @Test
+  void anOrderWithAnAddressMustNotBeMarkedCleared() {
+    UUID id = insertOrder(990, 350, 1340);
+
+    assertRejected(
+        () -> jdbc.update("UPDATE orders SET address_cleared_at = now() WHERE id = ?", id));
+  }
+
+  @Test
+  void anOrderWhoseAddressColumnIsNullMustBeMarkedCleared() {
+    UUID id = insertOrder(990, 350, 1340);
+
+    assertRejected(() -> jdbc.update("UPDATE orders SET street = NULL WHERE id = ?", id));
+    assertRejected(() -> jdbc.update("UPDATE orders SET zip_code = NULL WHERE id = ?", id));
+  }
+
+  @Test
+  void aClearedOrderHasNoAddressAtAllAndKeepsItsAmounts() {
+    UUID id = insertOrder(990, 350, 1340);
+
+    jdbc.update(
+        """
+        UPDATE orders
+        SET zip_code = NULL, street = NULL, number = NULL, complement = NULL,
+            neighborhood = NULL, city = NULL, state = NULL, address_cleared_at = now()
+        WHERE id = ?
+        """,
+        id);
+
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT total_in_cents FROM orders WHERE id = ?", Integer.class, id))
+        .isEqualTo(1340);
+    assertRejected(() -> jdbc.update("UPDATE orders SET city = 'Sao Paulo' WHERE id = ?", id));
+  }
+
+  @Test
+  void theStateRuleStillHoldsForAnOrderThatHasItsAddress() {
+    UUID id = insertOrder(990, 350, 1340);
+
+    assertRejected(() -> jdbc.update("UPDATE orders SET state = 'sp' WHERE id = ?", id));
   }
 
   private void insertOrderWithKey(UUID key, String fingerprint) {

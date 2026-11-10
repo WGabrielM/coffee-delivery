@@ -47,9 +47,10 @@ function paymentLabel(code: string): string {
  * wide with a 1 px gradient border from yellow to purple: a wrapper with the gradient and 1 px of
  * padding holds the inner card, whose corners are 1 px smaller so the border keeps the 6/36/6/36
  * shape. No price, item, or total is shown (the design has none), and the complement is left out.
+ * When the address was cleared after the retention period, the first row says so instead.
  */
 export function OrderConfirmation({ order }: { order: Order }) {
-  const { address, estimatedDeliveryMinutes, paymentMethod } = order;
+  const { address, addressRetentionDays, estimatedDeliveryMinutes, paymentMethod } = order;
   return (
     <>
       <h1 className="mt-px type-title-l text-yellow-dark">Uhu! Order confirmed</h1>
@@ -66,12 +67,18 @@ export function OrderConfirmation({ order }: { order: Order }) {
             className="flex flex-col gap-8 rounded-[5px_35px_5px_35px] bg-background p-6 sm:p-10"
           >
             <Row icon="map-pin-fill" tone="purple">
-              Delivery to{" "}
-              <span className={bold}>
-                {address.street}, {address.number}
-              </span>
-              <br />
-              {address.neighborhood} - {address.city}, {address.state}
+              {address === null ? (
+                `The address was removed after ${addressRetentionDays} ${addressRetentionDays === 1 ? "day" : "days"}.`
+              ) : (
+                <>
+                  Delivery to{" "}
+                  <span className={bold}>
+                    {address.street}, {address.number}
+                  </span>
+                  <br />
+                  {address.neighborhood} - {address.city}, {address.state}
+                </>
+              )}
             </Row>
             <Row icon="timer-fill" tone="yellow">
               Estimated delivery

@@ -2,6 +2,7 @@ package com.coffeedelivery.orders.interfaces;
 
 import com.coffeedelivery.orders.application.CreateOrderResult;
 import com.coffeedelivery.orders.application.CreateOrderUseCase;
+import com.coffeedelivery.orders.application.RetentionPolicy;
 import java.net.URI;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class CreateOrderRequestHandler {
 
   private final CreateOrderUseCase useCase;
+  private final RetentionPolicy retention;
 
-  public CreateOrderRequestHandler(CreateOrderUseCase useCase) {
+  public CreateOrderRequestHandler(CreateOrderUseCase useCase, RetentionPolicy retention) {
     this.useCase = useCase;
+    this.retention = retention;
   }
 
   @PostMapping("/api/v1/orders")
@@ -30,7 +33,7 @@ public class CreateOrderRequestHandler {
     CreateOrderResult result =
         useCase.execute(CreateOrderRequestValidator.toCommand(request, idempotencyKey));
     URI location = URI.create("/api/v1/orders/" + result.order().id());
-    OrderResponse body = OrderResponse.from(result.order());
+    OrderResponse body = OrderResponse.from(result.order(), retention.days());
     return result.created()
         ? ResponseEntity.created(location).body(body)
         : ResponseEntity.ok().location(location).body(body);

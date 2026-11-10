@@ -9,6 +9,13 @@ spring:
   flyway:
     locations: classpath:db/migration
 
+orders:
+  retention:
+    # The address of an order is cleared this many days after the order (a whole number, at least 1),
+    # by a job that runs on this schedule (Spring cron: second minute hour day month weekday).
+    days: ${ORDERS_RETENTION_DAYS:90}
+    cron: ${ORDERS_RETENTION_CRON:0 0 3 * * *}
+
 server:
   port: 3000
 

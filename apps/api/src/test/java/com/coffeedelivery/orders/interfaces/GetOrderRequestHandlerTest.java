@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.coffeedelivery.orders.application.GetOrderUseCase;
 import com.coffeedelivery.orders.application.InMemoryOrderRepository;
+import com.coffeedelivery.orders.application.RetentionPolicy;
 import com.coffeedelivery.orders.domain.Address;
 import com.coffeedelivery.orders.domain.Order;
 import com.coffeedelivery.orders.domain.OrderItem;
@@ -26,7 +27,8 @@ class GetOrderRequestHandlerTest {
 
   private final InMemoryOrderRepository orders = new InMemoryOrderRepository();
   private final MockMvc mvc =
-      MockMvcBuilders.standaloneSetup(new GetOrderRequestHandler(new GetOrderUseCase(orders)))
+      MockMvcBuilders.standaloneSetup(
+              new GetOrderRequestHandler(new GetOrderUseCase(orders), new RetentionPolicy(90)))
           .setControllerAdvice(new ApiExceptionHandler())
           .build();
 
@@ -43,6 +45,35 @@ class GetOrderRequestHandlerTest {
                 "01310-100", "Paulista Avenue", "1000", "Apt 12", "Bela Vista", "Sao Paulo", "SP"),
             PaymentMethod.DEBIT_CARD,
             Instant.parse("2026-11-04T12:00:00.123456Z")));
+  }
+
+  @Test
+  void anOrderWhoseAddressWasClearedAnswers200WithANullAddressAndEverythingElseAsBefore()
+      throws Exception {
+    storeAnOrder();
+    orders.clearAddressesCreatedBefore(Instant.parse("2027-01-01T00:00:00Z"), Instant.now());
+
+    mvc.perform(get("/api/v1/orders/" + ID))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.address").value(org.hamcrest.Matchers.nullValue()))
+        .andExpect(jsonPath("$.id").value(ID.toString()))
+        .andExpect(jsonPath("$.items.length()").value(2))
+        .andExpect(jsonPath("$.paymentMethod").value("debit_card"))
+        .andExpect(jsonPath("$.subtotalInCents").value(2970))
+        .andExpect(jsonPath("$.deliveryFeeInCents").value(350))
+        .andExpect(jsonPath("$.totalInCents").value(3320))
+        .andExpect(jsonPath("$.estimatedDeliveryMinutes.min").value(20))
+        .andExpect(jsonPath("$.createdAt").value("2026-11-04T12:00:00.123456Z"))
+        .andExpect(jsonPath("$.addressRetentionDays").value(90));
+  }
+
+  @Test
+  void anOrderThatHasItsAddressSaysAfterHowManyDaysItWillBeRemoved() throws Exception {
+    storeAnOrder();
+
+    mvc.perform(get("/api/v1/orders/" + ID))
+        .andExpect(jsonPath("$.address.street").value("Paulista Avenue"))
+        .andExpect(jsonPath("$.addressRetentionDays").value(90));
   }
 
   @Test
