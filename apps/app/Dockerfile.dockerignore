@@ -1,0 +1,16 @@
+# Ignore rules for the build of apps/app/Dockerfile (the context is the root of the repository).
+.git
+**/node_modules
+**/dist
+**/test-results
+**/playwright-report
+apps/api
+apps/app/e2e
+apps/app/assets-source
+docs
+plans
+adrs
+screenshots
+backups
+.env
+.env.local

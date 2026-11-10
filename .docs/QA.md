@@ -40,6 +40,8 @@ Gradle tasks behind the API commands: `spotlessApply` (`code:fix`), `spotlessChe
 | Start the app on port 5173 (proxies `/api` to port 3000) | `yarn app:dev` | `[implemented]` |
 | Install the browser the app's Playwright tests use (once) | `yarn --cwd apps/app playwright install chromium` | `[implemented]` |
 | Load test one profile: `smoke`, `load`, `stress`, `spike`, `soak` (needs k6; options in [`apps/api/load/README.md`](../apps/api/load/README.md)) | `yarn load:smoke`, `yarn load`, `yarn load:stress`, `yarn load:spike`, `yarn load:soak` | `[implemented]` |
+| Build the API and app images, run them, and open the app on <http://localhost:8080> (not run by the QA commands or the pipeline) | `yarn docker:build`, `yarn docker:up`, `yarn docker:down` | `[implemented]` |
+| Back up the database, and restore it into `restore_check` with the row counts (see [RUNBOOK.md](../docs/RUNBOOK.md)) | `yarn db:backup`, `yarn db:restore <file> [--drop]` | `[implemented]` |
 | Audit the Home page with Lighthouse (desktop preset; builds the app, serves it on port 5173, needs the API on port 3000 and the Chromium of Playwright, or `CHROME_PATH`; fails under 95 for performance or 95 for accessibility; not run in CI) | `yarn lighthouse` | `[implemented]` |
 
 ## Rules

@@ -10,6 +10,8 @@ Status markers: `[implemented]` exists in the repository; `[planned]` is queued 
 | Lint and format (JavaScript, TypeScript, JSON, CSS) | `oxlint` and `oxfmt` | `[implemented]` |
 | Git hooks | Lefthook: `pre-commit` runs lint-staged, `commit-msg` runs commitlint (Conventional Commits) | `[implemented]` |
 | Local infrastructure | Docker Compose: PostgreSQL 18 and Grafana LGTM, versions pinned in `compose.yaml` | `[implemented]` |
+| Images | `apps/api/Dockerfile` (Gradle `bootJar`, then `eclipse-temurin` 21 JRE, non-root user, port 3000) and `apps/app/Dockerfile` (Node 22.22.2 builds, `nginx` serves on port 80, proxies `/api` to `api:3000`, falls back to `index.html`, caches `assets/` for a year and not `index.html`); `compose.packaged.yaml` runs them next to the Postgres of `compose.yaml` on <http://localhost:8080>, for a local check only (spec 037). No host, registry, or deployment | `[implemented]` |
+| Backup | `yarn db:backup` (`pg_dump`, custom format, to `backups/`) and `yarn db:restore <file>` (into `restore_check`, never the live database, with the row counts); see [RUNBOOK.md](../docs/RUNBOOK.md) | `[implemented]` |
 | API | Java 21 or newer and Spring Boot 4.1, built with Gradle 9 (wrapper), in `apps/api` | `[implemented]` |
 | Database | PostgreSQL; schema and seed by Flyway migrations `V1` to `V4` (Flyway runs at startup) | `[implemented]` (specs 003 to 009) |
 | API formatting | Spotless with google-java-format | `[implemented]` |

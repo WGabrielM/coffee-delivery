@@ -25,7 +25,12 @@
     "load:soak": "node scripts/load.mjs soak",
     "app:dev": "yarn --cwd apps/app dev",
     "prepare": "lefthook install && node scripts/link-skills.mjs",
-    "lighthouse": "node scripts/lighthouse-home.mjs"
+    "lighthouse": "node scripts/lighthouse-home.mjs",
+    "docker:build": "docker compose --env-file .env.local -f compose.yaml -f compose.packaged.yaml build api app",
+    "docker:up": "node scripts/env-setup.mjs && docker compose --env-file .env.local -f compose.yaml -f compose.packaged.yaml up --detach --wait postgres api app",
+    "docker:down": "docker compose --env-file .env.local -f compose.yaml -f compose.packaged.yaml stop api app",
+    "db:backup": "node scripts/db-backup.mjs",
+    "db:restore": "node scripts/db-restore.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.4",

@@ -52,6 +52,8 @@ Open <http://localhost:5173>: the 14 coffees show up. Add some, open the cart (t
 | `yarn test:e2e` | The API end-to-end tests and the Playwright tests. It needs PostgreSQL (`yarn infra:up`), starts the API and the app when they are not running, and reuses them when they are |
 | `yarn build` | Builds the API and the app |
 | `yarn ci` | Runs on your machine the same commands, in the same order, as the GitHub Actions pipeline |
+| `yarn docker:build`, `yarn docker:up`, `yarn docker:down` | Build and run the API and app images next to PostgreSQL; the app opens on http://localhost:8080 (see [docs/RUNBOOK.md](docs/RUNBOOK.md)) |
+| `yarn db:backup`, `yarn db:restore <file>` | Back up the database to `backups/` and restore it into `restore_check` with the row counts |
 | `yarn lighthouse` | Audits the Home page with Lighthouse (desktop); needs the API running; fails under 95 (performance) or 95 (accessibility) |
 | `yarn load:smoke`, `yarn load`, `yarn load:stress`, `yarn load:spike`, `yarn load:soak` | The k6 load tests against the API (see [`apps/api/load/README.md`](apps/api/load/README.md)) |
 

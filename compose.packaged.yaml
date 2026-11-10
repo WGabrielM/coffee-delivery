@@ -1,0 +1,35 @@
+# The two images next to the PostgreSQL of compose.yaml, for a local check only (spec 037). It is
+# merged with compose.yaml, so use the scripts:
+#   yarn docker:build   builds the two images
+#   yarn docker:up      starts postgres, the API, and the app; the app opens on http://localhost:8080
+#   yarn docker:down    stops the API and the app (the database stays up: yarn infra:down stops it)
+# It chooses no host and pushes nothing. Settings come from .env.local, as for compose.yaml.
+name: coffee-delivery
+
+services:
+  api:
+    build:
+      context: apps/api
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env.local (run yarn env:setup)}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env.local (run yarn env:setup)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.local (run yarn env:setup)}
+      # Traces and metrics go to the Grafana of compose.yaml when it is running.
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://grafana:4318
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      dockerfile: apps/app/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
