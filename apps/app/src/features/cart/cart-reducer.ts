@@ -2,9 +2,7 @@
 // `{ coffeeId, quantity }`. Names, photos, and prices are never stored here; they come from the
 // catalog, so a saved cart cannot show a stale price.
 
-/** The least and the most of one coffee in an order (`BUSINESS.md`). */
-export const MIN_QUANTITY = 1;
-export const MAX_QUANTITY = 99;
+import { MAX_QUANTITY, MIN_QUANTITY } from "../../lib/quantity-limits";
 
 export type CartLine = { readonly coffeeId: string; readonly quantity: number };
 
@@ -14,7 +12,7 @@ export type CartAction =
   | { type: "remove"; coffeeId: string }
   | { type: "clear" };
 
-/** The quantity of a saved line: a whole number from 1 to 99. */
+/** The quantity of a saved line: a whole number from the least to the most of an order. */
 export function isValidQuantity(quantity: unknown): quantity is number {
   return (
     Number.isInteger(quantity) &&

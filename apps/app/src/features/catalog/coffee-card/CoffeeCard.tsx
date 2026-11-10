@@ -1,7 +1,8 @@
 import { useState } from "react";
 
 import { Button } from "../../../components/button/Button";
-import { Counter, MIN_QUANTITY } from "../../../components/counter/Counter";
+import { Counter } from "../../../components/counter/Counter";
+import { MIN_QUANTITY } from "../../../lib/quantity-limits";
 import { Tag } from "../../../components/tag/Tag";
 import { formatMoneyParts } from "../../../lib/format-money";
 import { useCart } from "../../cart/cart-context";

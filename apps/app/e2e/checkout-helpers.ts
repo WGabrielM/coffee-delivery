@@ -1,7 +1,7 @@
 // Helpers the checkout tests share. This file has no tests, so Playwright does not run it.
 import { createRequire } from "node:module";
 
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 
 const require = createRequire(import.meta.url);
 
@@ -59,4 +59,77 @@ export async function axeViolations(page: Page): Promise<string[]> {
     });
     return violations.map((violation) => `${violation.id}: ${violation.nodes[0]?.html}`);
   });
+}
+
+/** The address of the design, as the API takes it. */
+export const sampleAddress = {
+  zipCode: "90250-440",
+  street: "Rua João Daniel Martinelli",
+  number: "102",
+  complement: "",
+  neighborhood: "Farrapos",
+  city: "Porto Alegre",
+  state: "RS",
+};
+
+export const field = (page: Page, name: string) => page.getByRole("textbox", { name, exact: true });
+// The radio is visually hidden; the label around it is the option that is drawn and clicked.
+export const drawn = (page: Page, label: string) =>
+  page.locator("label", { has: page.getByRole("radio", { name: label }) });
+
+/** Types the sample address into the form, the way a person does (the masks add the hyphen). */
+export async function fillTheAddress(page: Page) {
+  await field(page, "ZIP code").fill("90250440");
+  await field(page, "Street").fill("Rua João Daniel Martinelli");
+  await field(page, "Number").fill("102");
+  await field(page, "Neighborhood").fill("Farrapos");
+  await field(page, "City").fill("Porto Alegre");
+  await field(page, "State").fill("rs");
+}
+
+/** The sample address and the credit card: everything the form needs for a valid submit. */
+export async function fillTheSample(page: Page) {
+  await fillTheAddress(page);
+  await drawn(page, "Credit card").click();
+}
+
+/** The coffees of the catalog, as the API lists them. */
+export async function listCoffees(request: APIRequestContext) {
+  const response = await request.get("/api/v1/coffees");
+  const { coffees } = (await response.json()) as { coffees: { id: string; name: string }[] };
+  return coffees;
+}
+
+export async function coffeeId(request: APIRequestContext, name: string): Promise<string> {
+  const coffee = (await listCoffees(request)).find((candidate) => candidate.name === name);
+  if (!coffee) throw new Error(`The catalog has no ${name}.`);
+  return coffee.id;
+}
+
+type OrderOptions = {
+  paymentMethod?: string;
+  complement?: string;
+  /** The name of the coffee to order; the first of the catalog by default. */
+  coffeeName?: string;
+  quantity?: number;
+};
+
+/** Creates a real order through the API with the sample address, and returns its id. */
+export async function createOrder(
+  request: APIRequestContext,
+  { paymentMethod = "credit_card", complement = "", coffeeName, quantity = 1 }: OrderOptions = {},
+): Promise<string> {
+  const coffee =
+    coffeeName === undefined
+      ? (await listCoffees(request))[0]!.id
+      : await coffeeId(request, coffeeName);
+  const response = await request.post("/api/v1/orders", {
+    data: {
+      items: [{ coffeeId: coffee, quantity }],
+      address: { ...sampleAddress, complement },
+      paymentMethod,
+    },
+  });
+  expect(response.status()).toBe(201);
+  return ((await response.json()) as { id: string }).id;
 }

@@ -5,7 +5,7 @@ import { expect, test, type APIRequestContext, type Page, type TestInfo } from "
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 
-import { boxOf } from "./checkout-helpers";
+import { boxOf, coffeeId, createOrder, fillTheSample } from "./checkout-helpers";
 import { masks, type Screen } from "./visual-masks";
 
 // The four screens of the app, in the state of the design frames, against the frames cut from the
@@ -28,24 +28,6 @@ const CART_KEY = "coffee-delivery:cart:v1";
 
 const close = (actual: number, expected: number) =>
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(TOLERANCE);
-
-const SAMPLE_ADDRESS = {
-  zipCode: "90250-440",
-  street: "Rua João Daniel Martinelli",
-  number: "102",
-  complement: "",
-  neighborhood: "Farrapos",
-  city: "Porto Alegre",
-  state: "RS",
-};
-
-async function coffeeId(request: APIRequestContext, name: string): Promise<string> {
-  const response = await request.get("/api/v1/coffees");
-  const { coffees } = (await response.json()) as { coffees: { id: string; name: string }[] };
-  const coffee = coffees.find((candidate) => candidate.name === name);
-  if (!coffee) throw new Error(`The catalog has no ${name}.`);
-  return coffee.id;
-}
 
 /** The cart of the frames: Traditional Espresso × 1 and Latte × 2 (the badge shows 3). */
 async function putTheFrameCartIn(page: Page, request: APIRequestContext) {
@@ -76,14 +58,7 @@ async function openFrame(page: Page, request: APIRequestContext, screen: Screen)
     await page.goto("/");
     await expect(page.getByRole("article")).toHaveCount(14);
   } else if (screen === "success") {
-    const created = await request.post("/api/v1/orders", {
-      data: {
-        items: [{ coffeeId: await coffeeId(request, "Latte"), quantity: 2 }],
-        address: SAMPLE_ADDRESS,
-        paymentMethod: "credit_card",
-      },
-    });
-    const { id } = (await created.json()) as { id: string };
+    const id = await createOrder(request, { coffeeName: "Latte", quantity: 2 });
     await page.goto(`/orders/${id}`);
     await expect(
       page.getByRole("heading", { level: 1, name: "Uhu! Order confirmed" }),
@@ -94,16 +69,7 @@ async function openFrame(page: Page, request: APIRequestContext, screen: Screen)
     await expect(page.getByRole("radiogroup", { name: "Payment method" })).toBeVisible();
     await expect(page.getByRole("list").first()).toBeVisible();
     if (screen === "checkout-filled") {
-      const field = (name: string) => page.getByRole("textbox", { name, exact: true });
-      await field("ZIP code").fill("90250440");
-      await field("Street").fill(SAMPLE_ADDRESS.street);
-      await field("Number").fill(SAMPLE_ADDRESS.number);
-      await field("Neighborhood").fill(SAMPLE_ADDRESS.neighborhood);
-      await field("City").fill(SAMPLE_ADDRESS.city);
-      await field("State").fill("rs");
-      await page
-        .locator("label", { has: page.getByRole("radio", { name: "Credit card" }) })
-        .click();
+      await fillTheSample(page);
     }
   }
   await waitUntilSettled(page);

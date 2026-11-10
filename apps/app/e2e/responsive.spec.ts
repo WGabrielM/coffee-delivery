@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
-import { boxOf, openCheckoutWithTheCart } from "./checkout-helpers";
+import { boxOf, createOrder, openCheckoutWithTheCart } from "./checkout-helpers";
 
 // These tests need the API: `yarn infra:up`, then `yarn api:dev` (port 3000). The confirmation test
 // creates a real order through it. Breakpoints (DESIGN.md): mobile below 640 px, tablet 640 to
@@ -15,27 +15,6 @@ const MID_DESKTOP = { width: 1280, height: 800 };
 const TABLET = { width: 768, height: 1024 };
 const MOBILE = { width: 390, height: 844 };
 const SMALL_MOBILE = { width: 320, height: 568 };
-
-async function createOrder(request: APIRequestContext) {
-  const catalog = await request.get("/api/v1/coffees");
-  const { coffees } = (await catalog.json()) as { coffees: { id: string }[] };
-  const response = await request.post("/api/v1/orders", {
-    data: {
-      items: [{ coffeeId: coffees[0]!.id, quantity: 1 }],
-      address: {
-        zipCode: "90250-440",
-        street: "Rua João Daniel Martinelli",
-        number: "102",
-        complement: "",
-        neighborhood: "Farrapos",
-        city: "Porto Alegre",
-        state: "RS",
-      },
-      paymentMethod: "credit_card",
-    },
-  });
-  return ((await response.json()) as { id: string }).id;
-}
 
 /** The four screens of the spec, each opened and ready. */
 const screens: Record<string, (page: Page, request: APIRequestContext) => Promise<void>> = {

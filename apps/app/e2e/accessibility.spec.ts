@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-import { openCheckoutWithTheCart } from "./checkout-helpers";
+import { createOrder, openCheckoutWithTheCart } from "./checkout-helpers";
 
 // An axe scan of every screen on the real app and API. A violation of impact critical or serious
 // fails the test; the lesser ones (moderate, minor) are not part of this check.
@@ -86,24 +86,7 @@ test("Checkout with every error shown has no critical or serious violation", asy
 });
 
 test("Confirmation has no critical or serious violation", async ({ page, request }) => {
-  const catalog = await request.get("/api/v1/coffees");
-  const { coffees } = (await catalog.json()) as { coffees: { id: string }[] };
-  const created = await request.post("/api/v1/orders", {
-    data: {
-      items: [{ coffeeId: coffees[0]!.id, quantity: 1 }],
-      address: {
-        zipCode: "90250-440",
-        street: "Rua João Daniel Martinelli",
-        number: "102",
-        complement: "",
-        neighborhood: "Farrapos",
-        city: "Porto Alegre",
-        state: "RS",
-      },
-      paymentMethod: "credit_card",
-    },
-  });
-  const { id } = (await created.json()) as { id: string };
+  const id = await createOrder(request);
 
   await page.goto(`/orders/${id}`);
   await expect(page.getByRole("heading", { level: 1, name: "Uhu! Order confirmed" })).toBeVisible();

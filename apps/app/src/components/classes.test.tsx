@@ -23,10 +23,13 @@ import {
 import { Badge } from "./badge/Badge";
 import { Button } from "./button/Button";
 import { Counter } from "./counter/Counter";
+import { ErrorState } from "./error-state/ErrorState";
 import { Input } from "./input/Input";
+import { LoadingState } from "./loading-state/LoadingState";
 import { Navbar } from "./navbar/Navbar";
 import { SelectOptionGroup } from "./select-option/SelectOptionGroup";
 import { Tag } from "./tag/Tag";
+import { TextLink } from "./text-link/TextLink";
 
 const require = createRequire(import.meta.url);
 const styles = join(import.meta.dirname, "..", "styles");
@@ -81,8 +84,12 @@ function renderEveryVariant() {
         Iced
       </Tag>
       <Badge count={3} />
+      <LoadingState text="Loading…" />
+      <ErrorState message="Failed." />
+      <ErrorState message="Failed." onRetry={() => {}} />
       <MemoryRouter>
         <Navbar cartCount={3} />
+        <TextLink to="/">Back to coffees</TextLink>
       </MemoryRouter>
     </>,
   );
@@ -109,7 +116,7 @@ async function catalogClasses(): Promise<string[]> {
 
   fakeFailingApi();
   view = renderWithQuery(<CoffeeList />);
-  await screen.findByRole("alert");
+  await within(view.container).findByRole("alert");
   collect(view.container);
   view.unmount();
 

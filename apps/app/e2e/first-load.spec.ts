@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { createOrder } from "./checkout-helpers";
+
 test.use({ viewport: { width: 1440, height: 900 } });
 
 // These tests need the API (`yarn infra:up`, `yarn api:dev`) and the production build, because the
@@ -18,28 +20,6 @@ function watchScripts(page: Page) {
     if (request.resourceType() === "script") urls.push(new URL(request.url()).pathname);
   });
   return urls;
-}
-
-async function createOrder(page: Page) {
-  const catalog = await page.request.get("/api/v1/coffees");
-  const { coffees } = (await catalog.json()) as { coffees: { id: string }[] };
-  const response = await page.request.post("/api/v1/orders", {
-    data: {
-      items: [{ coffeeId: coffees[0]!.id, quantity: 1 }],
-      address: {
-        zipCode: "90250-440",
-        street: "Rua João Daniel Martinelli",
-        number: "102",
-        complement: "",
-        neighborhood: "Farrapos",
-        city: "Porto Alegre",
-        state: "RS",
-      },
-      paymentMethod: "cash",
-    },
-  });
-  expect(response.status()).toBe(201);
-  return ((await response.json()) as { id: string }).id;
 }
 
 test("the entry chunk is under 250 kB", async ({ page }) => {
@@ -83,7 +63,7 @@ test("a first visit to /checkout shows the page after a short wait", async ({ pa
 });
 
 test("a first visit to /orders/<id> shows the confirmation of that order", async ({ page }) => {
-  const id = await createOrder(page);
+  const id = await createOrder(page.request, { paymentMethod: "cash" });
   const scripts = watchScripts(page);
 
   await page.goto(`/orders/${id}`);

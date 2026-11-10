@@ -1,6 +1,6 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-import { axeViolations, boxOf } from "./checkout-helpers";
+import { axeViolations, boxOf, createOrder } from "./checkout-helpers";
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -10,35 +10,13 @@ const TOLERANCE = 2;
 const close = (actual: number, expected: number) =>
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(TOLERANCE);
 
-async function createOrder(request: APIRequestContext, paymentMethod = "credit_card") {
-  const catalog = await request.get("/api/v1/coffees");
-  const { coffees } = (await catalog.json()) as { coffees: { id: string; name: string }[] };
-  const response = await request.post("/api/v1/orders", {
-    data: {
-      items: [{ coffeeId: coffees[0]!.id, quantity: 2 }],
-      address: {
-        zipCode: "90250-440",
-        street: "Rua João Daniel Martinelli",
-        number: "102",
-        complement: "Apt 12",
-        neighborhood: "Farrapos",
-        city: "Porto Alegre",
-        state: "RS",
-      },
-      paymentMethod,
-    },
-  });
-  expect(response.status()).toBe(201);
-  return ((await response.json()) as { id: string }).id;
-}
-
 const details = (page: Page) => page.getByRole("list", { name: "Order details" });
 
 test("an existing order shows the title, the subtitle, and the three rows", async ({
   page,
   request,
 }) => {
-  const id = await createOrder(request);
+  const id = await createOrder(request, { complement: "Apt 12" });
 
   await page.goto(`/orders/${id}`);
 
@@ -173,7 +151,7 @@ test.describe("the payment label", () => {
     ["cash", "Cash"],
   ] as const) {
     test(`${code} is shown as ${label}`, async ({ page, request }) => {
-      await page.goto(`/orders/${await createOrder(request, code)}`);
+      await page.goto(`/orders/${await createOrder(request, { paymentMethod: code })}`);
 
       await expect(details(page).getByRole("listitem").nth(2)).toHaveText(
         `Payment on delivery${label}`,

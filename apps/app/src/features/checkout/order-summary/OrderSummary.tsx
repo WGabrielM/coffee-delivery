@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 
 import { Button } from "../../../components/button/Button";
 import { Counter } from "../../../components/counter/Counter";
+import { ErrorState } from "../../../components/error-state/ErrorState";
+import { LoadingState } from "../../../components/loading-state/LoadingState";
 import { formatMoney } from "../../../lib/format-money";
 import { useCart } from "../../cart/cart-context";
 import { useCoffees } from "../../catalog/api";
@@ -182,21 +184,9 @@ export function OrderSummary() {
             />
           </>
         ) : failed ? (
-          <div role="alert" className="flex flex-col items-start gap-4">
-            <p className="type-text-regular-m text-text">We couldn't load your order.</p>
-            <Button variant="secondary" onClick={retry}>
-              Try again
-            </Button>
-          </div>
+          <ErrorState message="We couldn't load your order." onRetry={retry} />
         ) : (
-          <output className="flex items-center gap-3 type-text-regular-m text-text">
-            <span
-              data-spinner
-              aria-hidden="true"
-              className="size-6 animate-spin rounded-round border-2 border-button border-t-purple motion-reduce:animate-none"
-            />
-            Loading your order…
-          </output>
+          <LoadingState text="Loading your order…" />
         )}
         {alertMessage === undefined ? null : <SubmitAlert message={alertMessage} />}
         <div className="mt-6">

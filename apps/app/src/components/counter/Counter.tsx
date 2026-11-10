@@ -1,9 +1,6 @@
 import type { IconName } from "../../assets";
+import { MAX_QUANTITY, MIN_QUANTITY } from "../../lib/quantity-limits";
 import { Icon } from "../icon/Icon";
-
-/** A coffee is ordered at least once and at most 99 times (the business rule of the order). */
-export const MIN_QUANTITY = 1;
-export const MAX_QUANTITY = 99;
 
 type CounterProps = {
   /** The accessible name of the group, for example "Quantity of Latte". */
@@ -24,7 +21,7 @@ type StepProps = {
 
 // 24×24 is the smallest target WCAG 2.2 allows (2.5.8); the icon inside is 14 px.
 // At a limit the button is `aria-disabled`, not `disabled`: a disabled button drops the keyboard
-// focus, so a person who presses Enter on "Increase" up to 99 would be thrown back to the page.
+// focus, so a person who presses Enter on "Increase" up to the maximum would be thrown back to the page.
 function Step({ label, icon, disabled, onClick }: StepProps) {
   return (
     <button

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
-
+import { TextLink } from "../components/text-link/TextLink";
 import { useCart } from "../features/cart/cart-context";
 import { AddressCard } from "../features/checkout/address-card/AddressCard";
 import { CheckoutForm } from "../features/checkout/checkout-form/CheckoutForm";
@@ -27,12 +26,7 @@ function EmptyCart({ moveFocus }: { moveFocus: boolean }) {
       >
         Your cart is empty
       </h2>
-      <Link
-        to="/"
-        className="inline-flex min-h-6 items-center type-button-g text-purple-dark underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple"
-      >
-        Browse coffees
-      </Link>
+      <TextLink to="/">Browse coffees</TextLink>
     </section>
   );
 }

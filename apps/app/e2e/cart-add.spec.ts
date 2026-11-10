@@ -1,6 +1,8 @@
 import { createRequire } from "node:module";
 
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+import { boxOf } from "./checkout-helpers";
 
 const require = createRequire(import.meta.url);
 
@@ -17,12 +19,6 @@ const counter = (page: Page, name: string) =>
   card(page, name).getByRole("group", { name: `Quantity of ${name}` });
 const increase = (page: Page, name: string) =>
   counter(page, name).getByRole("button", { name: "Increase quantity" });
-
-async function boxOf(locator: Locator) {
-  const box = await locator.boundingBox();
-  if (!box) throw new Error("The element has no box.");
-  return box;
-}
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");

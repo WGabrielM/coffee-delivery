@@ -20,11 +20,14 @@ describe("src/components", () => {
         "badge/Badge.tsx",
         "button/Button.tsx",
         "counter/Counter.tsx",
+        "error-state/ErrorState.tsx",
         "input/Input.tsx",
+        "loading-state/LoadingState.tsx",
         "navbar/Navbar.tsx",
         "select-option/SelectOption.tsx",
         "select-option/SelectOptionGroup.tsx",
         "tag/Tag.tsx",
+        "text-link/TextLink.tsx",
       ]),
     );
   });
@@ -37,10 +40,13 @@ describe("src/components", () => {
         "badge/Badge.test.tsx",
         "button/Button.test.tsx",
         "counter/Counter.test.tsx",
+        "error-state/ErrorState.test.tsx",
         "input/Input.test.tsx",
+        "loading-state/LoadingState.test.tsx",
         "navbar/Navbar.test.tsx",
         "select-option/SelectOptionGroup.test.tsx",
         "tag/Tag.test.tsx",
+        "text-link/TextLink.test.tsx",
       ]),
     );
   });
@@ -73,12 +79,12 @@ describe("src/components", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("imports the router only in the navbar, whose links must not reload the page", () => {
+  it("imports the router only in the navbar and the text link, whose links must not reload the page", () => {
     const withRouter = sources.filter((file) =>
       /react-router/.test(readFileSync(join(components, file), "utf8")),
     );
 
-    expect(withRouter).toEqual(["navbar/Navbar.tsx"]);
+    expect(withRouter).toEqual(["navbar/Navbar.tsx", "text-link/TextLink.tsx"]);
   });
 
   it("takes no className prop: a screen cannot restyle a component", () => {

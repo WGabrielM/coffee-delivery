@@ -1,5 +1,7 @@
 import { expect, test, type Locator } from "@playwright/test";
 
+import { boxOf } from "./checkout-helpers";
+
 test.use({ viewport: { width: 1440, height: 900 } });
 
 // These tests need the API: `yarn infra:up`, then `yarn api:dev` (port 3000). The dev server of the
@@ -18,12 +20,6 @@ const style = (locator: Locator) =>
   });
 
 type Box = { x: number; y: number; width: number; height: number };
-
-async function boxOf(locator: Locator) {
-  const box = await locator.boundingBox();
-  if (!box) throw new Error("The element has no box.");
-  return box;
-}
 
 test("the page lists the 14 coffees of the API, starting with Traditional Espresso", async ({
   page,

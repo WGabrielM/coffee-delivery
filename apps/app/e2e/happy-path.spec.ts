@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { field } from "./checkout-helpers";
+
 // The whole purchase on the real app, API, and database: no request is mocked. `yarn test:e2e`
 // starts what is missing (or reuses what is running), so only Postgres has to be up (`yarn infra:up`).
 test.use({ viewport: { width: 1440, height: 900 } });
@@ -9,7 +11,6 @@ const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 const card = (page: Page, name: string) => page.getByRole("article", { name });
 const chip = (page: Page, name: string) =>
   page.getByRole("group", { name: "Filter by tag" }).getByRole("button", { name });
-const field = (page: Page, name: string) => page.getByRole("textbox", { name, exact: true });
 const summary = (page: Page) => page.getByRole("region", { name: "Selected coffees" });
 const totalOf = (page: Page, label: string) =>
   summary(page).getByText(label, { exact: true }).locator("xpath=following-sibling::dd");

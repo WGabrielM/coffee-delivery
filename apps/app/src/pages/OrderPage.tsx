@@ -1,7 +1,9 @@
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 
 import { ApiError } from "../api";
-import { Button } from "../components/button/Button";
+import { ErrorState } from "../components/error-state/ErrorState";
+import { LoadingState } from "../components/loading-state/LoadingState";
+import { TextLink } from "../components/text-link/TextLink";
 import { useOrder } from "../features/orders/api";
 import { OrderConfirmation } from "../features/orders/order-confirmation/OrderConfirmation";
 
@@ -26,32 +28,18 @@ export function OrderPage() {
             <h1 id="order-not-found" className="type-title-l text-subtitle">
               Order not found
             </h1>
-            <Link
-              to="/"
-              className="inline-flex min-h-6 items-center type-button-g text-purple-dark underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple"
-            >
-              Back to coffees
-            </Link>
+            <TextLink to="/">Back to coffees</TextLink>
           </section>
         ) : (
           <>
             <h1 className="sr-only">Order confirmation</h1>
             {order.isError ? (
-              <div role="alert" className="flex flex-col items-start gap-4">
-                <p className="type-text-regular-m text-text">We couldn't load your order.</p>
-                <Button variant="secondary" onClick={() => void order.refetch()}>
-                  Try again
-                </Button>
-              </div>
+              <ErrorState
+                message="We couldn't load your order."
+                onRetry={() => void order.refetch()}
+              />
             ) : (
-              <output className="flex items-center gap-3 type-text-regular-m text-text">
-                <span
-                  data-spinner
-                  aria-hidden="true"
-                  className="size-6 animate-spin rounded-round border-2 border-button border-t-purple motion-reduce:animate-none"
-                />
-                Loading your order…
-              </output>
+              <LoadingState text="Loading your order…" />
             )}
           </>
         )}

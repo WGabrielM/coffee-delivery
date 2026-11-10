@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-import { axeViolations, openCheckoutWithTheCart } from "./checkout-helpers";
+import { axeViolations, field, fillTheSample, openCheckoutWithTheCart } from "./checkout-helpers";
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -9,20 +9,7 @@ test.use({ viewport: { width: 1440, height: 900 } });
 const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 const TRY_AGAIN = "We couldn't place your order. Please try again.";
 
-const field = (page: Page, name: string) => page.getByRole("textbox", { name, exact: true });
 const confirm = (page: Page) => page.getByRole("button", { name: "Confirm order" });
-const drawn = (page: Page, label: string) =>
-  page.locator("label", { has: page.getByRole("radio", { name: label }) });
-
-async function fillTheSample(page: Page) {
-  await field(page, "ZIP code").fill("90250440");
-  await field(page, "Street").fill("Rua João Daniel Martinelli");
-  await field(page, "Number").fill("102");
-  await field(page, "Neighborhood").fill("Farrapos");
-  await field(page, "City").fill("Porto Alegre");
-  await field(page, "State").fill("rs");
-  await drawn(page, "Credit card").click();
-}
 
 /** Counts the `POST /api/v1/orders` requests that leave the page, and keeps their bodies. */
 function watchOrders(page: Page) {

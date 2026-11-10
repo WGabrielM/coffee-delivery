@@ -1,6 +1,7 @@
 import { useController } from "react-hook-form";
 
-import { Button } from "../../../components/button/Button";
+import { ErrorState } from "../../../components/error-state/ErrorState";
+import { LoadingState } from "../../../components/loading-state/LoadingState";
 import { SelectOptionGroup } from "../../../components/select-option/SelectOptionGroup";
 import { useCheckoutConfig } from "../api";
 import { FormCard } from "../checkout-form/FormCard";
@@ -51,21 +52,12 @@ export function PaymentCard() {
       {config.data ? (
         <PaymentOptions codes={config.data.paymentMethods} />
       ) : config.isError ? (
-        <div role="alert" className="flex flex-col items-start gap-4">
-          <p className="type-text-regular-m text-text">We couldn't load the payment methods.</p>
-          <Button variant="secondary" onClick={() => void config.refetch()}>
-            Try again
-          </Button>
-        </div>
+        <ErrorState
+          message="We couldn't load the payment methods."
+          onRetry={() => void config.refetch()}
+        />
       ) : (
-        <output className="flex items-center gap-3 type-text-regular-m text-text">
-          <span
-            data-spinner
-            aria-hidden="true"
-            className="size-6 animate-spin rounded-round border-2 border-button border-t-purple motion-reduce:animate-none"
-          />
-          Loading payment methods…
-        </output>
+        <LoadingState text="Loading payment methods…" />
       )}
     </FormCard>
   );

@@ -1,6 +1,12 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { axeViolations, boxOf, openCheckoutWithTheCart } from "./checkout-helpers";
+import {
+  axeViolations,
+  boxOf,
+  field,
+  fillTheAddress,
+  openCheckoutWithTheCart,
+} from "./checkout-helpers";
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -20,18 +26,6 @@ const FIELDS = [
 
 const close = (actual: number, expected: number) =>
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(TOLERANCE);
-
-const field = (page: Page, name: (typeof FIELDS)[number]) =>
-  page.getByRole("textbox", { name, exact: true });
-
-async function fillTheSample(page: Page) {
-  await field(page, "ZIP code").fill("90250440");
-  await field(page, "Street").fill("Rua João Daniel Martinelli");
-  await field(page, "Number").fill("102");
-  await field(page, "Neighborhood").fill("Farrapos");
-  await field(page, "City").fill("Porto Alegre");
-  await field(page, "State").fill("rs");
-}
 
 test.beforeEach(async ({ page }) => {
   await openCheckoutWithTheCart(page);
@@ -155,7 +149,7 @@ test("no message shows before a field loses focus, and a fixed field loses its m
 test("the sample address of the design is accepted: no message, and the filled border is yellow-dark", async ({
   page,
 }) => {
-  await fillTheSample(page);
+  await fillTheAddress(page);
   for (const name of FIELDS) await field(page, name).blur();
 
   await expect(field(page, "State")).toHaveValue("RS");

@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 import { Button } from "../../../components/button/Button";
+import { ErrorState } from "../../../components/error-state/ErrorState";
+import { LoadingState } from "../../../components/loading-state/LoadingState";
 import { useCoffees } from "../api";
 import { CoffeeCard } from "../coffee-card/CoffeeCard";
 import { CoffeeFilters } from "../coffee-filters/CoffeeFilters";
@@ -40,21 +42,9 @@ export function CoffeeList() {
             {data && !isPlaceholderData ? countText(data.length) : ""}
           </p>
           {isPending ? (
-            <output className="flex items-center gap-3 type-text-regular-m text-text">
-              <span
-                data-spinner
-                aria-hidden="true"
-                className="size-6 animate-spin rounded-round border-2 border-button border-t-purple motion-reduce:animate-none"
-              />
-              Loading coffees…
-            </output>
+            <LoadingState text="Loading coffees…" />
           ) : isError ? (
-            <div role="alert" className="flex flex-col items-start gap-4">
-              <p className="type-text-regular-m text-text">We couldn't load the coffees.</p>
-              <Button variant="secondary" onClick={() => void refetch()}>
-                Try again
-              </Button>
-            </div>
+            <ErrorState message="We couldn't load the coffees." onRetry={() => void refetch()} />
           ) : data.length === 0 ? (
             filtered ? (
               <div className="flex flex-col items-start gap-4">

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { axeViolations, boxOf, openCheckoutWithTheCart } from "./checkout-helpers";
+import { axeViolations, boxOf, drawn, openCheckoutWithTheCart } from "./checkout-helpers";
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -20,8 +20,6 @@ const close = (actual: number, expected: number) =>
 
 const group = (page: Page) => page.getByRole("radiogroup", { name: "Payment method" });
 const option = (page: Page, label: string) => page.getByRole("radio", { name: label });
-// The radio is visually hidden; the label around it is the option that is drawn and clicked.
-const drawn = (page: Page, label: string) => page.locator("label", { has: option(page, label) });
 
 /** The form of the page is submitted as the Confirm order button will do in spec 025. */
 const submitTheForm = (page: Page) =>

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { accessibilityViolations } from "../../test/axe";
-import { Counter, MAX_QUANTITY, MIN_QUANTITY } from "./Counter";
+import { MAX_QUANTITY, MIN_QUANTITY } from "../../lib/quantity-limits";
+import { Counter } from "./Counter";
 
 /** A parent that owns the value, one step below the maximum. */
 function Controlled() {
