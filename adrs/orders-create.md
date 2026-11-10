@@ -27,5 +27,5 @@ The cart lives in the browser, so the server receives coffee ids, quantities, th
 
 - Any new endpoint that rejects input can throw `ValidationFailedException` or `UnprocessableContentException` from its use case and inherit the error shape.
 - Orders created by manual checks and load runs stay in the local database until it is reset.
-- No idempotency key: sending the same request twice creates two orders (out of scope in the spec).
+- No idempotency key: sending the same request twice creates two orders (out of scope in the spec; spec 032 added an optional `Idempotency-Key`, see [orders-idempotent-create.md](orders-idempotent-create.md)).
 - No new library.

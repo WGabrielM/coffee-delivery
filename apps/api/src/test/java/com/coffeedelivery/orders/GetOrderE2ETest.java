@@ -165,7 +165,7 @@ class GetOrderE2ETest extends PostgresContainerSupport {
               method,
               createdAt);
 
-      orderRepository.save(saved);
+      orderRepository.save(saved, null, null);
 
       assertThat(orderRepository.findById(saved.id())).contains(saved);
     }

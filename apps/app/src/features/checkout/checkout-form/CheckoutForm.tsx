@@ -11,6 +11,7 @@ import {
   type CheckoutFormData,
   type CheckoutFormValues,
 } from "./checkout-form-schema";
+import { createIdempotencyKeys } from "./idempotency-keys";
 import { buildOrderRequest } from "./order-request";
 import { mapOrderError } from "./submit-errors";
 import { SubmitStateContext } from "./submit-state";
@@ -25,7 +26,8 @@ import { SubmitStateContext } from "./submit-state";
  * the address, and the payment code once. On success it opens the order page, replacing the
  * checkout in the history, and only then clears the cart. On a failure the cart and the values stay:
  * the messages of the server go under their fields, and what no field can say becomes the alert of
- * the summary (see `mapOrderError`). The request is never repeated by itself.
+ * the summary (see `mapOrderError`). The request is never repeated by itself, but a try again with
+ * the same request carries the same `Idempotency-Key`, so a lost answer never makes a second order.
  *
  * The browser's own validation is off (`noValidate`): the messages are the ones of the schema.
  */
@@ -34,6 +36,7 @@ export function CheckoutForm({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const createOrder = useCreateOrder();
   const [alertMessage, setAlertMessage] = useState<string | undefined>(undefined);
+  const [idempotencyKeys] = useState(() => createIdempotencyKeys());
 
   const methods = useForm<CheckoutFormValues, unknown, CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
@@ -46,7 +49,11 @@ export function CheckoutForm({ children }: { children: ReactNode }) {
     setAlertMessage(undefined);
     let order: Order;
     try {
-      order = await createOrder.mutateAsync(buildOrderRequest(lines, values));
+      const request = buildOrderRequest(lines, values);
+      order = await createOrder.mutateAsync({
+        request,
+        idempotencyKey: idempotencyKeys.keyFor(request),
+      });
     } catch (error) {
       const failure = mapOrderError(error);
       const fieldErrors = Object.entries(failure.fieldErrors) as [
@@ -61,6 +68,7 @@ export function CheckoutForm({ children }: { children: ReactNode }) {
     }
     // The cart is cleared after the page has changed, so the checkout never shows an empty cart on
     // its way out.
+    idempotencyKeys.reset();
     await navigate(`/orders/${order.id}`, { replace: true });
     clear();
   });

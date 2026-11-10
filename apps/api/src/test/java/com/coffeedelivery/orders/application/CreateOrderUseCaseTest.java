@@ -32,10 +32,15 @@ class CreateOrderUseCaseTest {
   private final CreateOrderUseCase useCase =
       new CreateOrderUseCase(prices, orders, Clock.fixed(NOW, ZoneOffset.UTC));
 
+  /** Creates an order and returns it, for the tests that look at the order only. */
+  private Order create(CreateOrderCommand command) {
+    return useCase.execute(command).order();
+  }
+
   @Test
   void pricesTheOrderOnTheServerFromTheCatalog() {
     Order order =
-        useCase.execute(
+        create(
             new CreateOrderCommand(
                 List.of(new Line(LATTE, 1), new Line(CUBAN, 2)),
                 ADDRESS,
@@ -50,7 +55,7 @@ class CreateOrderUseCaseTest {
   @Test
   void theLinesTakeTheCatalogNameAndPriceAndKeepTheRequestOrder() {
     Order order =
-        useCase.execute(
+        create(
             new CreateOrderCommand(
                 List.of(new Line(CUBAN, 3), new Line(LATTE, 1)), ADDRESS, PaymentMethod.CASH));
 
@@ -66,7 +71,7 @@ class CreateOrderUseCaseTest {
   @Test
   void savesTheOrderAndReturnsTheSavedOne() {
     Order order =
-        useCase.execute(
+        create(
             new CreateOrderCommand(List.of(new Line(LATTE, 1)), ADDRESS, PaymentMethod.DEBIT_CARD));
 
     assertThat(orders.saved()).containsExactly(order);
@@ -79,8 +84,8 @@ class CreateOrderUseCaseTest {
     CreateOrderCommand command =
         new CreateOrderCommand(List.of(new Line(LATTE, 1)), ADDRESS, PaymentMethod.CASH);
 
-    Order first = useCase.execute(command);
-    Order second = useCase.execute(command);
+    Order first = create(command);
+    Order second = create(command);
 
     assertThat(first.id()).isNotNull().isNotEqualTo(second.id());
     assertThat(first.createdAt()).isEqualTo(Instant.parse("2026-11-04T12:00:00.123456Z"));
@@ -92,7 +97,7 @@ class CreateOrderUseCaseTest {
         new CreateOrderCommand(
             List.of(new Line(LATTE, 1), new Line(GHOST, 2)), ADDRESS, PaymentMethod.CASH);
 
-    assertThatThrownBy(() -> useCase.execute(command))
+    assertThatThrownBy(() -> create(command))
         .isInstanceOfSatisfying(
             UnprocessableContentException.class,
             exception -> {
@@ -101,5 +106,107 @@ class CreateOrderUseCaseTest {
               assertThat(exception.fields().get("items")).doesNotContain(LATTE.toString());
             });
     assertThat(orders.saved()).isEmpty();
+  }
+
+  private static final UUID KEY = UUID.fromString("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+
+  private static CreateOrderCommand withKey(UUID key, int latteQuantity) {
+    return new CreateOrderCommand(
+        List.of(new Line(LATTE, latteQuantity)), ADDRESS, PaymentMethod.CREDIT_CARD, key);
+  }
+
+  @Test
+  void aNewKeyCreatesTheOrderAndStoresTheKeyWithTheFingerprintOfTheRequest() {
+    CreateOrderResult result = useCase.execute(withKey(KEY, 2));
+
+    assertThat(result.created()).isTrue();
+    assertThat(orders.saved()).containsExactly(result.order());
+    StoredOrder stored = orders.findByIdempotencyKey(KEY).orElseThrow();
+    assertThat(stored.order()).isEqualTo(result.order());
+    assertThat(stored.requestFingerprint())
+        .isEqualTo(CreateOrderUseCase.fingerprint(withKey(KEY, 2)))
+        .hasSize(64);
+  }
+
+  @Test
+  void theSameKeyWithTheSameRequestReturnsTheFirstOrderAndCreatesNothing() {
+    CreateOrderResult first = useCase.execute(withKey(KEY, 2));
+
+    CreateOrderResult second = useCase.execute(withKey(KEY, 2));
+
+    assertThat(second.created()).isFalse();
+    assertThat(second.order()).isEqualTo(first.order());
+    assertThat(orders.saved()).hasSize(1);
+  }
+
+  @Test
+  void theSameKeyWithADifferentRequestIsRefusedAndCreatesNothing() {
+    useCase.execute(withKey(KEY, 2));
+
+    assertThatThrownBy(() -> useCase.execute(withKey(KEY, 3)))
+        .isInstanceOfSatisfying(
+            UnprocessableContentException.class,
+            exception -> assertThat(exception.fields()).containsOnlyKeys("Idempotency-Key"));
+    assertThat(orders.saved()).hasSize(1);
+  }
+
+  @Test
+  void theFingerprintChangesWithTheItemsTheAddressOrThePaymentAndNotWithTheKey() {
+    String base = CreateOrderUseCase.fingerprint(withKey(KEY, 1));
+    UUID otherKey = UUID.fromString("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+
+    assertThat(CreateOrderUseCase.fingerprint(withKey(otherKey, 1))).isEqualTo(base);
+    assertThat(CreateOrderUseCase.fingerprint(withKey(KEY, 2))).isNotEqualTo(base);
+    assertThat(
+            CreateOrderUseCase.fingerprint(
+                new CreateOrderCommand(
+                    List.of(new Line(LATTE, 1)), ADDRESS, PaymentMethod.CASH, KEY)))
+        .isNotEqualTo(base);
+    Address elsewhere =
+        new Address("01310-100", "Other Street", "1000", "Apt 12", "Bela Vista", "Sao Paulo", "SP");
+    assertThat(
+            CreateOrderUseCase.fingerprint(
+                new CreateOrderCommand(
+                    List.of(new Line(LATTE, 1)), elsewhere, PaymentMethod.CREDIT_CARD, KEY)))
+        .isNotEqualTo(base);
+  }
+
+  @Test
+  void aCommandWithoutAKeyAlwaysCreatesAnOrder() {
+    CreateOrderCommand command =
+        new CreateOrderCommand(List.of(new Line(LATTE, 1)), ADDRESS, PaymentMethod.CASH);
+
+    CreateOrderResult first = useCase.execute(command);
+    CreateOrderResult second = useCase.execute(command);
+
+    assertThat(first.created()).isTrue();
+    assertThat(second.created()).isTrue();
+    assertThat(orders.saved()).hasSize(2);
+  }
+
+  @Test
+  void aCoffeeThatIsNotInTheCatalogDoesNotUseUpTheKey() {
+    CreateOrderCommand unknown =
+        new CreateOrderCommand(
+            List.of(new Line(GHOST, 1)), ADDRESS, PaymentMethod.CREDIT_CARD, KEY);
+
+    assertThatThrownBy(() -> useCase.execute(unknown))
+        .isInstanceOf(UnprocessableContentException.class);
+    CreateOrderResult result = useCase.execute(withKey(KEY, 1));
+
+    assertThat(result.created()).isTrue();
+    assertThat(orders.saved()).hasSize(1);
+  }
+
+  @Test
+  void whenAnotherRequestTakesTheKeyBetweenTheCheckAndTheSaveItsOrderIsReturned() {
+    CreateOrderResult winner = useCase.execute(withKey(KEY, 2));
+    orders.hideNextLookup();
+
+    CreateOrderResult loser = useCase.execute(withKey(KEY, 2));
+
+    assertThat(loser.created()).isFalse();
+    assertThat(loser.order()).isEqualTo(winner.order());
+    assertThat(orders.saved()).hasSize(1);
   }
 }

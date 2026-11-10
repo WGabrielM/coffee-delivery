@@ -73,6 +73,15 @@ async function fillTheSample(user: User) {
 
 const confirm = () => screen.getByRole("button", { name: "Confirm order" });
 
+/** The `Idempotency-Key` header of each `POST /api/v1/orders`, in order. */
+function sentKeys(fetchMock: Awaited<ReturnType<typeof openCheckout>>["fetchMock"]) {
+  return fetchMock.mock.calls
+    .filter(
+      ([input, init]) => String(input).startsWith("/api/v1/orders") && init?.method === "POST",
+    )
+    .map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
+}
+
 describe("Confirm order with an invalid form", () => {
   it("shows every error, moves the focus to the first invalid field, and sends no request", async () => {
     const { fetchMock, user } = await openCheckout();
@@ -163,6 +172,56 @@ describe("Confirm order with a valid form", () => {
     await waitFor(() => expect(confirm()).toBeDisabled());
 
     expect(loadCart()).toEqual([{ coffeeId: latte.id, quantity: 2 }]);
+  });
+});
+
+describe("the Idempotency-Key of the order", () => {
+  it("is a UUID on the first submit", async () => {
+    const { fetchMock, user } = await openCheckout();
+    await fillTheSample(user);
+
+    await user.click(confirm());
+    await screen.findByText("The order page");
+
+    expect(sentKeys(fetchMock)).toEqual([
+      expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+    ]);
+  });
+
+  it("stays the same when the person tries again with the same order after a failure", async () => {
+    const { fetchMock, user } = await openCheckout([
+      { kind: "network-error" },
+      { kind: "server-error" },
+      { kind: "created" },
+    ]);
+    await fillTheSample(user);
+
+    await user.click(confirm());
+    await screen.findByRole("alert");
+    await user.click(confirm());
+    await waitFor(() => expect(sentKeys(fetchMock)).toHaveLength(2));
+    await waitFor(() => expect(confirm()).toBeEnabled());
+    await user.click(confirm());
+    await screen.findByText("The order page");
+
+    const keys = sentKeys(fetchMock);
+    expect(keys).toHaveLength(3);
+    expect(new Set(keys).size).toBe(1);
+  });
+
+  it("changes when the person changes the order before trying again", async () => {
+    const { fetchMock, user } = await openCheckout([{ kind: "server-error" }, { kind: "created" }]);
+    await fillTheSample(user);
+    await user.click(confirm());
+    await screen.findByRole("alert");
+
+    await user.click(screen.getByRole("radio", { name: "Cash" }));
+    await user.click(confirm());
+    await screen.findByText("The order page");
+
+    const keys = sentKeys(fetchMock);
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).not.toBe(keys[1]);
   });
 });
 

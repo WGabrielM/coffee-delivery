@@ -255,4 +255,43 @@ class CreateOrderRequestValidatorTest {
     assertThat(fields.get("items")).isEqualTo("Add at least one coffee.");
     assertThat(fields.get("paymentMethod")).contains("credit_card", "debit_card", "cash");
   }
+
+  private static final String KEY = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+  @Test
+  void noKeyHeaderMeansNoKey() {
+    assertThat(CreateOrderRequestValidator.toCommand(valid(), null).idempotencyKey()).isNull();
+    assertThat(CreateOrderRequestValidator.toCommand(valid()).idempotencyKey()).isNull();
+  }
+
+  @Test
+  void aUuidKeyIsReadAndTrimmed() {
+    CreateOrderCommand command = CreateOrderRequestValidator.toCommand(valid(), "  " + KEY + " ");
+
+    assertThat(command.idempotencyKey()).isEqualTo(UUID.fromString(KEY));
+  }
+
+  @Test
+  void aKeyThatIsNotAUuidIsAFieldErrorNamedAfterTheHeader() {
+    for (String bad : new String[] {"", "   ", "not-a-uuid", KEY + "0"}) {
+      assertThatThrownBy(() -> CreateOrderRequestValidator.toCommand(valid(), bad))
+          .isInstanceOfSatisfying(
+              ValidationFailedException.class,
+              e ->
+                  assertThat(e.fields())
+                      .containsOnlyKeys("Idempotency-Key")
+                      .containsEntry(
+                          "Idempotency-Key", "Send the Idempotency-Key header as a UUID."));
+    }
+  }
+
+  @Test
+  void aBadKeyAndABadBodyAreReportedTogether() {
+    CreateOrderRequest request = new CreateOrderRequest(List.of(), address(), "credit_card");
+
+    assertThatThrownBy(() -> CreateOrderRequestValidator.toCommand(request, "nope"))
+        .isInstanceOfSatisfying(
+            ValidationFailedException.class,
+            e -> assertThat(e.fields()).containsOnlyKeys("Idempotency-Key", "items"));
+  }
 }

@@ -95,7 +95,7 @@ describe("createOrder", () => {
   it("posts the request to /api/v1/orders as JSON and returns the order", async () => {
     const fetchMock = fakeCheckoutApi();
 
-    await expect(createOrder(request)).resolves.toEqual(sampleOrder);
+    await expect(createOrder({ request })).resolves.toEqual(sampleOrder);
 
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe("/api/v1/orders");
@@ -104,12 +104,24 @@ describe("createOrder", () => {
     expect(postedOrders(fetchMock)).toEqual([request]);
   });
 
+  it("sends the key as the Idempotency-Key header, and no header without one", async () => {
+    const fetchMock = fakeCheckoutApi();
+
+    await createOrder({ request, idempotencyKey: "3f2b8a1e-0000-4000-8000-000000000001" });
+    await createOrder({ request });
+
+    const withKey = new Headers(fetchMock.mock.calls[0]![1]?.headers);
+    const withoutKey = new Headers(fetchMock.mock.calls[1]![1]?.headers);
+    expect(withKey.get("Idempotency-Key")).toBe("3f2b8a1e-0000-4000-8000-000000000001");
+    expect(withoutKey.has("Idempotency-Key")).toBe(false);
+  });
+
   it("throws the ApiError of a 400 with its fields", async () => {
     fakeCheckoutApi({
       orderOutcome: { kind: "validation", fields: { "address.zipCode": "Enter a ZIP code." } },
     });
 
-    await expect(createOrder(request)).rejects.toMatchObject({
+    await expect(createOrder({ request })).rejects.toMatchObject({
       status: 400,
       code: "validation_failed",
       fields: { "address.zipCode": "Enter a ZIP code." },
@@ -124,7 +136,7 @@ describe("useCreateOrder", () => {
       wrapper: wrapperFor(createTestQueryClient()),
     });
 
-    const order = await result.current.mutateAsync(request);
+    const order = await result.current.mutateAsync({ request });
 
     expect(order.id).toBe(sampleOrder.id);
     expect(postedOrders(fetchMock)).toHaveLength(1);
@@ -136,7 +148,7 @@ describe("useCreateOrder", () => {
       wrapper: wrapperFor(createTestQueryClient()),
     });
 
-    await expect(result.current.mutateAsync(request)).rejects.toBeInstanceOf(ApiError);
+    await expect(result.current.mutateAsync({ request })).rejects.toBeInstanceOf(ApiError);
 
     expect(postedOrders(fetchMock)).toHaveLength(1);
   });

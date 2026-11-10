@@ -164,6 +164,61 @@ class CreateOrderRequestHandlerTest {
     org.assertj.core.api.Assertions.assertThat(orders.saved()).isEmpty();
   }
 
+  private static final String KEY = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+  private static MockHttpServletRequestBuilder withKey(String key, String content) {
+    return json(content).header("Idempotency-Key", key);
+  }
+
+  @Test
+  void theSameKeyAndRequestAnswers201ThenTheSameOrderWith200() throws Exception {
+    String content = body(VALID_ITEMS, "credit_card");
+
+    var first =
+        mvc.perform(withKey(KEY, content))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse();
+    var second =
+        mvc.perform(withKey(KEY, content)).andExpect(status().isOk()).andReturn().getResponse();
+
+    org.assertj.core.api.Assertions.assertThat(second.getContentAsString())
+        .isEqualTo(first.getContentAsString());
+    org.assertj.core.api.Assertions.assertThat(second.getHeader("Location"))
+        .isEqualTo(first.getHeader("Location"));
+    org.assertj.core.api.Assertions.assertThat(orders.saved()).hasSize(1);
+  }
+
+  @Test
+  void theSameKeyWithAnotherRequestIs422OnTheKeyAndStoresNothingMore() throws Exception {
+    mvc.perform(withKey(KEY, body(VALID_ITEMS, "credit_card"))).andExpect(status().isCreated());
+
+    mvc.perform(withKey(KEY, body(VALID_ITEMS, "cash")))
+        .andExpect(status().isUnprocessableContent())
+        .andExpect(jsonPath("$.error.code").value("unprocessable_content"))
+        .andExpect(jsonPath("$.error.fields['Idempotency-Key']").isNotEmpty());
+    org.assertj.core.api.Assertions.assertThat(orders.saved()).hasSize(1);
+  }
+
+  @Test
+  void aKeyThatIsNotAUuidIsA400OnTheKeyAndStoresNothing() throws Exception {
+    mvc.perform(withKey("not-a-uuid", body(VALID_ITEMS, "cash")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code").value("validation_failed"))
+        .andExpect(jsonPath("$.error.fields['Idempotency-Key']").isNotEmpty());
+    org.assertj.core.api.Assertions.assertThat(orders.saved()).isEmpty();
+  }
+
+  @Test
+  void withoutAKeyTheSameRequestCreatesTwoOrders() throws Exception {
+    String content = body(VALID_ITEMS, "cash");
+
+    mvc.perform(json(content)).andExpect(status().isCreated());
+    mvc.perform(json(content)).andExpect(status().isCreated());
+
+    org.assertj.core.api.Assertions.assertThat(orders.saved()).hasSize(2);
+  }
+
   @Test
   void aBodyThatIsNotJsonIsA400() throws Exception {
     mvc.perform(json("{not json"))

@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Map;
 
 /** A tiny HTTP client for the end-to-end tests, bound to the random port of the running API. */
 public final class ApiClient {
@@ -22,11 +23,16 @@ public final class ApiClient {
   }
 
   public HttpResponse<String> post(String path, String jsonBody) {
-    return send(
+    return post(path, jsonBody, Map.of());
+  }
+
+  public HttpResponse<String> post(String path, String jsonBody, Map<String, String> headers) {
+    HttpRequest.Builder request =
         HttpRequest.newBuilder(uri(path))
             .header("Content-Type", "application/json")
-            .POST(BodyPublishers.ofString(jsonBody))
-            .build());
+            .POST(BodyPublishers.ofString(jsonBody));
+    headers.forEach(request::header);
+    return send(request.build());
   }
 
   private URI uri(String path) {

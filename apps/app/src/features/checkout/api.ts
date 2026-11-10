@@ -66,12 +66,28 @@ export interface Order {
   createdAt: string;
 }
 
-/** POST /api/v1/orders: the server prices the order itself and answers `201` with it. */
-export function createOrder(request: OrderRequest, options?: RequestOptions): Promise<Order> {
-  return apiPost<Order>("/orders", request, options);
+/** An order to send, with the key that makes sending it again safe. */
+export interface OrderSubmission {
+  request: OrderRequest;
+  /** Sent as the `Idempotency-Key` header: the same key and request never create a second order. */
+  idempotencyKey?: string | undefined;
+}
+
+/**
+ * POST /api/v1/orders: the server prices the order itself and answers `201` with it. When the key
+ * was already used with the same request it answers `200` with the order it created the first time.
+ */
+export function createOrder(
+  { request, idempotencyKey }: OrderSubmission,
+  options: RequestOptions = {},
+): Promise<Order> {
+  const headers = idempotencyKey
+    ? { ...options.headers, "Idempotency-Key": idempotencyKey }
+    : options.headers;
+  return apiPost<Order>("/orders", request, { ...options, headers });
 }
 
 /** Confirms the order. A mutation never retries by itself: the person decides to try again. */
 export function useCreateOrder() {
-  return useMutation({ mutationFn: (request: OrderRequest) => createOrder(request) });
+  return useMutation({ mutationFn: (submission: OrderSubmission) => createOrder(submission) });
 }

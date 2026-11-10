@@ -135,6 +135,39 @@ test("a double click on Confirm order sends one request while it runs", async ({
   expect(bodies).toHaveLength(1);
 });
 
+test("when the answer is lost after the server stored the order, trying again opens the same order", async ({
+  page,
+}) => {
+  const keys: (string | undefined)[] = [];
+  const storedIds: string[] = [];
+  let lostFirstAnswer = false;
+  await page.route("**/api/v1/orders", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    keys.push(route.request().headers()["idempotency-key"]);
+    const response = await route.fetch();
+    storedIds.push(((await response.json()) as { id: string }).id);
+    if (!lostFirstAnswer) {
+      lostFirstAnswer = true;
+      return route.abort("failed");
+    }
+    return route.fulfill({ response });
+  });
+  await fillTheSample(page);
+
+  await confirm(page).click();
+  await expect(page.getByRole("alert")).toBeVisible();
+  await confirm(page).click();
+
+  await expect(page).toHaveURL(new RegExp(`/orders/${UUID}$`));
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toMatch(new RegExp(`^${UUID}$`));
+  expect(keys[1]).toBe(keys[0]);
+  // The server answered the second request with the order of the first: one order, one id.
+  expect(storedIds).toHaveLength(2);
+  expect(storedIds[1]).toBe(storedIds[0]);
+  expect(page.url()).toContain(`/orders/${storedIds[0]}`);
+});
+
 test("a 400 with fields puts the messages under the fields and keeps the cart and the values", async ({
   page,
 }) => {

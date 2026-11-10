@@ -11,10 +11,11 @@ export function getAndCheck(path, checks, name = path) {
   return response;
 }
 
-// POST a JSON body to a path of the API and run the given checks on the response.
-export function postAndCheck(path, body, expectedStatus, checks) {
+// POST a JSON body to a path of the API and run the given checks on the response. `headers` are
+// added to the JSON content type, for example an Idempotency-Key.
+export function postAndCheck(path, body, expectedStatus, checks, headers = {}) {
   const response = http.post(`${BASE_URL}${path}`, JSON.stringify(body), {
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headers },
     tags: { name: path },
   });
   check(response, {

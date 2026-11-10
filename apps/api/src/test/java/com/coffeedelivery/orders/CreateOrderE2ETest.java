@@ -13,9 +13,17 @@ import com.coffeedelivery.orders.domain.PaymentMethod;
 import com.jayway.jsonpath.JsonPath;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -263,11 +271,117 @@ class CreateOrderE2ETest extends PostgresContainerSupport {
             PaymentMethod.CASH,
             Instant.now());
 
-    assertThatThrownBy(() -> orderRepository.save(order))
+    assertThatThrownBy(() -> orderRepository.save(order, null, null))
         .isInstanceOf(DataIntegrityViolationException.class);
 
     assertThat(orderCount()).isZero();
     assertThat(jdbc.queryForObject("SELECT count(*) FROM order_items", Integer.class)).isZero();
+  }
+
+  private HttpResponse<String> postWithKey(UUID key, String body) {
+    return api().post("/api/v1/orders", body, Map.of("Idempotency-Key", key.toString()));
+  }
+
+  @Test
+  void theSameKeyAndRequestAnswers201ThenTheSameOrderWith200AndStoresOneOrder() {
+    UUID key = UUID.randomUUID();
+    String body = order(latteAndTwoCubans(), ADDRESS, "credit_card");
+
+    HttpResponse<String> first = postWithKey(key, body);
+    HttpResponse<String> second = postWithKey(key, body);
+
+    assertThat(first.statusCode()).isEqualTo(201);
+    assertThat(second.statusCode()).isEqualTo(200);
+    assertThat(second.body()).isEqualTo(first.body());
+    assertThat(second.headers().firstValue("Location"))
+        .isEqualTo(first.headers().firstValue("Location"));
+    assertThat(orderCount()).isEqualTo(1);
+    assertThat(jdbc.queryForObject("SELECT count(*) FROM order_items", Integer.class)).isEqualTo(2);
+  }
+
+  @Test
+  void theSameKeyWithAnotherRequestIs422OnTheKeyAndStoresNothingMore() {
+    UUID key = UUID.randomUUID();
+    postWithKey(key, order(latteAndTwoCubans(), ADDRESS, "credit_card"));
+
+    HttpResponse<String> response = postWithKey(key, order(latteAndTwoCubans(), ADDRESS, "cash"));
+
+    assertThat(response.statusCode()).isEqualTo(422);
+    Map<String, String> fields = JsonPath.read(response.body(), "$.error.fields");
+    assertThat(fields).containsOnlyKeys("Idempotency-Key");
+    assertThat(orderCount()).isEqualTo(1);
+  }
+
+  @Test
+  void aKeyThatIsNotAUuidIsA400OnTheKeyAndStoresNothing() {
+    HttpResponse<String> response =
+        api()
+            .post(
+                "/api/v1/orders",
+                order(latteAndTwoCubans(), ADDRESS, "cash"),
+                Map.of("Idempotency-Key", "not-a-uuid"));
+
+    assertThat(response.statusCode()).isEqualTo(400);
+    Map<String, String> fields = JsonPath.read(response.body(), "$.error.fields");
+    assertThat(fields).containsOnlyKeys("Idempotency-Key");
+    assertThat(orderCount()).isZero();
+  }
+
+  @Test
+  void aRefusedRequestDoesNotUseUpTheKey() {
+    UUID key = UUID.randomUUID();
+    String ghost = "[{\"coffeeId\": \"%s\", \"quantity\": 1}]".formatted(UUID.randomUUID());
+    assertThat(postWithKey(key, order(ghost, ADDRESS, "cash")).statusCode()).isEqualTo(422);
+
+    HttpResponse<String> response = postWithKey(key, order(latteAndTwoCubans(), ADDRESS, "cash"));
+
+    assertThat(response.statusCode()).isEqualTo(201);
+    assertThat(orderCount()).isEqualTo(1);
+  }
+
+  @Test
+  void requestsWithoutAKeyAlwaysCreateAnOrder() {
+    String body = order(latteAndTwoCubans(), ADDRESS, "cash");
+
+    assertThat(api().post("/api/v1/orders", body).statusCode()).isEqualTo(201);
+    assertThat(api().post("/api/v1/orders", body).statusCode()).isEqualTo(201);
+
+    assertThat(orderCount()).isEqualTo(2);
+  }
+
+  @Test
+  void parallelRequestsWithTheSameKeyStoreExactlyOneOrder() throws Exception {
+    UUID key = UUID.randomUUID();
+    String body = order(latteAndTwoCubans(), ADDRESS, "cash");
+    int requests = 8;
+    CountDownLatch start = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(requests);
+    try {
+      List<Future<HttpResponse<String>>> answers = new ArrayList<>();
+      for (int i = 0; i < requests; i++) {
+        answers.add(
+            pool.submit(
+                () -> {
+                  start.await();
+                  return postWithKey(key, body);
+                }));
+      }
+      start.countDown();
+      List<Integer> statuses = new ArrayList<>();
+      Set<String> ids = new HashSet<>();
+      for (Future<HttpResponse<String>> answer : answers) {
+        HttpResponse<String> response = answer.get(30, TimeUnit.SECONDS);
+        statuses.add(response.statusCode());
+        ids.add(JsonPath.read(response.body(), "$.id"));
+      }
+
+      assertThat(statuses.stream().filter(status -> status == 201)).hasSize(1);
+      assertThat(statuses.stream().filter(status -> status == 200)).hasSize(requests - 1);
+      assertThat(ids).hasSize(1);
+      assertThat(orderCount()).isEqualTo(1);
+    } finally {
+      pool.shutdownNow();
+    }
   }
 
   @Test

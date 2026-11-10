@@ -155,6 +155,16 @@ describe("apiPost", () => {
     expect(headers.get("Accept")).toBe("application/json");
   });
 
+  it("sends the extra headers of the options", async () => {
+    const fetchMock = stubFetch(() => jsonResponse({ id: "abc" }, 201));
+
+    await apiPost("/orders", {}, { headers: { "Idempotency-Key": "a-key" } });
+
+    const headers = new Headers(fetchMock.mock.calls[0]![1]?.headers);
+    expect(headers.get("Idempotency-Key")).toBe("a-key");
+    expect(headers.get("Content-Type")).toBe("application/json");
+  });
+
   it("throws an ApiError for a 422 response", async () => {
     stubFetch(() =>
       jsonResponse(

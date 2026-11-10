@@ -112,7 +112,7 @@ The exit criteria of the milestones, with their measured results, are in [`docs/
 - **Bundle.** One JavaScript chunk of 522 kB; the form libraries load on the home page.
 - **Cart.** Kept in `localStorage`: not shared between tabs or devices, and a coffee that leaves the catalog is dropped when the checkout loads.
 - **Orders.** There are no order tracking, no editing, no cancellation, no accounts, and no payment processing. The end-to-end tests create real orders in the local database and do not delete them.
-- **Single API instance.** The delivery fee and the estimate are fixed rules; orders have no idempotency key, so a request repeated by a client creates a second order.
+- **Single API instance.** The delivery fee and the estimate are fixed rules; orders had no idempotency key, so a request repeated by a client created a second order (fixed after the capstone by spec 032).
 - **Visual parity** depends on the font rendering of Chromium on the machine; the filled input border and the filter chips differ from the frames by decision.
 - **The pipeline.** The first run of the workflow failed (Node 22.22.1 was not enough for `jsdom`) and the run after the fix passed in all three jobs; the commit message workflow has not run yet, because it runs on pull requests only. `actionlint` was not run: the permission to run the downloaded binary was refused.
 

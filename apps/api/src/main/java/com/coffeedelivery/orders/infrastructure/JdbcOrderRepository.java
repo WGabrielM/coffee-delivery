@@ -1,6 +1,7 @@
 package com.coffeedelivery.orders.infrastructure;
 
 import com.coffeedelivery.orders.application.OrderRepository;
+import com.coffeedelivery.orders.application.StoredOrder;
 import com.coffeedelivery.orders.domain.Address;
 import com.coffeedelivery.orders.domain.Order;
 import com.coffeedelivery.orders.domain.OrderItem;
@@ -37,31 +38,42 @@ class JdbcOrderRepository implements OrderRepository {
   }
 
   @Override
-  public void save(Order order) {
+  public boolean save(Order order, UUID idempotencyKey, String requestFingerprint) {
     Address address = order.address();
-    jdbc.sql(
-            """
+    // With a key, the unique constraint decides: a second insert with the same key does nothing
+    // (it waits for the first to commit), and then no line is stored. Null keys never conflict.
+    int inserted =
+        jdbc.sql(
+                """
             INSERT INTO orders (id, status, payment_method, zip_code, street, number, complement,
                                 neighborhood, city, state, subtotal_in_cents,
-                                delivery_fee_in_cents, total_in_cents, created_at)
+                                delivery_fee_in_cents, total_in_cents, created_at,
+                                idempotency_key, request_fingerprint)
             VALUES (:id, :status, :paymentMethod, :zipCode, :street, :number, :complement,
-                    :neighborhood, :city, :state, :subtotal, :deliveryFee, :total, :createdAt)
+                    :neighborhood, :city, :state, :subtotal, :deliveryFee, :total, :createdAt,
+                    :idempotencyKey, :requestFingerprint)
+            ON CONFLICT (idempotency_key) DO NOTHING
             """)
-        .param("id", order.id())
-        .param("status", order.status().value())
-        .param("paymentMethod", order.paymentMethod().value())
-        .param("zipCode", address.zipCode())
-        .param("street", address.street())
-        .param("number", address.number())
-        .param("complement", address.complement(), Types.VARCHAR)
-        .param("neighborhood", address.neighborhood())
-        .param("city", address.city())
-        .param("state", address.state())
-        .param("subtotal", order.subtotalInCents())
-        .param("deliveryFee", order.deliveryFeeInCents())
-        .param("total", order.totalInCents())
-        .param("createdAt", OffsetDateTime.ofInstant(order.createdAt(), ZoneOffset.UTC))
-        .update();
+            .param("id", order.id())
+            .param("status", order.status().value())
+            .param("paymentMethod", order.paymentMethod().value())
+            .param("zipCode", address.zipCode())
+            .param("street", address.street())
+            .param("number", address.number())
+            .param("complement", address.complement(), Types.VARCHAR)
+            .param("neighborhood", address.neighborhood())
+            .param("city", address.city())
+            .param("state", address.state())
+            .param("subtotal", order.subtotalInCents())
+            .param("deliveryFee", order.deliveryFeeInCents())
+            .param("total", order.totalInCents())
+            .param("createdAt", OffsetDateTime.ofInstant(order.createdAt(), ZoneOffset.UTC))
+            .param("idempotencyKey", idempotencyKey, Types.OTHER)
+            .param("requestFingerprint", requestFingerprint, Types.VARCHAR)
+            .update();
+    if (inserted == 0) {
+      return false;
+    }
     for (OrderItem item : order.items()) {
       jdbc.sql(
               """
@@ -77,6 +89,20 @@ class JdbcOrderRepository implements OrderRepository {
           .param("lineTotal", item.lineTotalInCents())
           .update();
     }
+    return true;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<StoredOrder> findByIdempotencyKey(UUID idempotencyKey) {
+    return jdbc.sql("SELECT id, request_fingerprint FROM orders WHERE idempotency_key = :key")
+        .param("key", idempotencyKey)
+        .query(
+            (rs, rowNumber) ->
+                new Object[] {rs.getObject("id", UUID.class), rs.getString("request_fingerprint")})
+        .optional()
+        .flatMap(
+            row -> findById((UUID) row[0]).map(order -> new StoredOrder(order, (String) row[1])));
   }
 
   /** Reads the stored snapshot only: nothing here touches the catalog. */

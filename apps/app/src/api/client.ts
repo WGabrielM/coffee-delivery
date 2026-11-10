@@ -29,6 +29,8 @@ export class ApiError extends Error {
 
 export interface RequestOptions {
   signal?: AbortSignal | undefined;
+  /** Extra request headers, such as `Idempotency-Key`. */
+  headers?: Record<string, string> | undefined;
 }
 
 const NETWORK_ERROR_MESSAGE = "Could not reach the server. Check your connection and try again.";
@@ -46,9 +48,9 @@ async function request<T>(
   method: "GET" | "POST",
   path: string,
   body: unknown,
-  { signal }: RequestOptions,
+  { signal, headers: extraHeaders }: RequestOptions,
 ): Promise<T> {
-  const headers = new Headers({ Accept: "application/json" });
+  const headers = new Headers({ Accept: "application/json", ...extraHeaders });
   const init: RequestInit = { method, headers };
   if (body !== undefined) {
     headers.set("Content-Type", "application/json");

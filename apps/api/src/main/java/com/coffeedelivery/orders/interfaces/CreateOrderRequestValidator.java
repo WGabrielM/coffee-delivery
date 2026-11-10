@@ -31,14 +31,32 @@ final class CreateOrderRequestValidator {
   private CreateOrderRequestValidator() {}
 
   static CreateOrderCommand toCommand(CreateOrderRequest request) {
+    return toCommand(request, null);
+  }
+
+  /** The same, with the text of the {@code Idempotency-Key} header (null when it was not sent). */
+  static CreateOrderCommand toCommand(CreateOrderRequest request, String idempotencyKeyText) {
     Map<String, String> errors = new LinkedHashMap<>();
+    UUID idempotencyKey = idempotencyKey(idempotencyKeyText, errors);
     List<Line> lines = items(request.items(), errors);
     Address address = address(request.address(), errors);
     PaymentMethod paymentMethod = paymentMethod(request.paymentMethod(), errors);
     if (!errors.isEmpty()) {
       throw new ValidationFailedException(errors);
     }
-    return new CreateOrderCommand(lines, address, paymentMethod);
+    return new CreateOrderCommand(lines, address, paymentMethod, idempotencyKey);
+  }
+
+  private static UUID idempotencyKey(String text, Map<String, String> errors) {
+    if (text == null) {
+      return null;
+    }
+    return UuidText.parse(text.trim())
+        .orElseGet(
+            () -> {
+              errors.put("Idempotency-Key", "Send the Idempotency-Key header as a UUID.");
+              return null;
+            });
   }
 
   private static List<Line> items(

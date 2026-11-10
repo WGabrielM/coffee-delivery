@@ -33,6 +33,7 @@ Details:
 - **Names:** endpoint segments are lowercase and hyphenated. JSON fields are `camelCase`. Identifiers are UUID strings.
 - **Access:** there are no accounts, so every endpoint is public.
 - **Success:** `200` with a JSON body, `201` after creating something (with a `Location` header), `204` with no body.
+- **Idempotency:** a request that creates something may take an optional `Idempotency-Key` header (a UUID chosen by the client). The key is stored with a fingerprint of the request under a unique index. The same key with the same request creates nothing and answers `200` with the first result (and its `Location`); the same key with a different request is a `422 unprocessable_content` with `fields["Idempotency-Key"]`; a header that is not a UUID is a `400 validation_failed` with the same field name. Only `POST /api/v1/orders` uses it today.
 - **Errors:** every error response under `/api` uses this shape:
 
   ```json

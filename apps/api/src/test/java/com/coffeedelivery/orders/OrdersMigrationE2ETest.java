@@ -48,7 +48,9 @@ class OrdersMigrationE2ETest extends PostgresContainerSupport {
             "subtotal_in_cents",
             "delivery_fee_in_cents",
             "total_in_cents",
-            "created_at");
+            "created_at",
+            "idempotency_key",
+            "request_fingerprint");
   }
 
   @Test
@@ -65,7 +67,7 @@ class OrdersMigrationE2ETest extends PostgresContainerSupport {
   }
 
   @Test
-  void complementIsTheOnlyNullableColumnOfOrders() {
+  void onlyTheComplementAndTheTwoIdempotencyColumnsAreNullable() {
     List<String> nullable =
         jdbc.queryForList(
             """
@@ -74,7 +76,48 @@ class OrdersMigrationE2ETest extends PostgresContainerSupport {
             """,
             String.class);
 
-    assertThat(nullable).containsExactly("complement");
+    assertThat(nullable)
+        .containsExactlyInAnyOrder("complement", "idempotency_key", "request_fingerprint");
+  }
+
+  @Test
+  void manyOrdersWithoutAKeyAreAccepted() {
+    insertOrder(990, 350, 1340);
+    insertOrder(990, 350, 1340);
+
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM orders WHERE idempotency_key IS NULL", Integer.class))
+        .isEqualTo(2);
+  }
+
+  @Test
+  void aKeyIsUniqueAcrossOrders() {
+    UUID key = UUID.randomUUID();
+    insertOrderWithKey(key, "fingerprint");
+
+    assertRejected(() -> insertOrderWithKey(key, "fingerprint"));
+    insertOrderWithKey(UUID.randomUUID(), "fingerprint");
+  }
+
+  @Test
+  void aKeyAndItsFingerprintAreBothSetOrBothNull() {
+    assertRejected(() -> insertOrderWithKey(UUID.randomUUID(), null));
+    assertRejected(() -> insertOrderWithKey(null, "fingerprint"));
+  }
+
+  private void insertOrderWithKey(UUID key, String fingerprint) {
+    jdbc.update(
+        """
+        INSERT INTO orders (id, status, payment_method, zip_code, street, number, complement,
+                            neighborhood, city, state, subtotal_in_cents, delivery_fee_in_cents,
+                            total_in_cents, idempotency_key, request_fingerprint)
+        VALUES (?, 'confirmed', 'cash', '01310-100', 'Paulista Avenue', '1000', NULL, 'Bela Vista',
+                'Sao Paulo', 'SP', 990, 350, 1340, ?, ?)
+        """,
+        UUID.randomUUID(),
+        key,
+        fingerprint);
   }
 
   @Test
