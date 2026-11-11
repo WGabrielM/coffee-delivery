@@ -6,6 +6,7 @@ import { coffeeImages } from "../../../assets";
 import { accessibilityViolations } from "../../../test/axe";
 import { cuban, latte, renderWithCart, traditionalEspresso } from "../../../test/coffees";
 import { useCart } from "../../cart/cart-context";
+import { saveCart } from "../../cart/cart-storage";
 import { CoffeeCard } from "./CoffeeCard";
 
 // Shows what the cart holds, so a test reads the cart through the screen and not through the hook.
@@ -164,7 +165,7 @@ describe("CoffeeCard", () => {
       expect(screen.getByText("In the cart: 0")).toBeInTheDocument();
     });
 
-    it("adds the counter quantity of that coffee to the cart and resets the counter to 1", async () => {
+    it("adds the counter quantity of that coffee to the cart and keeps the counter where it was", async () => {
       const user = userEvent.setup();
       renderWithCart(
         <>
@@ -181,10 +182,10 @@ describe("CoffeeCard", () => {
         JSON.stringify([{ coffeeId: latte.id, quantity: 2 }]),
       );
       expect(screen.getByText("In the cart: 2")).toBeInTheDocument();
-      expect(within(counter).getByText("1")).toBeInTheDocument();
+      expect(within(counter).getByText("2")).toBeInTheDocument();
     });
 
-    it("adds one coffee by default and makes the quantity grow when the coffee is added again", async () => {
+    it("adds one coffee by default and makes the quantity grow by the counter when it is added again", async () => {
       const user = userEvent.setup();
       renderWithCart(
         <>
@@ -201,10 +202,11 @@ describe("CoffeeCard", () => {
 
       await user.click(within(latteCard).getByRole("button", { name: "Add Latte to cart" }));
 
-      expect(screen.getByText("In the cart: 4")).toBeInTheDocument();
+      // The Latte counter stayed at 2, so adding again puts 2 more.
+      expect(screen.getByText("In the cart: 5")).toBeInTheDocument();
       expect(screen.getByTestId("cart-lines")).toHaveTextContent(
         JSON.stringify([
-          { coffeeId: latte.id, quantity: 3 },
+          { coffeeId: latte.id, quantity: 4 },
           { coffeeId: traditionalEspresso.id, quantity: 1 },
         ]),
       );
@@ -253,6 +255,56 @@ describe("CoffeeCard", () => {
       expect(screen.getByText("In the cart: 99")).toBeInTheDocument();
     });
 
+    it("shows no badge until the coffee is in the cart, then how many are in the cart", async () => {
+      const user = userEvent.setup();
+      renderWithCart(<CoffeeCard coffee={latte} />);
+      const card = screen.getByRole("article", { name: "Latte" });
+      expect(card.querySelector("[data-in-cart]")).not.toBeInTheDocument();
+
+      await user.click(within(card).getByRole("button", { name: "Increase quantity" }));
+      await user.click(within(card).getByRole("button", { name: "Increase quantity" }));
+      await user.click(within(card).getByRole("button", { name: "Add Latte to cart" }));
+
+      const badge = card.querySelector("[data-in-cart]");
+      expect(badge).toHaveTextContent("3");
+      expect(badge).toHaveAttribute("aria-hidden", "true");
+      // The counter keeps the 3 that were added.
+      expect(within(card).getByRole("group", { name: "Quantity of Latte" })).toHaveTextContent("3");
+    });
+
+    it("adds again on another click and the badge follows the cart, not the counter", async () => {
+      const user = userEvent.setup();
+      renderWithCart(<CoffeeCard coffee={latte} />);
+      const card = screen.getByRole("article", { name: "Latte" });
+      await user.click(within(card).getByRole("button", { name: "Increase quantity" }));
+
+      await user.click(within(card).getByRole("button", { name: "Add Latte to cart" }));
+      await user.click(within(card).getByRole("button", { name: "Add Latte to cart" }));
+
+      expect(card.querySelector("[data-in-cart]")).toHaveTextContent("4");
+      expect(within(card).getByRole("group", { name: "Quantity of Latte" })).toHaveTextContent("2");
+    });
+
+    it("describes the add button with how many are in the cart, for a screen reader", async () => {
+      const user = userEvent.setup();
+      renderWithCart(<CoffeeCard coffee={latte} />);
+      const button = screen.getByRole("button", { name: "Add Latte to cart" });
+      expect(button).not.toHaveAccessibleDescription();
+
+      await user.click(button);
+
+      expect(button).toHaveAccessibleDescription("1 in the cart");
+    });
+
+    it("shows the badge of a coffee that was already in the saved cart", () => {
+      saveCart([{ coffeeId: latte.id, quantity: 5 }]);
+      renderWithCart(<CoffeeCard coffee={latte} />);
+
+      expect(
+        screen.getByRole("article", { name: "Latte" }).querySelector("[data-in-cart]"),
+      ).toHaveTextContent("5");
+    });
+
     it("announces each addition in a polite live region", async () => {
       const user = userEvent.setup();
       renderWithCart(<CoffeeCard coffee={latte} />);
@@ -265,7 +317,7 @@ describe("CoffeeCard", () => {
       await user.click(within(card).getByRole("button", { name: "Increase quantity" }));
       await user.click(within(card).getByRole("button", { name: "Add Latte to cart" }));
 
-      expect(live).toHaveTextContent("Added 2 × Latte to cart");
+      expect(live).toHaveTextContent("Added 2 × Latte to cart. 2 in the cart.");
     });
 
     it("announces the same addition again: the text changes even when the words do not", async () => {
@@ -278,7 +330,7 @@ describe("CoffeeCard", () => {
       const first = live?.textContent;
       await user.click(within(card).getByRole("button", { name: "Add Latte to cart" }));
 
-      expect(live).toHaveTextContent("Added 1 × Latte to cart");
+      expect(live).toHaveTextContent("Added 1 × Latte to cart. 2 in the cart.");
       expect(live?.textContent).not.toBe(first);
     });
   });

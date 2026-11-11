@@ -1,8 +1,9 @@
 import { useState } from "react";
 
+import { Badge } from "../../../components/badge/Badge";
 import { Button } from "../../../components/button/Button";
 import { Counter } from "../../../components/counter/Counter";
-import { MIN_QUANTITY } from "../../../lib/quantity-limits";
+import { MAX_QUANTITY, MIN_QUANTITY } from "../../../lib/quantity-limits";
 import { Tag } from "../../../components/tag/Tag";
 import { formatMoneyParts } from "../../../lib/format-money";
 import { useCart } from "../../cart/cart-context";
@@ -15,12 +16,15 @@ const photo = "-mt-5 size-30 shrink-0 rounded-round";
 /**
  * A coffee of the catalog: photo, tags, name, description, and a purchase row with the price, the
  * quantity counter, and the cart button. The card is 256 by 310. The counter value belongs to the
- * card (it is not the cart): adding puts that quantity in the cart and sets the counter back to 1.
+ * card (it is not the cart): adding puts that quantity in the cart and the counter keeps its value,
+ * so the visitor sees what was just added. A badge on the cart button says how many of this coffee
+ * are in the cart now (nothing while there are none), so adding again is a choice and not a surprise.
  */
 export function CoffeeCard({ coffee }: { coffee: Coffee }) {
   const { symbol, amount } = formatMoneyParts(coffee.priceInCents);
   const headingId = `coffee-${coffee.slug}`;
-  const { add } = useCart();
+  const { add, lines } = useCart();
+  const inCart = lines.find((line) => line.coffeeId === coffee.id)?.quantity ?? 0;
   const [quantity, setQuantity] = useState(MIN_QUANTITY);
   // `repeat` flips on every addition. A live region speaks a change of text, so the same words twice
   // would stay silent; a trailing no-break space makes the second one a change.
@@ -28,11 +32,11 @@ export function CoffeeCard({ coffee }: { coffee: Coffee }) {
 
   function addToCart() {
     add(coffee.id, quantity);
+    const now = Math.min(inCart + quantity, MAX_QUANTITY);
     setAnnouncement((previous) => ({
-      text: `Added ${quantity} × ${coffee.name} to cart`,
+      text: `Added ${quantity} × ${coffee.name} to cart. ${now} in the cart.`,
       repeat: !previous.repeat,
     }));
-    setQuantity(MIN_QUANTITY);
   }
 
   return (
@@ -57,12 +61,30 @@ export function CoffeeCard({ coffee }: { coffee: Coffee }) {
         </p>
         <div className="flex items-center gap-2">
           <Counter label={`Quantity of ${coffee.name}`} value={quantity} onChange={setQuantity} />
-          <Button
-            variant="icon"
-            icon="shopping-cart-fill"
-            aria-label={`Add ${coffee.name} to cart`}
-            onClick={addToCart}
-          />
+          {/* The badge sits on the corner of the button, out of the flow, so the card keeps its size. */}
+          <span className="relative inline-flex">
+            <Button
+              variant="icon"
+              icon="shopping-cart-fill"
+              aria-label={`Add ${coffee.name} to cart`}
+              aria-describedby={inCart > 0 ? `${headingId}-in-cart` : undefined}
+              onClick={addToCart}
+            />
+            {inCart > 0 ? (
+              <span
+                data-in-cart
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-2 -right-2"
+              >
+                <Badge count={inCart} />
+              </span>
+            ) : null}
+            {inCart > 0 ? (
+              <span id={`${headingId}-in-cart`} className="sr-only">
+                {inCart} in the cart
+              </span>
+            ) : null}
+          </span>
         </div>
       </div>
       <p aria-live="polite" className="sr-only">

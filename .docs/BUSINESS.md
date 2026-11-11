@@ -18,7 +18,7 @@
 ## How it works
 
 1. The visitor opens the home page and sees the 14 coffees. They can filter by tags (several tags narrow the list: a coffee must have all of them).
-2. On a coffee card the visitor picks a quantity and adds it to the cart. The cart icon in the navbar shows the total number of coffees.
+2. On a coffee card the visitor picks a quantity and adds it to the cart. The cart icon in the navbar shows the total number of coffees, and the card shows, on its cart button, how many of that coffee are in the cart. The quantity on the card stays after adding, so adding again adds that quantity once more and the badge shows the new total.
 3. In the checkout the visitor reviews the coffees, changes quantities or removes items, and sees the items total, the delivery fee, and the total. These numbers come from the server (a quote of the cart), so the total shown is the total that will be charged; the quote is asked again when the cart or a complete ZIP code changes.
 4. The visitor enters the address (ZIP code, street, number, optional complement, neighborhood, city, state) and chooses a payment method.
 5. The visitor confirms. If the form has a problem, the page shows it and sends nothing. Otherwise the app sends the cart lines, the address, and the payment method once; the server checks the request, prices the order itself, stores it, and answers with the confirmed order. The app then empties the cart and opens the confirmation page; Back does not return to the form.

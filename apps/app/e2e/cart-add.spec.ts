@@ -33,7 +33,7 @@ test("each card has a counter at 1 and a button named for the coffee", async ({ 
   await expect(page.getByRole("button", { name: /^Add .* to cart$/ })).toHaveCount(14);
 });
 
-test("adding Latte × 2, Traditional Espresso × 1, then Latte × 1 makes the badge 3 and then 4", async ({
+test("adding Latte × 2, Traditional Espresso × 1, then Latte again (its counter stays at 2) makes the badge 3 and then 5", async ({
   page,
 }) => {
   await expect(page.getByRole("link", { name: "Cart, empty" })).toBeVisible();
@@ -48,10 +48,14 @@ test("adding Latte × 2, Traditional Espresso × 1, then Latte × 1 makes the ba
 
   await addButton(page, "Latte").click();
 
-  await expect(page.getByRole("link", { name: "Cart, 4 items" })).toHaveText("4");
+  await expect(page.getByRole("link", { name: "Cart, 5 items" })).toHaveText("5");
+  // The badge of the card says how many Lattes are in the cart, and Traditional Espresso has its own.
+  await expect(card(page, "Latte").locator("[data-in-cart]")).toHaveText("4");
+  await expect(card(page, "Traditional Espresso").locator("[data-in-cart]")).toHaveText("1");
+  await expect(card(page, "Irish").locator("[data-in-cart]")).toHaveCount(0);
 });
 
-test("the counter goes back to 1 after adding, and a click on a counter adds nothing", async ({
+test("the counter keeps its value after adding, the card says how many are in the cart, and a click on a counter adds nothing", async ({
   page,
 }) => {
   await increase(page, "Cuban").click();
@@ -61,8 +65,34 @@ test("the counter goes back to 1 after adding, and a click on a counter adds not
 
   await addButton(page, "Cuban").click();
 
-  await expect(counter(page, "Cuban").getByText("1", { exact: true })).toBeVisible();
+  await expect(counter(page, "Cuban").getByText("3", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Cart, 3 items" })).toBeVisible();
+  await expect(card(page, "Cuban").locator("[data-in-cart]")).toHaveText("3");
+});
+
+test("the badge of the card sits on the corner of the cart button and does not change the card", async ({
+  page,
+}) => {
+  const latte = card(page, "Latte");
+  // The page scrolls to the click, so positions are compared inside the card.
+  const place = async () => {
+    const cardBox = await boxOf(latte);
+    const button = await boxOf(addButton(page, "Latte"));
+    return {
+      size: [cardBox.width, cardBox.height],
+      button: [button.x - cardBox.x, button.y - cardBox.y, button.width, button.height],
+    };
+  };
+  const before = await place();
+
+  await addButton(page, "Latte").click();
+
+  const buttonAfter = await boxOf(addButton(page, "Latte"));
+  const badge = await boxOf(latte.locator("[data-in-cart]"));
+  expect(await place()).toEqual(before);
+  // Its center is the top right corner of the button, out of the flow.
+  expect(Math.abs(badge.x + badge.width / 2 - (buttonAfter.x + buttonAfter.width))).toBeLessThan(6);
+  expect(Math.abs(badge.y + badge.height / 2 - buttonAfter.y)).toBeLessThan(6);
 });
 
 test("the counters of different cards change independently", async ({ page }) => {
@@ -95,7 +125,6 @@ test("the counter stops at 99, and the cart never holds more than 99 of a coffee
   await expect(plus).toHaveAttribute("aria-disabled", "true");
 
   await addButton(page, "Latte").click();
-  await increase(page, "Latte").click();
   await addButton(page, "Latte").click();
 
   // 99 is the most of one coffee; the badge draws 99+ above that, here the total is exactly 99.
@@ -108,7 +137,7 @@ test("a polite live region announces each addition and nothing opens", async ({ 
   await addButton(page, "Latte").click();
 
   await expect(card(page, "Latte").locator("[aria-live=polite]")).toHaveText(
-    "Added 2 × Latte to cart",
+    "Added 2 × Latte to cart. 2 in the cart.",
   );
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page).toHaveURL(/\/$/);
