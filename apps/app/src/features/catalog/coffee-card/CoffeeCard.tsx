@@ -33,10 +33,13 @@ export function CoffeeCard({ coffee }: { coffee: Coffee }) {
   function addToCart() {
     add(coffee.id, quantity);
     const now = Math.min(inCart + quantity, MAX_QUANTITY);
-    setAnnouncement((previous) => ({
-      text: `Added ${quantity} × ${coffee.name} to cart. ${now} in the cart.`,
-      repeat: !previous.repeat,
-    }));
+    const added = now - inCart;
+    // The cart keeps at most the maximum of one coffee: say what really went in, not what was asked.
+    const text =
+      added === 0
+        ? `${coffee.name} is at the maximum of ${MAX_QUANTITY} in the cart.`
+        : `Added ${added} × ${coffee.name} to cart. ${now} in the cart.`;
+    setAnnouncement((previous) => ({ text, repeat: !previous.repeat }));
   }
 
   return (

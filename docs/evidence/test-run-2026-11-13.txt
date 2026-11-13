@@ -1,0 +1,23 @@
+Test run behind docs/TESTING.md, 2026-11-13 (machine of the developer: Windows 11, Docker Desktop, Node 22.22.0, Java 21.0.12).
+Commands and the lines they printed (trimmed to the result lines):
+
+$ yarn test
+  API (Gradle test): 172 tests in 23 classes, 0 failed            (apps/api build/test-results/test)
+  Vitest: Test Files 54 passed (54); Tests 694 passed (694); Duration 37.75s
+  Scripts (node --test scripts/*.test.mjs): tests 165, pass 165, fail 0, skipped 0
+
+$ yarn test:e2e
+  API (Gradle e2eTest, Testcontainers postgres:18.6-alpine): 113 tests in 12 classes, 0 failed
+  Playwright (Chromium): 199 passed (1.2m)   [18 spec files]
+  Printed by the visual comparison: home 0.60%, checkout 0.07%, checkout-filled 0.41%, success 0.27% of the
+  unmasked pixels differ (limit 2%)
+  Printed by first-load.spec.ts: Home transferred 512 kB (limit 600 kB)
+
+$ ./gradlew jacocoTestCoverageVerification jacocoTestReport   (unit and e2e execution data together)
+  Total: instructions 25 missed of 2,862 (99%); branches 8 of 139 (94%); lines 6 missed of 624 (99%)
+  Gate: at least 80% of lines -> BUILD SUCCESSFUL
+
+$ yarn build
+  BUILD SUCCESSFUL; entry chunk dist/assets/index-*.js 238.14 kB (gzip 74.45 kB)
+
+Totals: 172 + 113 + 694 + 165 + 199 = 1,343 automated tests.

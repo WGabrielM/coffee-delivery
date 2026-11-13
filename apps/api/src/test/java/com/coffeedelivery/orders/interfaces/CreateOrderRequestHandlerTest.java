@@ -12,6 +12,7 @@ import com.coffeedelivery.orders.application.FakeCoffeePriceLookup;
 import com.coffeedelivery.orders.application.InMemoryOrderRepository;
 import com.coffeedelivery.orders.application.RetentionPolicy;
 import com.coffeedelivery.shared.error.ApiExceptionHandler;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -29,6 +30,7 @@ class CreateOrderRequestHandlerTest {
   private static final String GHOST = "33333333-3333-3333-3333-333333333333";
 
   private final InMemoryOrderRepository orders = new InMemoryOrderRepository();
+  private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
   private final MockMvc mvc =
       MockMvcBuilders.standaloneSetup(
               new CreateOrderRequestHandler(
@@ -38,7 +40,8 @@ class CreateOrderRequestHandlerTest {
                           .with(CUBAN, "Cuban", 990),
                       orders,
                       Clock.fixed(Instant.parse("2026-11-04T12:00:00Z"), ZoneOffset.UTC)),
-                  new RetentionPolicy(90)))
+                  new RetentionPolicy(90),
+                  registry))
           .setControllerAdvice(new ApiExceptionHandler())
           .build();
 
@@ -165,6 +168,30 @@ class CreateOrderRequestHandlerTest {
         .andExpect(jsonPath("$.error.code").value("unprocessable_content"))
         .andExpect(jsonPath("$.error.fields.items").value(containsString(GHOST)));
     org.assertj.core.api.Assertions.assertThat(orders.saved()).isEmpty();
+  }
+
+  private double counted(String outcome) {
+    return registry.counter("orders.created", "outcome", outcome).count();
+  }
+
+  @Test
+  void countsACreatedOrderAndAReplayInTheMetricOrdersCreated() throws Exception {
+    String content = body(VALID_ITEMS, "credit_card");
+
+    mvc.perform(withKey(KEY, content)).andExpect(status().isCreated());
+    mvc.perform(withKey(KEY, content)).andExpect(status().isOk());
+    mvc.perform(withKey(KEY, content)).andExpect(status().isOk());
+
+    org.assertj.core.api.Assertions.assertThat(counted("created")).isEqualTo(1);
+    org.assertj.core.api.Assertions.assertThat(counted("replayed")).isEqualTo(2);
+  }
+
+  @Test
+  void aRefusedRequestIsNotCountedAsAnOrder() throws Exception {
+    mvc.perform(json("{}")).andExpect(status().isBadRequest());
+
+    org.assertj.core.api.Assertions.assertThat(counted("created")).isZero();
+    org.assertj.core.api.Assertions.assertThat(counted("replayed")).isZero();
   }
 
   private static final String KEY = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";

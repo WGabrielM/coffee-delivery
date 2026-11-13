@@ -305,6 +305,34 @@ describe("CoffeeCard", () => {
       ).toHaveTextContent("5");
     });
 
+    it("does not claim an addition the cart did not make: at the maximum it says so", async () => {
+      const user = userEvent.setup();
+      saveCart([{ coffeeId: latte.id, quantity: 99 }]);
+      renderWithCart(<CoffeeCard coffee={latte} />);
+      const card = screen.getByRole("article", { name: "Latte" });
+      const live = card.querySelector("[aria-live]");
+
+      await user.click(within(card).getByRole("button", { name: "Add Latte to cart" }));
+
+      expect(live).toHaveTextContent("Latte is at the maximum of 99 in the cart.");
+      expect(live).not.toHaveTextContent("Added");
+    });
+
+    it("says how many really went in when only part of the quantity fits", async () => {
+      const user = userEvent.setup();
+      saveCart([{ coffeeId: latte.id, quantity: 98 }]);
+      renderWithCart(<CoffeeCard coffee={latte} />);
+      const card = screen.getByRole("article", { name: "Latte" });
+      await user.click(within(card).getByRole("button", { name: "Increase quantity" }));
+      await user.click(within(card).getByRole("button", { name: "Increase quantity" }));
+
+      await user.click(within(card).getByRole("button", { name: "Add Latte to cart" }));
+
+      expect(card.querySelector("[aria-live]")).toHaveTextContent(
+        "Added 1 × Latte to cart. 99 in the cart.",
+      );
+    });
+
     it("announces each addition in a polite live region", async () => {
       const user = userEvent.setup();
       renderWithCart(<CoffeeCard coffee={latte} />);

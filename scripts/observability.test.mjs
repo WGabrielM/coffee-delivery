@@ -31,6 +31,9 @@ test("the dashboard has the panels the spec asks for", () => {
     "Latency p99 by route",
     "JVM heap",
     "Database connection pool",
+    "Orders created per minute",
+    "Client errors (4xx) by status",
+    "Addresses cleared (last 24 h)",
   ]) {
     assert.ok(titles.includes(title), `missing panel: ${title}`);
   }
@@ -98,4 +101,18 @@ test("compose mounts the provider and the dashboards read only into the Grafana 
     grafana.includes("./infra/grafana/dashboards:/otel-lgtm/coffee-delivery-dashboards:ro"),
     "dashboards mount missing",
   );
+});
+
+test("the business panels read the custom metrics of the API: orders created and addresses cleared", () => {
+  const expressions = Object.fromEntries(
+    panels().map((panel) => [panel.title, panel.targets.map((target) => target.expr).join("\n")]),
+  );
+
+  assert.match(
+    expressions["Orders created per minute"],
+    /orders_created_total\{job="coffee-delivery-api"\}/,
+  );
+  assert.match(expressions["Orders created per minute"], /sum by \(outcome\)/);
+  assert.match(expressions["Addresses cleared (last 24 h)"], /orders_addresses_cleared_total/);
+  assert.match(expressions["Client errors (4xx) by status"], /status=~"4\.\."/);
 });

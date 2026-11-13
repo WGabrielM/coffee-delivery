@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 
 import { apiGet, apiPost, type RequestOptions } from "../../api";
 import type { CartLine } from "../cart/cart-reducer";
+import { ZIP_CODE_PATTERN } from "./address-schema";
 
 /** The checkout rules of the server as `GET /api/v1/checkout-config` returns them. */
 export interface CheckoutConfig {
@@ -102,8 +103,6 @@ export function getQuote(request: QuoteRequest, options?: RequestOptions): Promi
   return apiPost<Quote>("/orders/quote", request, options);
 }
 
-const COMPLETE_ZIP_CODE = /^\d{5}-\d{3}$/;
-
 /**
  * The quote of the cart lines. It is asked again when the lines or a complete ZIP code change (a
  * ZIP code that is not complete is not sent), and while the new answer loads the previous numbers
@@ -116,7 +115,7 @@ export function useQuote(
 ) {
   const items = lines.map(({ coffeeId, quantity }) => ({ coffeeId, quantity }));
   const completeZipCode =
-    zipCode !== undefined && COMPLETE_ZIP_CODE.test(zipCode) ? zipCode : undefined;
+    zipCode !== undefined && ZIP_CODE_PATTERN.test(zipCode) ? zipCode : undefined;
   return useQuery({
     queryKey: ["quote", items, completeZipCode],
     queryFn: ({ signal }) =>

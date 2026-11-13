@@ -133,10 +133,15 @@ As of 2026-11-10, after the follow-up specs.
 - **Fee and estimate.** Fixed rules (350 cents, 20 to 30 minutes). The quote endpoint (spec 039) takes a ZIP code so a fee by zone needs no change in the app, but today the fee is the same for every ZIP code.
 - **Rate limit.** Only the proxy of the app image limits orders (10 a minute for each client address, with a burst of 5, spec 038). The API has no limit of its own, and neither has the Vite dev server, so a client that calls the API directly is not limited. The limit is by client address, so people behind one address share it.
 - **Packaging and backup.** The two images and `compose.packaged.yaml` are for a local check only: no host, no registry, no deployment, and the images are not built by the QA commands or the pipeline. `yarn db:restore` restores into `restore_check` and never into the live database; recovering the live database is a manual step ([`RUNBOOK.md`](RUNBOOK.md)). The scheduled job that clears addresses has a metric (`orders.addresses.cleared`) but no Grafana panel.
+- **Observability.** Logs stay on standard output (not in Loki) and traces have one span per request (no JDBC spans); there are no alert rules, and the Grafana container has no data volume, so telemetry can disappear on `infra:down`. The dashboard has ten panels, including the business counters `orders.created` and `orders.addresses.cleared` ([OBSERVABILITY.md](OBSERVABILITY.md)).
 - **Visual parity** depends on the font rendering of Chromium on the machine; the filled input border and the filter chips differ from the frames by decision.
 - **The pipeline.** The first run of the workflow failed (Node 22.22.1 was not enough for `jsdom`) and the run after the fix passed in all three jobs; the commit message workflow has not run yet, because it runs on pull requests only. `actionlint` was not run: the permission to run the downloaded binary was refused. The runs on GitHub after the commits of 2026-11-10 were not looked at for this report.
 
-## 8. Lessons learned
+## 8. Evidence for review
+
+After the first review of this report (8.2 out of 10), the evidence behind it was written down in four documents, each built on a run of the system: [OBSERVABILITY.md](OBSERVABILITY.md) (signals, panels, a screenshot of the dashboard under load, a log line and its trace), [TESTING.md](TESTING.md) (1,343 tests measured on 2026-11-13, coverage, the defects the tests found, the traceability from spec to test), [DECISIONS.md](DECISIONS.md) (the reasoning behind the architecture), and [AGENTS-IN-ACTION.md](AGENTS-IN-ACTION.md) (real runs of the agents). [FEEDBACK-RESPONSE.md](FEEDBACK-RESPONSE.md) answers each point of the review.
+
+## 9. Lessons learned
 
 - **Small specs keep the AI honest.** One action per spec, with measurable criteria, made every result checkable: a number, a box, a test. The few times a criterion was a feeling, the work needed a second pass.
 - **Write the check before the fix, and read what it says.** The pixel comparison of spec 029 found six real deviations in screens that had passed every earlier test, because those tests measured the boxes and the text, not the whole picture. The responsive check found a 22 px link target that had been wrong since the empty cart page was built.

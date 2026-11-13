@@ -79,5 +79,6 @@ The six commands from `code:fix` to `build` must pass before every commit; [`.do
 
 - [`docs/CAPSTONE.md`](docs/CAPSTONE.md): the process, the 31 specs and the 8 follow-up specs with their plans and decision records, the numbers (each with its date), what a person decided and what AI decided, the deviations, the limits, and the lessons.
 - [`docs/PLAN.md`](docs/PLAN.md): the roadmap with the result of each spec.
+- Evidence for review: [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) (signals, dashboard, a trace), [`docs/TESTING.md`](docs/TESTING.md) (1,343 tests, coverage, defects found), [`docs/DECISIONS.md`](docs/DECISIONS.md) (the reasoning behind the architecture), [`docs/AGENTS-IN-ACTION.md`](docs/AGENTS-IN-ACTION.md) (real runs of the agents), and [`docs/FEEDBACK-RESPONSE.md`](docs/FEEDBACK-RESPONSE.md).
 - [`.docs/BUSINESS.md`](.docs/BUSINESS.md): what the product does and its rules. [`.docs/ARCHITECTURE.md`](.docs/ARCHITECTURE.md): the endpoints, the data model, and the structure.
 - [`.docs/DESIGN.md`](.docs/DESIGN.md): the screens, with the tablet and mobile rules.
