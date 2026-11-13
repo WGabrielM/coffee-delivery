@@ -2,6 +2,8 @@
 
 A small coffee store: a visitor browses 14 coffees, filters them by tag, builds a cart, enters a delivery address, chooses how to pay on delivery, and confirms the order. There are no accounts. It is a React app and a Java Spring Boot API with a PostgreSQL database, rebuilt from a Figma design as the capstone of the Applied AI postgraduate module (Coders University). It was built with AI, one spec at a time, following the workflow in [`.docs/`](.docs/AGENTS.md); [`docs/CAPSTONE.md`](docs/CAPSTONE.md) tells how, with the measured results.
 
+![The Coffee Delivery home screen: the hero, the tag filters, and the coffee cards](docs/images/home.png)
+
 ## Stack
 
 | Part | Tools |
